@@ -32,3 +32,8 @@ jobs:
             -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15" \
             -H "Accept-Language: en-US,en;q=0.9" "$PRODUCT_URL" || true
           grep -o -i -E 'robot or human|px-captcha|captcha|__NEXT_DATA__|og:image[^>]{0,200}' page.html | head -8 || true
+      - name: Try page readers that render like a browser
+        run: |
+          enc=$(node -e 'console.log(encodeURIComponent(process.env.PRODUCT_URL))')
+          echo "--- microlink"; curl -s --max-time 40 "https://api.microlink.io/?url=$enc" | head -c 1500; echo
+          echo "--- jina reader"; curl -s --max-time 40 -H "Accept: application/json" -H "X-With-Images-Summary: true" "https://r.jina.ai/$PRODUCT_URL" | head -c 2500; echo
