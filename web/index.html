@@ -835,10 +835,10 @@ function updatePlan(except=-1,smooth=true){
     const x=T[i],L=day.locked[i];
     x.sec.classList.toggle("locked",L);x.lock.setAttribute("aria-pressed",L);
     x.lock.setAttribute("aria-label",(L?"Unlock ":"Lock ")+s.name);
-    x.lock.innerHTML=(L?LOCKED:OPEN)+`<span>${L?"Locked":"Lock"}</span>`;
+    x.lock.innerHTML=(L?LOCKED:OPEN);
     const E=isDone(ui.day,i),sk=s.opts[day.picks[i]].skip;x.eat.hidden=sk;x.sec.classList.toggle("eaten",E&&!sk);
     x.eat.setAttribute("aria-pressed",E);x.eat.setAttribute("aria-label",(E?"Unmark ":"Mark ")+s.name+" as eaten");
-    x.eat.innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-ok"/></svg>'+`<span>${E?"Eaten":"Mark eaten"}</span>`;
+    x.eat.innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-ok"/></svg>';
     x.label.textContent=fmtTime(timeOf(ui.day,i));
     x.cards.forEach((el,oi)=>el.classList.toggle("sel",oi===day.picks[i]));
     x.dots.forEach((d,oi)=>d.setAttribute("aria-current",oi===day.picks[i]));
