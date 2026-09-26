@@ -59,19 +59,27 @@ main{max-width:960px;margin:0 auto;padding-bottom:calc(96px + env(safe-area-inse
 .total{display:flex;align-items:baseline;gap:8px}
 .total .k{font-size:3rem;font-weight:300;letter-spacing:-0.04em;line-height:1}
 .total .of{color:var(--muted)}
-.line{position:relative;height:2px;background:var(--line);margin:14px 0 0}
-.line .fill{position:absolute;inset:0 auto 0 0;background:var(--ink);transition:width .3s ease}
-.line .tick{position:absolute;top:-4px;height:10px;width:1px;background:var(--ink);left:83.333%}
+.meter{position:relative;display:flex;height:12px;margin:16px 0 0;border-radius:6px;background:var(--soft)}
+.meter .ms{height:100%;background:#d8d8d4;border-right:2px solid var(--bg);transition:width .3s ease,background .3s}
+.meter .ms:first-child{border-radius:6px 0 0 6px}
+.meter .ms.last{border-radius:0 6px 6px 0;border-right:0}
+.meter .ms.is-done{background:var(--ink)}
+.meter .ms.is-now{background:repeating-linear-gradient(135deg,var(--ink) 0 4px,#6d6d6d 4px 8px)}
+.meter .tgt{position:absolute;top:-5px;bottom:-5px;width:2px;background:var(--ink);border-radius:1px}
+.meter .tgt::after{content:attr(data-l);position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-size:.66rem;color:var(--muted);white-space:nowrap}
+.m-leg{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px;font-size:.8rem;color:var(--muted)}
+.m-leg b{color:var(--ink);font-weight:500}
+.m-leg .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px;background:#d8d8d4}
+.m-leg .sw.done{background:var(--ink)}
 .sub{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;margin-top:10px;color:var(--muted);font-size:.85rem}
 .sub b{font-weight:500;color:var(--ink)}
 .sub>span{white-space:nowrap}
 .status{margin:6px 0 0;font-size:.85rem;color:var(--muted);min-height:1.3em}
 
-details.goals{padding:0 24px;border-bottom:1px solid var(--line)}
-details.goals summary{list-style:none;cursor:pointer;padding:0 0 16px;color:var(--muted);font-size:.87rem}
-details.goals summary::-webkit-details-marker{display:none}
-details.goals summary span{text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line)}
-.goal-body{display:grid;gap:14px;padding:0 0 22px}
+.goals-open{padding:0 24px 16px;border-bottom:1px solid var(--line)}
+.goals-open .txt{color:var(--muted)}
+.g-title{font-size:1.35rem!important}
+.goal-body{display:grid;gap:14px;padding:14px 0 6px}
 .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .stepper{display:flex;align-items:center;gap:4px}
 .stepper output{min-width:6ch;text-align:center}
@@ -199,12 +207,16 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .wg-now{position:absolute;left:0;right:0;border-top:1.5px solid var(--ink);z-index:2}
 .wg-hint{padding:0 24px;margin:6px 0 0;font-size:.8rem;color:var(--muted)}
 /* next meal */
-.next{display:block;width:100%;margin:10px 0 0;padding:14px 24px 0;text-align:left}
-.next .lbl{font-size:.78rem;color:var(--muted)}
-.next .big{display:block;font-size:1.35rem;letter-spacing:-0.02em;margin:2px 0 1px}
+.next{display:block;width:calc(100% - 48px);margin:12px 24px 0;padding:16px 18px 14px;text-align:left;
+  border:1px solid var(--line);border-radius:18px;background:var(--soft);transition:border-color .2s}
+.next:hover{border-color:var(--ink)}
+.next .top{display:flex;justify-content:space-between;gap:10px;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.next .big{display:block;font-size:1.6rem;font-weight:300;letter-spacing:-0.03em;line-height:1.15;margin:8px 0 2px}
 .next .big b{font-weight:500}
-.next .sm{font-size:.85rem;color:var(--muted)}
-.next:hover .sm{text-decoration:underline;text-underline-offset:3px}
+.next .sm{display:block;font-size:.87rem;color:var(--muted)}
+.next .prog{display:block;position:relative;height:4px;border-radius:2px;background:var(--line);margin-top:14px;overflow:hidden}
+.next .prog i{position:absolute;inset:0 auto 0 0;background:var(--ink);border-radius:2px;transition:width .4s ease}
+.next .ends{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-top:5px}
 /* wider screens */
 @media (min-width:640px){
   .narrow{max-width:640px}
@@ -342,36 +354,14 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
     <div class="gauge" aria-live="polite">
       <div class="dlabel" id="dLabel"></div>
       <div class="total"><span class="k" id="kTotal">0</span><span class="of" id="kOf">/ 3,000 kcal</span></div>
-      <div class="line"><div class="fill" id="kFill"></div><div class="tick"></div></div>
+      <div class="meter" id="meter" role="img"></div>
+      <div class="m-leg" id="mLeg"></div>
       <div class="sub"><span>Protein <b id="pTotal">0 g</b> / <span id="pOf">110 g</span></span><span>Carbs <b id="cTotal">0</b></span><span>Fat <b id="fTotal">0</b></span></div>
       <p class="status" id="status"></p>
       <p class="status" id="variety" hidden></p>
     </div>
 
-    <details class="goals">
-      <summary><span>Goals &amp; schedule</span></summary>
-      <div class="goal-body">
-        <div class="row"><span>Calories per day</span>
-          <div class="stepper"><button class="sq" id="kDown" aria-label="Lower calorie goal by 100">−</button><output id="kGoal">3,000</output><button class="sq" id="kUp" aria-label="Raise calorie goal by 100">+</button></div></div>
-        <div class="presets" role="group" aria-label="Ramp-up steps">
-          <button class="preset" data-v="2200">Week 1: 2,200</button>
-          <button class="preset" data-v="2600">Week 2: 2,600</button>
-          <button class="preset" data-v="3000">Then: 3,000</button>
-        </div>
-        <p class="hint">Step up over a couple of weeks rather than jumping straight to the full amount.</p>
-        <div class="row"><span>Protein per day</span>
-          <div class="stepper"><button class="sq" id="pDown" aria-label="Lower protein goal by 5 grams">−</button><output id="pGoal">110 g</output><button class="sq" id="pUp" aria-label="Raise protein goal by 5 grams">+</button></div></div>
-        <p class="subhead">Default meal times</p>
-        <div class="times" id="times"></div>
-        <p class="hint">Dragging a meal on the calendar changes the time for that day only.</p>
-        <div class="row"><label for="startDate">Week starts</label><input type="date" id="startDate"></div>
-        <p class="hint">Meals and your weekly plan are stored in Notion. <a class="txt" href="https://app.notion.com/p/3e71fe5d3fa48144bd10fd03a50ec960" target="_blank" rel="noopener">Open Gain Planner in Notion</a></p>
-        <form class="row" id="passRow" action="#" method="post" autocomplete="on"><label for="passcode">Notion passcode</label>
-          <input class="vh" type="text" name="username" autocomplete="username" value="Gain planner" tabindex="-1" aria-hidden="true" readonly>
-          <span class="pass"><input type="password" name="password" id="passcode" autocomplete="current-password" placeholder="Passcode"><button class="txt" id="savePass" type="submit">Save</button></span></form>
-        <p class="hint" id="passHint" hidden>Saved on this device. <button class="txt" id="copyLink" type="button">Copy sign-in link</button> Opening that link on any device signs it in, so keep it private. <span class="msg" id="passMsg" role="status"></span></p>
-      </div>
-    </details>
+    <div class="goals-open"><button class="txt" id="goalsBtn" aria-haspopup="dialog">Goals &amp; schedule</button></div>
    </div>
    <div class="plan-main">
     <div id="slots"></div>
@@ -438,6 +428,30 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   </section>
 </main>
 
+<div class="sheet-bg" id="goals" hidden><div class="sheet" id="goalsBox" role="dialog" aria-modal="true" aria-labelledby="goalsTitle">
+  <div class="sh-top"><h2 id="goalsTitle" class="g-title">Goals &amp; schedule</h2><button class="txt" id="goalsClose">Close</button></div>
+  <div class="goal-body">
+        <div class="row"><span>Calories per day</span>
+          <div class="stepper"><button class="sq" id="kDown" aria-label="Lower calorie goal by 100">−</button><output id="kGoal">3,000</output><button class="sq" id="kUp" aria-label="Raise calorie goal by 100">+</button></div></div>
+        <div class="presets" role="group" aria-label="Ramp-up steps">
+          <button class="preset" data-v="2200">Week 1: 2,200</button>
+          <button class="preset" data-v="2600">Week 2: 2,600</button>
+          <button class="preset" data-v="3000">Then: 3,000</button>
+        </div>
+        <p class="hint">Step up over a couple of weeks rather than jumping straight to the full amount.</p>
+        <div class="row"><span>Protein per day</span>
+          <div class="stepper"><button class="sq" id="pDown" aria-label="Lower protein goal by 5 grams">−</button><output id="pGoal">110 g</output><button class="sq" id="pUp" aria-label="Raise protein goal by 5 grams">+</button></div></div>
+        <p class="subhead">Default meal times</p>
+        <div class="times" id="times"></div>
+        <p class="hint">Dragging a meal on the calendar changes the time for that day only.</p>
+        <div class="row"><label for="startDate">Week starts</label><input type="date" id="startDate"></div>
+        <p class="hint">Meals and your weekly plan are stored in Notion. <a class="txt" href="https://app.notion.com/p/3e71fe5d3fa48144bd10fd03a50ec960" target="_blank" rel="noopener">Open Gain Planner in Notion</a></p>
+        <form class="row" id="passRow" action="#" method="post" autocomplete="on"><label for="passcode">Notion passcode</label>
+          <input class="vh" type="text" name="username" autocomplete="username" value="Gain planner" tabindex="-1" aria-hidden="true" readonly>
+          <span class="pass"><input type="password" name="password" id="passcode" autocomplete="current-password" placeholder="Passcode"><button class="txt" id="savePass" type="submit">Save</button></span></form>
+        <p class="hint" id="passHint" hidden>Saved on this device. <button class="txt" id="copyLink" type="button">Copy sign-in link</button> Opening that link on any device signs it in, so keep it private. <span class="msg" id="passMsg" role="status"></span></p>
+      </div>
+</div></div>
 <div class="sheet-bg" id="sheet" hidden><div class="sheet" id="sheetBox" role="dialog" aria-modal="true" aria-labelledby="shTitle"></div></div>
 
 <nav class="tabbar" aria-label="Sections">
@@ -760,7 +774,7 @@ function updatePlan(except=-1,smooth=true){
   const{k,p,c,f}=totals(ui.day);
   $("dLabel").textContent=longDate(ui.day)+(isToday(ui.day)?" (today)":"");
   $("kTotal").textContent=fmt(k);$("kOf").textContent=`/ ${fmt(state.target)} kcal`;
-  $("kFill").style.width=Math.min(100,k/(state.target*1.2)*100)+"%";
+  renderMeter();
   $("pTotal").textContent=`${fmt(p)} g`;$("pOf").textContent=`${state.protein} g`;
   $("cTotal").textContent=`${fmt(c)} g`;$("fTotal").textContent=`${fmt(f)} g`;
   $("kGoal").textContent=fmt(state.target);$("pGoal").textContent=`${state.protein} g`;
@@ -806,32 +820,51 @@ $("copyAll").onclick=()=>{
   setTimeout(()=>{b.textContent="Copy this day to the whole week"},2000);
 };
 
+/* ---------- calorie meter: eaten vs planned against the goal ---------- */
+function renderMeter(){
+  const d=ui.day,ms=mealsOf(d).filter(m=>!m.o.skip),tot=ms.reduce((a,m)=>a+m.o.k,0),scale=Math.max(state.target*1.15,tot*1.02);
+  const now=new Date(),nm=now.getHours()*60+now.getMinutes(),today=isToday(d),past=iso(dayDate(d))<iso(now);
+  const st=m=>past?"done":!today?"todo":mins(m.time)+30<=nm?"done":mins(m.time)<=nm?"now":"todo";
+  const box=$("meter");box.innerHTML="";
+  ms.forEach((m,j)=>{const s=document.createElement("span");s.className="ms is-"+st(m)+(j===ms.length-1?" last":"");s.style.width=(m.o.k/scale*100)+"%";
+    s.title=`${m.slot} ${fmtTime(m.time)}: ${m.o.n}, ${fmt(m.o.k)} kcal`;box.appendChild(s)});
+  const t=document.createElement("span");t.className="tgt";t.style.left=`calc(${state.target/scale*100}% - 1px)`;t.dataset.l=`Goal ${fmt(state.target)}`;box.appendChild(t);
+  const done=ms.filter(m=>st(m)!=="todo"),ek=done.reduce((a,m)=>a+m.o.k,0),ep=done.reduce((a,m)=>a+m.o.p,0);
+  box.setAttribute("aria-label",`${fmt(ek)} of ${fmt(tot)} planned kcal eaten, goal ${fmt(state.target)}`);
+  $("mLeg").innerHTML=today?`<span><span class="sw done"></span>Eaten <b>${fmt(ek)}</b> kcal · <b>${done.length}</b> of ${ms.length} meals · <b>${fmt(ep)} g</b> protein</span><span><span class="sw"></span>${fmt(Math.max(0,state.target-ek))} kcal to go</span>`
+    :past?`<span><span class="sw done"></span>All ${ms.length} meals done</span>`:`<span><span class="sw"></span>${ms.length} meals planned</span>`;
+}
+
 /* ---------- next meal ---------- */
 function nextMeal(){
   const now=new Date(),today=iso(now),nm=now.getHours()*60+now.getMinutes();
   let d=-1;for(let x=0;x<D;x++)if(iso(dayDate(x))===today)d=x;
   if(d<0)return null;
   const list=x=>mealsOf(x).filter(m=>!m.o.skip);
-  const cur=list(d).filter(m=>mins(m.time)<=nm&&nm-mins(m.time)<30).pop();
-  if(cur)return{d,m:cur,diff:0};
-  const up=list(d).find(m=>mins(m.time)>nm);
-  if(up)return{d,m:up,diff:mins(up.time)-nm};
-  if(d+1<D){const t=list(d+1)[0];if(t)return{d:d+1,m:t,diff:24*60-nm+mins(t.time)}}
+  const today_=list(d),cur=today_.filter(m=>mins(m.time)<=nm&&nm-mins(m.time)<30).pop();
+  if(cur)return{d,m:cur,diff:0,from:mins(cur.time),to:mins(cur.time)+30,now:nm};
+  const up=today_.find(m=>mins(m.time)>nm),prev=today_.filter(m=>mins(m.time)<=nm).pop();
+  if(up)return{d,m:up,diff:mins(up.time)-nm,from:prev?mins(prev.time):Math.max(0,mins(up.time)-180),to:mins(up.time),now:nm,prev};
+  if(d+1<D){const t=list(d+1)[0];if(t)return{d:d+1,m:t,diff:24*60-nm+mins(t.time),from:prev?mins(prev.time):nm,to:24*60+mins(t.time),now:nm,prev}}
   return null;
 }
 function inText(min){if(min<1)return "now";const h=Math.floor(min/60),m=min%60;return "in "+(h?`${h} h`+(m?` ${m} min`:""):`${m} min`)}
 function renderNext(){
   const el=$("nextMeal"),n=nextMeal();
   if(!n){el.hidden=true;return}
-  const{d,m,diff}=n;
-  el.innerHTML=`<span class="lbl">${diff===0?"Now":"Next meal"}</span><span class="big"><b></b> <span></span></span><span class="sm"></span>`;
+  const{d,m,diff,from,to,now,prev}=n,pct=Math.max(0,Math.min(100,(now-from)/Math.max(1,to-from)*100));
+  el.innerHTML=`<span class="top"><span>${diff===0?"Now":"Next meal"}</span><span></span></span><span class="big"><b></b> <span></span></span><span class="sm"></span>
+    <span class="prog" aria-hidden="true"><i style="width:${pct}%"></i></span><span class="ends"><span></span><span></span></span>`;
+  el.querySelector(".top span+span").textContent=fmtTime(m.time)+(isToday(d)?"":" tomorrow");
   el.querySelector(".big b").textContent=m.slot;
   el.querySelector(".big span").textContent=diff===0?"is now":inText(diff);
-  el.querySelector(".sm").textContent=`${m.o.n}, ${fmtTime(m.time)}${isToday(d)?"":" tomorrow"}`;
+  el.querySelector(".sm").textContent=`${m.o.n} · ${fmt(m.o.k)} kcal · ${fmt(m.o.p)} g protein`;
+  const ends=el.querySelectorAll(".ends span");
+  ends[0].textContent=diff===0?`Started ${fmtTime(m.time)}`:prev?`${prev.slot} ${fmtTime(prev.time)}`:"";ends[1].textContent=diff===0?"":m.slot;
   el.setAttribute("aria-label",`${diff===0?"Now":"Next meal"}: ${m.slot} ${diff===0?"is now":inText(diff)}, ${m.o.n} at ${fmtTime(m.time)}. Open recipe.`);
   el.onclick=()=>openDetail(d,m.i);el.hidden=false;
 }
-setInterval(()=>{if(ui.tab==="plan"&&document.visibilityState==="visible")renderNext()},30000);
+setInterval(()=>{if(ui.tab==="plan"&&document.visibilityState==="visible"){renderNext();renderMeter()}},30000);
 
 /* ---------- calendar ---------- */
 function gotoPlan(d,slot){
@@ -1248,7 +1281,20 @@ async function notionSync(){
   }catch(e){nError(e)}
   finally{nState.busy=false;if(nState.again){nState.again=false;scheduleNotion(1500)}}
 }
-function openPassField(){ui.tab="plan";renderAll(false);const det=document.querySelector("details.goals");det.open=true;setTimeout(()=>{$("passcode").focus();$("passRow").scrollIntoView({block:"center"})},50)}
+// Goals & schedule opens over the page instead of pushing the plan down.
+let goalsFocus=null;
+function openGoals(focusId){goalsFocus=document.activeElement;renderSettings();$("goals").hidden=false;document.body.style.overflow="hidden";
+  setTimeout(()=>{const el=$(focusId||"goalsClose");if(el){el.focus();if(focusId)el.scrollIntoView({block:"center"})}},30)}
+function closeGoals(){$("goals").hidden=true;document.body.style.overflow="";if(goalsFocus&&document.contains(goalsFocus))goalsFocus.focus()}
+$("goalsBtn").onclick=()=>openGoals();$("goalsClose").onclick=closeGoals;
+$("goals").addEventListener("click",e=>{if(e.target===$("goals"))closeGoals()});
+document.addEventListener("keydown",e=>{
+  if($("goals").hidden)return;
+  if(e.key==="Escape"){e.preventDefault();closeGoals();return}
+  if(e.key==="Tab"){const f=[...$("goalsBox").querySelectorAll("button,input,a[href]")].filter(x=>x.offsetParent&&x.tabIndex>=0);if(!f.length)return;const a=f[0],z=f[f.length-1];
+    if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
+});
+function openPassField(){openGoals("passcode")}
 $("notionBtn").onclick=()=>{if(!passcode())openPassField();else notionSync()};
 // A real form submit lets the browser offer to save the passcode (iCloud Keychain, Google Password Manager).
 $("passRow").addEventListener("submit",e=>{e.preventDefault();const v=$("passcode").value.trim();try{v?localStorage.setItem(PASSKEY,v):localStorage.removeItem(PASSKEY)}catch(e){}
