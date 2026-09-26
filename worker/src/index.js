@@ -13,6 +13,8 @@
 //   GET  /pantry             -> { items: [...] }        what's in the fridge, freezer and pantry
 //   POST /pantry/batch       -> { created: [{ref, id, url}], ok: [ids], failed: [{ref, message}] }
 //        body: { creates: [item + ref], updates: [item + id], deletes: [id] }  (max 20 in total)
+//   GET  /product?url=...    -> { title, image, images: [...] }  reads a store's product page
+//   GET  /img?url=...        -> the image itself, with CORS so the app can cut out its background
 //   GET  /health             -> { ok: true }
 //
 // Optional history cleanup: when KEEP_WEEKS is set above 0, a daily cron moves
@@ -55,6 +57,8 @@ export default {
       if (request.method === "GET" && url.pathname === "/health") return json({ ok: true });
       if (request.method === "GET" && url.pathname === "/meals") return json({ meals: await listMeals(env) });
       if (request.method === "GET" && url.pathname === "/plan") return json({ rows: await listPlan(env, url.searchParams.get("from")) });
+      if (request.method === "GET" && url.pathname === "/product") return json(await readProduct(url.searchParams.get("url")));
+      if (request.method === "GET" && url.pathname === "/img") return await proxyImage(url.searchParams.get("url"), cors);
       if (url.pathname === "/pantry" || url.pathname === "/pantry/batch") {
         if (!env.PANTRY_DB) return json({ error: "server_not_configured", message: "Set PANTRY_DB." }, 500);
         if (request.method === "GET" && url.pathname === "/pantry") return json({ items: await listPantry(env) });
@@ -71,6 +75,7 @@ export default {
       }
       return json({ error: "not_found" }, 404);
     } catch (e) {
+      if (e.fetchError) return json({ error: "fetch_failed", message: e.message }, 422);
       const status = e.status || 0;
       const code = status === 401 ? "notion_token" : status === 403 || status === 404 ? "notion_access" : "notion_error";
       return json({ error: code, message: e.message || "Notion request failed." }, 502);
@@ -318,6 +323,8 @@ async function listPantry(env) {
         quantity: numOrNull(pr["Quantity"]),
         unit: text(pr["Unit"]).trim(),
         expires: pr["Expires"] && pr["Expires"].date ? String(pr["Expires"].date.start).slice(0, 10) : "",
+        link: (pr["Link"] && pr["Link"].url) || "",
+        image: (pr["Image"] && pr["Image"].url) || "",
       };
     })
     .filter((it) => it.name);
@@ -334,6 +341,8 @@ function cleanPantry(raw, needId) {
     quantity: q === null ? null : Number.isFinite(q) && q >= 0 && q <= 9999 ? Math.round(q * 100) / 100 : null,
     unit: String(raw.unit || "").trim().slice(0, 20),
     expires: /^\d{4}-\d{2}-\d{2}$/.test(String(raw.expires || "")) ? String(raw.expires) : "",
+    link: webUrl(raw.link),
+    image: webUrl(raw.image),
   };
   if (!it.name) return null;
   if (needId) {
@@ -351,6 +360,8 @@ function pantryProps(it) {
     Quantity: { number: it.quantity },
     Unit: { rich_text: it.unit ? [{ text: { content: it.unit } }] : [] },
     Expires: { date: it.expires ? { start: it.expires } : null },
+    Link: { url: it.link || null },
+    Image: { url: it.image || null },
   };
 }
 
@@ -392,4 +403,77 @@ async function writePantry(env, body) {
   };
   await Promise.all([worker(), worker()]);
   return { created, ok, failed };
+}
+
+// ---------- product pages and images ----------
+const BROWSER = {
+  "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15",
+  "Accept-Language": "en-US,en;q=0.9",
+};
+function webUrl(v) {
+  try { const u = new URL(String(v || "").trim()); return /^https?:$/.test(u.protocol) && u.href.length <= 2000 ? u.href : ""; } catch { return ""; }
+}
+function fetchFail(message) { const e = new Error(message); e.fetchError = true; return e; }
+async function fetchOut(target, accept) {
+  const u = webUrl(target);
+  if (!u) throw fetchFail("That isn't a web address.");
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 9000);
+  try {
+    const res = await fetch(u, { headers: { ...BROWSER, Accept: accept }, redirect: "follow", signal: ctl.signal });
+    if (!res.ok) throw fetchFail(res.status === 403 || res.status === 429 || res.status === 503
+      ? "That store blocked the request. Open the product photo, copy its image address, and paste that instead."
+      : `The store returned an error (${res.status}).`);
+    return res;
+  } catch (e) {
+    if (e.fetchError) throw e;
+    throw fetchFail(e.name === "AbortError" ? "The store took too long to answer." : "Couldn't reach that address.");
+  } finally { clearTimeout(t); }
+}
+const decode = (s) => String(s || "").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#0?39;|&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#x2F;/gi, "/").trim();
+
+async function readProduct(target) {
+  const res = await fetchOut(target, "text/html,application/xhtml+xml,image/*;q=0.9,*/*;q=0.8");
+  const base = res.url || target, ct = res.headers.get("content-type") || "";
+  if (ct.startsWith("image/")) return { title: "", image: base, images: [base] };
+  const html = (await res.text()).slice(0, 2_000_000);
+  const images = [], add = (v) => { try { const u = new URL(decode(v), base).href; if (/^https?:/.test(u) && !images.includes(u)) images.push(u); } catch {} };
+  let title = "";
+  // JSON-LD Product data is the most reliable source on store pages.
+  for (const m of html.matchAll(/<script[^>]+application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) {
+    let data; try { data = JSON.parse(m[1].trim()); } catch { continue; }
+    const walk = (o) => {
+      if (!o || typeof o !== "object") return;
+      if (Array.isArray(o)) return o.forEach(walk);
+      const type = [].concat(o["@type"] || []).join(" ");
+      if (/Product/i.test(type)) {
+        if (!title && o.name) title = decode(o.name);
+        [].concat(o.image || []).forEach((im) => add(typeof im === "string" ? im : im && (im.url || im.contentUrl)));
+      }
+      if (o["@graph"]) walk(o["@graph"]);
+    };
+    walk(data);
+  }
+  const metas = {};
+  for (const m of html.matchAll(/<meta\s[^>]*>/gi)) {
+    const tag = m[0], key = (tag.match(/\b(?:property|name|itemprop)\s*=\s*["']([^"']+)["']/i) || [])[1];
+    const val = (tag.match(/\bcontent\s*=\s*["']([^"']*)["']/i) || [])[1];
+    if (key && val && !metas[key.toLowerCase()]) metas[key.toLowerCase()] = val;
+  }
+  ["og:image:secure_url", "og:image", "twitter:image", "twitter:image:src", "image"].forEach((k) => metas[k] && add(metas[k]));
+  const link = html.match(/<link[^>]+rel=["']image_src["'][^>]*href=["']([^"']+)["']/i); if (link) add(link[1]);
+  if (!title) title = decode(metas["og:title"] || metas["twitter:title"] || (html.match(/<title[^>]*>([^<]*)<\/title>/i) || [])[1] || "");
+  title = title.replace(/\s*[|\-–:]\s*(Target|Walmart\.com|Walmart|Amazon\.com|Whole Foods Market|Trader Joe's|Kroger|Instacart|Costco)\s*$/i, "").slice(0, 100);
+  if (!images.length) throw fetchFail("Couldn't find a product photo on that page. Paste the image address instead.");
+  return { title, image: images[0], images: images.slice(0, 6) };
+}
+
+async function proxyImage(target, cors) {
+  const res = await fetchOut(target, "image/avif,image/webp,image/png,image/jpeg,image/*;q=0.8");
+  const ct = res.headers.get("content-type") || "";
+  if (!ct.startsWith("image/") || /svg/.test(ct)) throw fetchFail("That address isn't a photo.");
+  const len = +res.headers.get("content-length") || 0;
+  if (len > 8_000_000) throw fetchFail("That photo is too large.");
+  const buf = await res.arrayBuffer();
+  if (buf.byteLength > 8_000_000) throw fetchFail("That photo is too large.");
+  return new Response(buf, { headers: { ...cors, "Content-Type": ct, "Cache-Control": "private, max-age=604800" } });
 }

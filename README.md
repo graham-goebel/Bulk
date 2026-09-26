@@ -67,6 +67,8 @@ The **Pantry** tab shows what's in your fridge, freezer and pantry as a 3D galle
 
 Items live in the **Pantry** database in Notion (`PANTRY_DB` in `worker/wrangler.toml`). On the Shop tab, check off what you bought and tap **Add checked to pantry**; items you already have get their quantity increased. Without a Notion connection the pantry is kept on the device.
 
+To use a real product photo, open an item, paste a link to the product page (or straight to the photo) into **Store link**, and tap **Get photo**. The Worker reads the page's product photo and name; the app removes a plain studio background and shows the cut-out in the 3D view and the list. Busy lifestyle photos are left as they are. Some stores block automated requests; for those, open the photo in your browser, copy its image address, and paste that instead. The Pantry database keeps the link and photo address in its **Link** and **Image** columns.
+
 ## Meal times across time zones
 
 Each row in Meal Plan has a **Time** column with the wall-clock time the meal is planned for, such as `07:30`. The app syncs that, so a phone and a laptop set to different time zones show the same times. **When** is kept up to date for Notion's calendar view but can look shifted if your devices are in different zones. To change a meal's time from Notion, edit **Time**.

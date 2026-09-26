@@ -194,7 +194,15 @@ function textSprite(text) {
   sp.scale.set(cv.width / cv.height * 0.34, 0.34, 1); return sp;
 }
 
-export function createPantryScene(container, { onPick, onHover } = {}) {
+// A product photo (already cut out) as a flat card that always faces the camera.
+function photoSprite(canvas) {
+  const t = new THREE.CanvasTexture(canvas); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, toneMapped: false, alphaTest: 0.02 }));
+  const a = canvas.width / canvas.height; let h = 0.66, w = h * a; if (w > 0.8) { w = 0.8; h = w / a; }
+  sp.scale.set(w, h, 1); sp.userData.h = h; return sp;
+}
+
+export function createPantryScene(container, { onPick, onHover, loadImage } = {}) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.toneMapping = THREE.NeutralToneMapping;
@@ -253,7 +261,8 @@ export function createPantryScene(container, { onPick, onHover } = {}) {
       itemScale = 1.7;
       list.forEach((o, i) => {
         const y = n === 1 ? 0 : 1 - (i / (n - 1)) * 2, r = Math.sqrt(1 - y * y), th = ga * i;
-        o.pos.set(Math.cos(th) * r * R, y * R, Math.sin(th) * r * R); o.scale = 1;
+        if (n === 1) o.pos.set(0, 0, 0); else o.pos.set(Math.cos(th) * r * R, y * R, Math.sin(th) * r * R);
+        o.scale = 1;
       });
       shelves.visible = false; camGoal = { dist: fitDist(2 * R + 1.4, 2 * R + 1.4), target: new THREE.Vector3(0, 0, 0) };
     } else {
@@ -277,13 +286,20 @@ export function createPantryScene(container, { onPick, onHover } = {}) {
     const seen = new Set();
     items.forEach((it) => {
       seen.add(it.id);
-      const sig = [it.name, it.category, it.location, Math.min(3, Math.round(+it.quantity || 1)), it.expires].join("|");
+      const sig = [it.name, it.category, it.location, Math.min(3, Math.round(+it.quantity || 1)), it.expires, it.image || ""].join("|");
       let o = objs.get(it.id);
       if (!o || o.sig !== sig) {
         const g = build(it); g.userData.id = it.id;
-        if (it.expires && (new Date(it.expires + "T23:59:59") - Date.now()) / 864e5 < 3) {
-          const dot = mesh(sph(0.045), mat("#d64532", { rough: 0.4 })); const bb = new THREE.Box3().setFromObject(g);
-          dot.position.set(0, bb.max.y + 0.09, 0); g.add(dot);
+        const soon = it.expires && (new Date(it.expires + "T23:59:59") - Date.now()) / 864e5 < 3;
+        const addDot = (top) => { const dot = mesh(sph(0.045), mat("#d64532", { rough: 0.4 })); dot.position.set(0, top + 0.09, 0); g.add(dot); };
+        if (soon) addDot(new THREE.Box3().setFromObject(g).max.y);
+        // Swap the generic model for the product photo once it has loaded and been cut out.
+        if (it.image && loadImage) {
+          const id = it.id;
+          loadImage(it.image).then((cv) => {
+            const cur = objs.get(id); if (!cv || !cur || cur.sig !== sig) return;
+            g.clear(); const sp = photoSprite(cv); g.add(sp); if (soon) addDot(sp.userData.h / 2);
+          }).catch(() => {});
         }
         if (o) { g.position.copy(o.g.position); g.scale.copy(o.g.scale); root.remove(o.g); } else g.scale.setScalar(0.001);
         root.add(g);
