@@ -53,11 +53,11 @@ main{max-width:960px;margin:0 auto;padding-bottom:calc(100px + env(safe-area-ins
 .strip{display:flex;gap:4px;padding:10px 20px 6px}
 .strip button{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 0 8px;border-radius:12px;font-size:.72rem;color:var(--muted);position:relative}
 .strip b{font-size:1.02rem;font-weight:400;color:var(--ink)}
-.strip button[aria-current="true"]:not(.in){background:var(--ink);color:var(--bg)}
-.strip button[aria-current="true"] b{color:var(--bg)}
-.strip{position:relative}.strip button{z-index:1}
-.strip button.in{background:var(--ink);color:rgba(255,255,255,.6);border-radius:0;box-shadow:4px 0 0 var(--ink)}.strip button.in b{color:#fff}
-.strip button.in.first{border-radius:12px 0 0 12px}.strip button.in.last{border-radius:0 12px 12px 0;box-shadow:none}.strip button.in.first.last{border-radius:12px}
+.strip{position:relative}.strip button{z-index:1;transition:color .3s}.strip b{transition:color .3s}
+.strip .hi{position:absolute;left:0;top:0;height:0;width:0;border-radius:12px;background:var(--ink);pointer-events:none;
+  transition:transform .5s cubic-bezier(.3,.7,.2,1),width .5s cubic-bezier(.3,.7,.2,1)}
+.strip .hi.now{transition:none}
+.strip button.in{color:rgba(255,255,255,.6)}.strip button.in b{color:#fff}
 .strip button.today::after{content:"";position:absolute;bottom:3px;width:3px;height:3px;border-radius:50%;background:currentColor}
 
 .dlabel{font-size:.82rem;color:var(--muted);margin-bottom:4px}
@@ -89,11 +89,11 @@ main{max-width:960px;margin:0 auto;padding-bottom:calc(100px + env(safe-area-ins
 .icon-btn{width:42px;height:42px;border-radius:50%;background:var(--soft);display:grid;place-items:center;color:var(--ink)}
 .icon-btn .ic{width:19px;height:19px}
 .icon-btn:focus-visible{border-radius:50%}
+.app-head .icon-btn{background:none}
 .icon-btn.sm{width:34px;height:34px}.icon-btn.sm .ic{width:16px;height:16px}
-.hero{position:relative;overflow:hidden;isolation:isolate;margin:14px 24px 0;border-radius:28px;color:var(--ink);
-  background:radial-gradient(120% 90% at 20% 10%,#fbfbfa 0,transparent 55%),radial-gradient(90% 80% at 90% 90%,#e9e9e6 0,transparent 60%),#f2f2f0}
-.hero .fx-bg,.hero .fx-pt{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
-.hero .fx-bg{z-index:-2}.hero .fx-pt{z-index:-1}
+.hero{position:relative;isolation:isolate;margin:6px 24px 0;color:var(--ink)}
+.hero .fx-pt{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
+.hero .fx-pt{z-index:-1}
 .rings{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:22px 12px 18px}
 .ring{display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0}
 .dial{position:relative;width:100%;max-width:112px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
@@ -422,14 +422,6 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .with-ic{display:inline-flex;align-items:center;gap:6px}
 .tabbar button[aria-current="page"]{background:rgba(0,0,0,.07);color:var(--ink)}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
-/* dashboard tab: a light shader fills the page behind header, rings and tiles */
-#dashBg{position:fixed;inset:0;z-index:-1;pointer-events:none;display:none;
-  background:radial-gradient(120% 70% at 20% 10%,#fff 0,transparent 55%),radial-gradient(90% 60% at 90% 80%,#f1f1ef 0,transparent 60%),#f8f8f7}
-#dashBg .fx-bg{position:absolute;inset:0;width:100%;height:100%;display:block}
-html.dash-mode{background:#f8f8f7}
-html.dash-mode body{background:transparent}
-html.dash-mode #dashBg{display:block}
-html.dash-mode .hero{background:none;margin-top:4px}
 @media (max-width:639px){
   .hours{margin:18px 12px 0}
   .blk{left:42px}
@@ -466,7 +458,6 @@ html.dash-mode .hero{background:none;margin-top:4px}
   <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></g></symbol><symbol id="i-cloud" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 0 0 4.5 4.5H18a3.75 3.75 0 0 0 1.332-7.257 3 3 0 0 0-3.758-3.848 5.25 5.25 0 0 0-10.233 2.33A4.502 4.502 0 0 0 2.25 15Z"/></g></symbol><symbol id="i-okl" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></g></symbol><symbol id="i-syncl" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></g></symbol><symbol id="i-warnl" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/></g></symbol><symbol id="i-plan" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z"/></g></symbol><symbol id="i-dash" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"/></g></symbol><symbol id="i-cal" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z"/></g></symbol><symbol id="i-shop" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></g></symbol><symbol id="i-pantry" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/></g></symbol><symbol id="i-clock" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8Zm7.75-4.25a.75.75 0 0 0-1.5 0V8c0 .414.336.75.75.75h3.25a.75.75 0 0 0 0-1.5h-2.5v-3.5Z" clip-rule="evenodd"/></g></symbol><symbol id="i-adjust" viewBox="0 0 16 16"><g fill="currentColor"><path d="M6.5 2.25a.75.75 0 0 0-1.5 0v3a.75.75 0 0 0 1.5 0V4.5h6.75a.75.75 0 0 0 0-1.5H6.5v-.75ZM11 6.5a.75.75 0 0 0-1.5 0v3a.75.75 0 0 0 1.5 0v-.75h2.25a.75.75 0 0 0 0-1.5H11V6.5ZM5.75 10a.75.75 0 0 1 .75.75v.75h6.75a.75.75 0 0 1 0 1.5H6.5v.75a.75.75 0 0 1-1.5 0v-3a.75.75 0 0 1 .75-.75ZM2.75 7.25H8.5v1.5H2.75a.75.75 0 0 1 0-1.5ZM4 3H2.75a.75.75 0 0 0 0 1.5H4V3ZM2.75 11.5H4V13H2.75a.75.75 0 0 1 0-1.5Z"/></g></symbol><symbol id="i-sync" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M13.836 2.477a.75.75 0 0 1 .75.75v3.182a.75.75 0 0 1-.75.75h-3.182a.75.75 0 0 1 0-1.5h1.37l-.84-.841a4.5 4.5 0 0 0-7.08.932.75.75 0 0 1-1.3-.75 6 6 0 0 1 9.44-1.242l.842.84V3.227a.75.75 0 0 1 .75-.75Zm-.911 7.5A.75.75 0 0 1 13.199 11a6 6 0 0 1-9.44 1.241l-.84-.84v1.371a.75.75 0 0 1-1.5 0V9.591a.75.75 0 0 1 .75-.75H5.35a.75.75 0 0 1 0 1.5H3.98l.841.841a4.5 4.5 0 0 0 7.08-.932.75.75 0 0 1 1.025-.273Z" clip-rule="evenodd"/></g></symbol><symbol id="i-ok" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z" clip-rule="evenodd"/></g></symbol><symbol id="i-warn" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M6.701 2.25c.577-1 2.02-1 2.598 0l5.196 9a1.5 1.5 0 0 1-1.299 2.25H2.804a1.5 1.5 0 0 1-1.3-2.25l5.197-9ZM8 4a.75.75 0 0 1 .75.75v3a.75.75 0 1 1-1.5 0v-3A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/></g></symbol><symbol id="i-skip" viewBox="0 0 20 20"><g fill="currentColor"><path fill-rule="evenodd" d="M5.965 4.904l9.131 9.131a6.5 6.5 0 00-9.131-9.131zm8.07 10.192L4.904 5.965a6.5 6.5 0 009.131 9.131zM4.343 4.343a8 8 0 1111.314 11.314A8 8 0 014.343 4.343z" clip-rule="evenodd"/></g></symbol><symbol id="i-dots" viewBox="0 0 20 20"><g fill="currentColor"><path d="M3 10a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0ZM8.5 10a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0ZM15.5 8.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"/></g></symbol><symbol id="i-x" viewBox="0 0 20 20"><g fill="currentColor"><path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"/></g></symbol><symbol id="i-trash" viewBox="0 0 20 20"><g fill="currentColor"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clip-rule="evenodd"/></g></symbol><symbol id="i-lock" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M8 1a3.5 3.5 0 0 0-3.5 3.5V7A1.5 1.5 0 0 0 3 8.5v5A1.5 1.5 0 0 0 4.5 15h7a1.5 1.5 0 0 0 1.5-1.5v-5A1.5 1.5 0 0 0 11.5 7V4.5A3.5 3.5 0 0 0 8 1Zm2 6V4.5a2 2 0 1 0-4 0V7h4Z" clip-rule="evenodd"/></g></symbol><symbol id="i-unlock" viewBox="0 0 16 16"><g fill="currentColor"><path d="M11.5 1A3.5 3.5 0 0 0 8 4.5V7H2.5A1.5 1.5 0 0 0 1 8.5v5A1.5 1.5 0 0 0 2.5 15h7a1.5 1.5 0 0 0 1.5-1.5v-5A1.5 1.5 0 0 0 9.5 7V4.5a2 2 0 1 1 4 0v1.75a.75.75 0 0 0 1.5 0V4.5A3.5 3.5 0 0 0 11.5 1Z"/></g></symbol><symbol id="i-ext" viewBox="0 0 16 16"><g fill="currentColor"><path d="M6.22 8.72a.75.75 0 0 0 1.06 1.06l5.22-5.22v1.69a.75.75 0 0 0 1.5 0v-3.5a.75.75 0 0 0-.75-.75h-3.5a.75.75 0 0 0 0 1.5h1.69L6.22 8.72Z"/>
   <path d="M3.5 6.75c0-.69.56-1.25 1.25-1.25H7A.75.75 0 0 0 7 4H4.75A2.75 2.75 0 0 0 2 6.75v4.5A2.75 2.75 0 0 0 4.75 14h4.5A2.75 2.75 0 0 0 12 11.25V9a.75.75 0 0 0-1.5 0v2.25c0 .69-.56 1.25-1.25 1.25h-4.5c-.69 0-1.25-.56-1.25-1.25v-4.5Z"/></g></symbol><symbol id="i-down" viewBox="0 0 16 16"><g fill="currentColor"><path d="M8.75 2.75a.75.75 0 0 0-1.5 0v5.69L5.03 6.22a.75.75 0 0 0-1.06 1.06l3.5 3.5a.75.75 0 0 0 1.06 0l3.5-3.5a.75.75 0 0 0-1.06-1.06L8.75 8.44V2.75Z"/>
   <path d="M3.5 9.75a.75.75 0 0 0-1.5 0v1.5A2.75 2.75 0 0 0 4.75 14h6.5A2.75 2.75 0 0 0 14 11.25v-1.5a.75.75 0 0 0-1.5 0v1.5c0 .69-.56 1.25-1.25 1.25h-6.5c-.69 0-1.25-.56-1.25-1.25v-1.5Z"/></g></symbol><symbol id="i-sphere" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M3.757 4.5c.18.217.376.42.586.608.153-.61.354-1.175.596-1.678A5.53 5.53 0 0 0 3.757 4.5ZM8 1a6.994 6.994 0 0 0-7 7 7 7 0 1 0 7-7Zm0 1.5c-.476 0-1.091.386-1.633 1.427-.293.564-.531 1.267-.683 2.063A5.48 5.48 0 0 0 8 6.5a5.48 5.48 0 0 0 2.316-.51c-.152-.796-.39-1.499-.683-2.063C9.09 2.886 8.476 2.5 8 2.5Zm3.657 2.608a8.823 8.823 0 0 0-.596-1.678c.444.298.842.659 1.182 1.07-.18.217-.376.42-.586.608Zm-1.166 2.436A6.983 6.983 0 0 1 8 8a6.983 6.983 0 0 1-2.49-.456 10.703 10.703 0 0 0 .202 2.6c.72.231 1.49.356 2.288.356.798 0 1.568-.125 2.29-.356a10.705 10.705 0 0 0 .2-2.6Zm1.433 1.85a12.652 12.652 0 0 0 .018-2.609c.405-.276.78-.594 1.117-.947a5.48 5.48 0 0 1 .44 2.262 7.536 7.536 0 0 1-1.575 1.293Zm-2.172 2.435a9.046 9.046 0 0 1-3.504 0c.039.084.078.166.12.244C6.907 13.114 7.523 13.5 8 13.5s1.091-.386 1.633-1.427c.04-.078.08-.16.12-.244Zm1.31.74a8.5 8.5 0 0 0 .492-1.298c.457-.197.893-.43 1.307-.696a5.526 5.526 0 0 1-1.8 1.995Zm-6.123 0a8.507 8.507 0 0 1-.493-1.298 8.985 8.985 0 0 1-1.307-.696 5.526 5.526 0 0 0 1.8 1.995ZM2.5 8.1c.463.5.993.935 1.575 1.293a12.652 12.652 0 0 1-.018-2.608 7.037 7.037 0 0 1-1.117-.947 5.48 5.48 0 0 0-.44 2.262Z" clip-rule="evenodd"/></g></symbol><symbol id="i-shelves" viewBox="0 0 16 16"><g fill="currentColor"><path d="M9.836 3h-3.67v10h3.67V3ZM11.336 13H13.5a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 13.5 3h-2.164v10ZM2.5 3h2.166v10H2.5A1.5 1.5 0 0 1 1 11.5v-7A1.5 1.5 0 0 1 2.5 3Z"/></g></symbol><symbol id="i-list" viewBox="0 0 16 16"><g fill="currentColor"><path d="M3 4.75a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM6.25 3a.75.75 0 0 0 0 1.5h7a.75.75 0 0 0 0-1.5h-7ZM6.25 7.25a.75.75 0 0 0 0 1.5h7a.75.75 0 0 0 0-1.5h-7ZM6.25 11.5a.75.75 0 0 0 0 1.5h7a.75.75 0 0 0 0-1.5h-7ZM4 12.25a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM3 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></g></symbol><symbol id="i-grow" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M2.75 9a.75.75 0 0 1 .75.75v1.69l2.22-2.22a.75.75 0 0 1 1.06 1.06L4.56 12.5h1.69a.75.75 0 0 1 0 1.5h-3.5a.75.75 0 0 1-.75-.75v-3.5A.75.75 0 0 1 2.75 9ZM2.75 7a.75.75 0 0 0 .75-.75V4.56l2.22 2.22a.75.75 0 0 0 1.06-1.06L4.56 3.5h1.69a.75.75 0 0 0 0-1.5h-3.5a.75.75 0 0 0-.75.75v3.5c0 .414.336.75.75.75ZM13.25 9a.75.75 0 0 0-.75.75v1.69l-2.22-2.22a.75.75 0 1 0-1.06 1.06l2.22 2.22H9.75a.75.75 0 0 0 0 1.5h3.5a.75.75 0 0 0 .75-.75v-3.5a.75.75 0 0 0-.75-.75ZM13.25 7a.75.75 0 0 1-.75-.75V4.56l-2.22 2.22a.75.75 0 1 1-1.06-1.06l2.22-2.22H9.75a.75.75 0 0 1 0-1.5h3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-.75.75Z" clip-rule="evenodd"/></g></symbol><symbol id="i-shrink" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M2.22 2.22a.75.75 0 0 1 1.06 0L5.5 4.44V2.75a.75.75 0 0 1 1.5 0v3.5a.75.75 0 0 1-.75.75h-3.5a.75.75 0 0 1 0-1.5h1.69L2.22 3.28a.75.75 0 0 1 0-1.06Zm10.5 0a.75.75 0 1 1 1.06 1.06L11.56 5.5h1.69a.75.75 0 0 1 0 1.5h-3.5A.75.75 0 0 1 9 6.25v-3.5a.75.75 0 0 1 1.5 0v1.69l2.22-2.22ZM2.75 9h3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-1.69l-2.22 2.22a.75.75 0 0 1-1.06-1.06l2.22-2.22H2.75a.75.75 0 0 1 0-1.5ZM9 9.75A.75.75 0 0 1 9.75 9h3.5a.75.75 0 0 1 0 1.5h-1.69l2.22 2.22a.75.75 0 1 1-1.06 1.06l-2.22-2.22v1.69a.75.75 0 0 1-1.5 0v-3.5Z" clip-rule="evenodd"/></g></symbol><symbol id="i-plus" viewBox="0 0 16 16"><g fill="currentColor"><path d="M8.75 3.75a.75.75 0 0 0-1.5 0v3.5h-3.5a.75.75 0 0 0 0 1.5h3.5v3.5a.75.75 0 0 0 1.5 0v-3.5h3.5a.75.75 0 0 0 0-1.5h-3.5v-3.5Z"/></g></symbol><symbol id="i-search" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></g></symbol></svg>
-<div id="dashBg" aria-hidden="true"></div>
 <header class="app-head">
   <div class="h-txt"><p class="h-kick" id="hKick"></p><h1 class="h-title" id="hTitle">Today</h1></div>
   <div class="head-r">
@@ -863,19 +854,29 @@ function refreshAfterMark(d){
 if(fresh){if(state.days[0].locked.some(Boolean)){for(let d=0;d<D;d++)rebalanceDay(d)}else{for(let d=0;d<D;d++)rebalanceDay(d,-1,d>0)}saveLocal()}
 
 /* ---------- day strip ---------- */
+// The dark bar behind the selected day(s) is one element that slides and stretches between them.
+function placeStripBar(instant){
+  const el=$("strip"),sel=[...el.querySelectorAll("button.in")];if(!sel.length||el.hidden)return;
+  let hi=el.querySelector(".hi");if(!hi){hi=document.createElement("span");hi.className="hi";hi.setAttribute("aria-hidden","true");el.prepend(hi);instant=true}
+  const a=sel[0],z=sel[sel.length-1];if(!a.offsetWidth)return;
+  if(instant||!hi.dataset.on)hi.classList.add("now");
+  hi.style.top=a.offsetTop+"px";hi.style.height=a.offsetHeight+"px";hi.style.width=(z.offsetLeft+z.offsetWidth-a.offsetLeft)+"px";hi.style.transform=`translateX(${a.offsetLeft}px)`;
+  hi.dataset.on="1";if(hi.classList.contains("now")){void hi.offsetWidth;hi.classList.remove("now")}
+}
 function renderStrip(){
   // Week views and the whole-week shopping list select every day; 3 days selects a window of three.
-  const el=$("strip");el.innerHTML="";
+  const el=$("strip");el.querySelectorAll("button").forEach(b=>b.remove());
   const rg=ui.tab==="cal"&&ui.cal==="week"||ui.tab==="shop"&&ui.scope==="week"?[0,D-1]:ui.tab==="cal"&&ui.cal==="three"?[Math.min(ui.day,D-3),Math.min(ui.day,D-3)+2]:null;
   for(let d=0;d<D;d++){
     const b=document.createElement("button");
     b.innerHTML=`<span>${wk(d)}</span><b>${dayDate(d).getDate()}</b>`;
     const inR=rg&&d>=rg[0]&&d<=rg[1];b.setAttribute("aria-label",longDate(d));b.setAttribute("aria-current",rg?!!inR:d===ui.day);
-    if(inR){b.classList.add("in");if(d===rg[0])b.classList.add("first");if(d===rg[1])b.classList.add("last")}
+    if(rg?inR:d===ui.day)b.classList.add("in");
     if(isToday(d))b.classList.add("today");
     b.onclick=()=>{ui.day=d;if(ui.tab==="cal"&&ui.cal==="week")ui.cal="day";if(ui.tab==="shop")ui.scope="day";saveUi();renderAll(false)};
     el.appendChild(b);
   }
+  placeStripBar(false);
 }
 
 /* ---------- plan view ---------- */
@@ -1481,8 +1482,6 @@ function renderHead(){
 function renderAll(smooth=true){
   renderHead();
   document.querySelectorAll("[data-tab]").forEach(b=>b.dataset.tab===ui.tab?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current"));
-  const dm=ui.tab==="dash"&&!wideMQ.matches;document.documentElement.classList.toggle("dash-mode",dm);
-  if(dashFx)dashFx.setPage(dm);
   $("view-plan").hidden=ui.tab!=="plan";$("view-dash").hidden=ui.tab!=="dash";$("view-cal").hidden=ui.tab!=="cal";$("view-shop").hidden=ui.tab!=="shop";$("view-pantry").hidden=ui.tab!=="pantry";
   $("strip").hidden=ui.tab==="pantry";renderStrip();placeDash();
   if(ui.tab==="pantry")openPantry();else if(P3)P3.stop();
@@ -1648,7 +1647,7 @@ else{$("passcode").placeholder=passcode()?"Saved":"Passcode";$("passHint").hidde
 /* ---------- pantry ---------- */
 const PANKEY="gf-gain-planner-pantry";
 const BUILD="__BUILD__"; // replaced with the commit id when the site is published, so new versions aren't served from cache
-import("./dashfx.js?v="+BUILD).then(m=>{dashFx=m.createDashFx($("hero"),{reduceMotion,pageHost:$("dashBg")});dashFx.setPage(document.documentElement.classList.contains("dash-mode"));dashFx.update(meterData)}).catch(e=>console.warn("dashboard effects unavailable",e));
+import("./dashfx.js?v="+BUILD).then(m=>{dashFx=m.createDashFx($("hero"),{reduceMotion});dashFx.update(meterData)}).catch(e=>console.warn("dashboard effects unavailable",e));
 const LOCS=["Fridge","Freezer","Pantry"];
 const CATS=["Produce","Dairy & eggs","Meat & fish","Grains & bread","Cans & jars","Nuts & snacks","Oils & sauces","Frozen","Drinks","Other"];
 let pantry=[];try{const c=JSON.parse(localStorage.getItem(PANKEY)||"[]");if(Array.isArray(c))pantry=c}catch(e){}
@@ -2060,7 +2059,7 @@ function scheduleRemote(){}
 setSync(API_URL?"":"Saved on this device");
 
 renderSettings();renderAll(false);
-let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(()=>{if(ui.tab==="plan"||ui.tab==="dash")updatePlan(-1,false);if(ui.tab==="pantry")sizePantryMobile()},150)});
+let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(()=>{placeStripBar(true);if(ui.tab==="plan"||ui.tab==="dash")updatePlan(-1,false);if(ui.tab==="pantry")sizePantryMobile()},150)});
 </script>
 </body>
 </html>
