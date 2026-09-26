@@ -11,6 +11,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Gain planner">
 <link rel="manifest" href="manifest.webmanifest">
+<script type="importmap">{"imports":{"three":"./vendor/three/three.module.min.js","three/addons/":"./vendor/three/addons/"}}</script>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -223,6 +224,61 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 @media (min-width:900px) and (max-width:1199px){
   .card{flex-basis:64%}.track::before,.track::after{flex-basis:calc(18% - 10px)}
 }
+/* pantry */
+.pan{display:grid;grid-template-columns:minmax(0,1fr)}
+.pan-side{padding:14px 24px 0;min-width:0}
+.pan-title{margin:0;font-size:2rem;font-weight:500;letter-spacing:-0.04em;line-height:1.05}
+.pan-kicker{margin:4px 0 16px;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.pan-search{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:999px;padding:0 16px;min-height:46px}
+.pan-search svg{width:17px;height:17px;flex:none;color:var(--muted)}
+.pan-search input{flex:1;min-width:0;border:0;background:transparent;font:inherit;color:var(--ink);outline:none}
+.pan-count{display:flex;justify-content:space-between;align-items:center;margin:10px 2px 0;font-size:.85rem;color:var(--muted);min-height:32px}
+.pan-group h3{margin:16px 0 8px;font-size:.68rem;font-weight:400;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.pan-opts{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.pan-opts::-webkit-scrollbar{display:none}
+.pan-opt{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:.87rem}
+.pan-opt .n{color:var(--muted);font-size:.8rem}
+.pan-opt[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.pan-opt[aria-pressed="true"] .n{color:var(--bg);opacity:.7}
+.pan-stage{padding:14px 24px 0;min-width:0}
+.pan-tools{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.pan-seg{display:flex;border:1px solid var(--line);border-radius:999px;padding:3px}
+.pan-seg button{padding:6px 13px;border-radius:999px;font-size:.84rem;color:var(--muted)}
+.pan-seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.pan-btn{border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:.84rem;min-height:36px}
+.pan-btn:hover{border-color:var(--ink)}
+.pan-btn svg{width:15px;height:15px;display:block}
+.pan-fdet summary{list-style:none;cursor:pointer;margin:12px 0 0;display:inline-block;font-size:.87rem;border:1px solid var(--line);border-radius:999px;padding:7px 14px}
+.pan-fdet summary::-webkit-details-marker{display:none}
+.pan-fdet[open] summary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pan-btn.primary{background:var(--ink);border-color:var(--ink);color:var(--bg);margin-left:auto}
+.pan-canvas{position:relative;height:58vh;min-height:320px;border-radius:18px;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 42%,#ffffff 0%,#f3f2ef 62%,#e9e7e2 100%)}
+.pan-canvas canvas{display:block;cursor:grab}
+.pan-tip{position:absolute;z-index:2;pointer-events:none;background:var(--ink);color:var(--bg);border-radius:8px;padding:5px 9px;font-size:.8rem;white-space:nowrap;transform:translate(-50%,calc(-100% - 12px))}
+.pan-empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px;margin:0;color:var(--muted);font-size:.92rem}
+.pan-list{padding:0 2px}
+.pl-h{margin:18px 0 4px;font-size:.68rem;font-weight:400;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.pl-row{display:grid;grid-template-columns:1fr auto;gap:2px 12px;width:100%;padding:11px 0;border-bottom:1px solid var(--line)}
+.pl-row .nm{font-size:.95rem}
+.pl-row .mt{grid-column:1;font-size:.8rem;color:var(--muted)}
+.pl-row .q{grid-row:1/3;grid-column:2;align-self:center;font-size:.9rem;color:var(--muted)}
+.exp{color:#b23a2a}
+.pan-msg{margin:10px 2px 0;font-size:.82rem;color:var(--muted);min-height:1.2em}
+.pan.max .pan-stage{position:fixed;inset:0;z-index:25;background:var(--bg);padding:16px 16px env(safe-area-inset-bottom,16px)}
+.pan.max .pan-canvas{height:calc(100% - 64px)}
+.pf{display:grid;grid-template-columns:auto 1fr;gap:12px 16px;align-items:center;margin-top:18px;font-size:.92rem}
+.pf label{color:var(--muted);font-size:.85rem}
+.pf input,.pf select{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:8px;padding:6px 9px;min-height:36px;width:100%;min-width:0}
+.pf .qty{display:flex;align-items:center;gap:6px}.pf .qty input{width:5.5em;text-align:center}
+@media (min-width:900px){
+  .pan{grid-template-columns:290px minmax(0,1fr);gap:0 20px;align-items:start}
+  .pan-side{position:sticky;top:8px;max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:thin}
+  .pan-opts{flex-direction:column;overflow:visible}
+  .pan-fdet summary{display:none}
+  .pan-opt{border-radius:12px;padding:10px 16px}
+  .pan-canvas{height:calc(100vh - 200px);min-height:460px}
+}
 .wsum{display:flex;gap:22px;flex-wrap:wrap;padding:18px 24px 0;font-size:.87rem;color:var(--muted)}
 .wsum b{color:var(--ink);font-weight:500}
 
@@ -328,9 +384,35 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
     <div class="foot">
       <button class="pdf" id="shopPdf" hidden>Download PDF</button>
       <button class="txt" id="clearChecks">Clear checks</button>
+      <button class="txt" id="toPantry">Add checked to pantry</button>
       <span class="msg" id="shopMsg" role="status"></span>
     </div>
     <p class="note">Quantities are rounded up for shopping. Items marked “check GF label” need a certified gluten-free version.</p>
+  </section>
+  <!-- PANTRY -->
+  <section id="view-pantry" aria-label="Pantry" hidden>
+    <div class="pan" id="pan">
+      <aside class="pan-side" aria-label="Find food">
+        <h2 class="pan-title">Pantry</h2>
+        <p class="pan-kicker">Fridge, freezer &amp; pantry</p>
+        <label class="pan-search"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="9" cy="9" r="6"/><path d="m14 14 4 4"/></svg>
+          <input type="search" id="pSearch" placeholder="Search your food" aria-label="Search your food"></label>
+        <div class="pan-count"><span id="pCount" role="status"></span><button class="txt" id="pReset">Reset</button></div>
+        <details class="pan-fdet" id="pFdet"><summary>Filters</summary><div id="pFilters"></div></details>
+      </aside>
+      <div class="pan-stage">
+        <div class="pan-tools">
+          <div class="pan-seg" role="group" aria-label="View">
+            <button data-pl="sphere" aria-pressed="true">Sphere</button><button data-pl="shelves" aria-pressed="false">Shelves</button><button data-pl="list" aria-pressed="false">List</button>
+          </div>
+          <button class="pan-btn" id="pMax" aria-pressed="false" aria-label="Full screen" title="Full screen"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg></button>
+          <button class="pan-btn primary" id="pAdd">+ Add</button>
+        </div>
+        <div class="pan-canvas" id="pCanvas"><div class="pan-tip" id="pTip" hidden></div><p class="pan-empty" id="pEmpty" hidden></p></div>
+        <div class="pan-list" id="pList" hidden></div>
+        <p class="pan-msg" id="pMsg" role="status"></p>
+      </div>
+    </div>
   </section>
 </main>
 
@@ -340,6 +422,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   <button data-tab="plan" aria-current="page">Plan</button>
   <button data-tab="cal">Calendar</button>
   <button data-tab="shop">Shop</button>
+  <button data-tab="pantry">Pantry</button>
 </nav>
 
 <script src="config.js"></script>
@@ -534,7 +617,7 @@ if(!state){
       state.days[0]={picks:o.picks.map((v,i)=>clamp(v|0,0,SLOTS[i].opts.length-1)),locked:SLOTS.map((_,i)=>!!(o.locked&&o.locked[i])),times:Array(N).fill(null)}}}}catch(e){}
 }
 let ui={tab:"plan",day:0,cal:"hour",scope:"week"};
-try{const u=JSON.parse(localStorage.getItem(UIKEY)||"null");if(u){ui.tab=["plan","cal","shop"].includes(u.tab)?u.tab:"plan";ui.day=clamp(u.day|0,0,D-1);ui.cal=["hour","day","week"].includes(u.cal)?u.cal:"hour";ui.scope=u.scope==="day"?"day":"week"}}catch(e){}
+try{const u=JSON.parse(localStorage.getItem(UIKEY)||"null");if(u){ui.tab=["plan","cal","shop","pantry"].includes(u.tab)?u.tab:"plan";ui.pl=["sphere","shelves","list"].includes(u.pl)?u.pl:"sphere";ui.day=clamp(u.day|0,0,D-1);ui.cal=["hour","day","week"].includes(u.cal)?u.cal:"hour";ui.scope=u.scope==="day"?"day":"week"}}catch(e){}
 function saveUi(){try{localStorage.setItem(UIKEY,JSON.stringify(ui))}catch(e){}}
 function syncNames(){state.days.forEach(dy=>{dy.names=dy.picks.map((p,i)=>(SLOTS[i].opts[p]||{}).n||null)})}
 function saveLocal(){syncNames();try{localStorage.setItem(KEY2,JSON.stringify(state))}catch(e){}}
@@ -971,7 +1054,7 @@ function rq(q,u){
 let sheetCtx=null,sheetFocus=null;
 function refreshBehind(){if(ui.tab==="cal")renderCal();else if(ui.tab==="plan")updatePlan(-1,false)}
 function openDetail(d,i){sheetCtx={d,i};sheetFocus=document.activeElement;renderSheet();$("sheet").hidden=false;document.body.style.overflow="hidden";const c=$("shClose");if(c)c.focus()}
-function closeDetail(){$("sheet").hidden=true;document.body.style.overflow="";sheetCtx=null;
+function closeDetail(){$("sheet").hidden=true;document.body.style.overflow="";sheetCtx=null;if(P3)P3.select(null);
   const slot=sheetFocus&&sheetFocus.dataset?sheetFocus.dataset.slot:null;
   if(sheetFocus&&document.contains(sheetFocus))sheetFocus.focus();else if(slot!=null)focusBlk(slot,true)}
 function renderSheet(){
@@ -1004,7 +1087,7 @@ $("sheet").addEventListener("click",e=>{if(e.target===$("sheet"))closeDetail()})
 document.addEventListener("keydown",e=>{
   if($("sheet").hidden)return;
   if(e.key==="Escape"){e.preventDefault();closeDetail();return}
-  if(e.key==="Tab"){const f=[...$("sheetBox").querySelectorAll("button,input")];if(!f.length)return;const a=f[0],z=f[f.length-1];
+  if(e.key==="Tab"){const f=[...$("sheetBox").querySelectorAll("button,input,select")];if(!f.length)return;const a=f[0],z=f[f.length-1];
     if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
 });
 
@@ -1013,8 +1096,9 @@ function switchTab(t){ui.tab=t;saveUi();renderAll(false)}
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{if(ui.tab!==b.dataset.tab){switchTab(b.dataset.tab);window.scrollTo(0,0)}});
 function renderAll(smooth=true){
   document.querySelectorAll("[data-tab]").forEach(b=>b.dataset.tab===ui.tab?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current"));
-  $("view-plan").hidden=ui.tab!=="plan";$("view-cal").hidden=ui.tab!=="cal";$("view-shop").hidden=ui.tab!=="shop";
-  $("strip").hidden=false;renderStrip();
+  $("view-plan").hidden=ui.tab!=="plan";$("view-cal").hidden=ui.tab!=="cal";$("view-shop").hidden=ui.tab!=="shop";$("view-pantry").hidden=ui.tab!=="pantry";
+  $("strip").hidden=ui.tab==="pantry";renderStrip();
+  if(ui.tab==="pantry")openPantry();else if(P3)P3.stop();
   if(ui.tab==="plan"){requestAnimationFrame(()=>updatePlan(-1,smooth))}
   if(ui.tab==="cal")renderCal();
   if(ui.tab==="shop")renderShop();
@@ -1145,6 +1229,194 @@ $("passcode").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefaul
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&notionOn()&&Date.now()-nState.last>60000)notionSync()});
 if(!API_URL){$("passRow").hidden=true}
 else{$("passcode").placeholder=passcode()?"Saved":"Passcode";if(passcode()){nSet("Notion");notionSync()}else nSet("Connect Notion")}
+
+/* ---------- pantry ---------- */
+const PANKEY="gf-gain-planner-pantry";
+const LOCS=["Fridge","Freezer","Pantry"];
+const CATS=["Produce","Dairy & eggs","Meat & fish","Grains & bread","Cans & jars","Nuts & snacks","Oils & sauces","Frozen","Drinks","Other"];
+let pantry=[];try{const c=JSON.parse(localStorage.getItem(PANKEY)||"[]");if(Array.isArray(c))pantry=c}catch(e){}
+let P3=null,p3Loading=null,p3Failed=false,pLast=0;
+const pf={q:"",loc:new Set(),cat:new Set(),st:new Set()};
+function savePantryLocal(){try{localStorage.setItem(PANKEY,JSON.stringify(pantry))}catch(e){}}
+function daysLeft(it){if(!it.expires)return Infinity;return Math.floor((new Date(it.expires+"T00:00:00")-new Date(iso(new Date())+"T00:00:00"))/864e5)}
+const expSoon=it=>daysLeft(it)<=3,lowQ=it=>it.quantity!=null&&it.quantity<=1;
+function qtyLabel(it){return it.quantity==null?"":`${+(+it.quantity).toFixed(2)}${it.unit?" "+it.unit:""}`}
+function expLabel(it){const d=daysLeft(it);if(d===Infinity)return "";return d<0?`expired ${-d} day${d===-1?"":"s"} ago`:d===0?"expires today":d===1?"expires tomorrow":`expires in ${d} days`}
+// Best guess at where a food lives and what kind it is, from its name.
+function guessPlace(name,sec){
+  const n=name.toLowerCase();
+  if(sec==="F"||/frozen/.test(n))return{location:"Freezer",category:"Frozen"};
+  if(/oil|syrup|tamari|soy sauce|vinegar|sauce|dressing|ketchup/.test(n))return{location:"Pantry",category:"Oils & sauces"};
+  if(/bean|chickpea|lentil|tuna|sardine|coconut milk|crushed tomato|salsa|marinara|peanut butter|almond butter|honey|tahini|curry paste|jam/.test(n))return{location:"Pantry",category:"Cans & jars"};
+  if(/nut|almond|walnut|pistachio|seed|chia|hemp|flax|trail mix|chocolate|cocoa|date|raisin/.test(n))return{location:"Pantry",category:"Nuts & snacks"};
+  if(sec==="M"||/chicken|beef|pork|turkey|steak|sausage|salmon|cod|shrimp|fish/.test(n))return{location:"Fridge",category:"Meat & fish"};
+  if(sec==="D"||/milk|kefir|yogurt|cheese|cheddar|feta|parmesan|ricotta|butter|cream|egg/.test(n))return{location:"Fridge",category:"Dairy & eggs"};
+  if(sec==="B"||/bread|bagel|tortilla|rice|oat|quinoa|pasta|pancake|granola|cracker|chip|cookie|flour/.test(n))return{location:"Pantry",category:"Grains & bread"};
+  if(sec==="P"||/apple|banana|berr|orange|clementine|avocado|potato|onion|carrot|spinach|kale|green|broccoli|tomato|pepper|cucumber|mango|pineapple|lemon|lime|vegetable/.test(n))
+    return{location:/banana|potato|onion|avocado|tomato|pineapple/.test(n)?"Pantry":"Fridge",category:"Produce"};
+  return{location:"Pantry",category:"Other"};
+}
+function filteredPantry(){
+  const q=pf.q.trim().toLowerCase();
+  return pantry.filter(it=>(!q||it.name.toLowerCase().includes(q)||it.category.toLowerCase().includes(q))
+    &&(!pf.loc.size||pf.loc.has(it.location))&&(!pf.cat.size||pf.cat.has(it.category))
+    &&(!pf.st.size||(pf.st.has("Expiring soon")&&expSoon(it))||(pf.st.has("Running low")&&lowQ(it))));
+}
+function pErr(e){const c=e&&e.code;return c==="bad_passcode"?"Wrong passcode. Update it in Goals & schedule.":c==="notion_access"?"Share Gain Planner (including Pantry) with your integration in Notion.":c==="server_not_configured"?"The server is missing PANTRY_DB. Deploy the Worker again.":c==="network"?"Can't reach the server. Changes are saved on this device for now.":(e&&e.message)||"Pantry sync failed."}
+async function pantryLoad(force){
+  if(!notionOn()||(!force&&Date.now()-pLast<30000))return;
+  // Items added offline (or whose upload failed) still have a local id; keep them and send them now.
+  const pend=pantry.filter(x=>/^r/.test(x.id));
+  try{const d=await apiRead("/pantry");pantry=[...((d&&d.items)||[]),...pend];pLast=Date.now();savePantryLocal();$("pMsg").textContent="";renderPantry()}
+  catch(e){$("pMsg").textContent=pErr(e);return}
+  for(let k=0;k<pend.length;k+=20){
+    try{const r=await api("/pantry/batch",{creates:pend.slice(k,k+20).map(x=>({...x,ref:x.id}))});
+      (r.created||[]).forEach(c=>{const it=pantry.find(x=>x.id===c.ref);if(it){it.id=c.id;it.url=c.url}});savePantryLocal();renderPantry()}
+    catch(e){$("pMsg").textContent=pErr(e);return}
+  }
+}
+// Apply a change locally right away, then send it to Notion.
+async function pantryWrite(ch){
+  (ch.creates||[]).forEach(it=>pantry.push({...it,id:it.ref}));
+  (ch.updates||[]).forEach(u=>{const i=pantry.findIndex(x=>x.id===u.id);if(i>=0)pantry[i]={...pantry[i],...u}});
+  (ch.deletes||[]).forEach(id=>{pantry=pantry.filter(x=>x.id!==id)});
+  savePantryLocal();renderPantry();
+  if(!notionOn()){$("pMsg").textContent="Saved on this device. Connect Notion to sync your pantry.";return true}
+  const local=id=>/^r/.test(id);
+  const creates=[...(ch.creates||[]),...(ch.updates||[]).filter(u=>local(u.id)).map(u=>({...pantry.find(x=>x.id===u.id),ref:u.id}))];
+  const updates=(ch.updates||[]).filter(u=>!local(u.id)).map(u=>({...pantry.find(x=>x.id===u.id)}));
+  const deletes=(ch.deletes||[]).filter(id=>!local(id));
+  const all=[...creates.map(c=>["c",c]),...updates.map(u=>["u",u]),...deletes.map(d=>["d",d])];let bad=null;
+  for(let k=0;k<all.length;k+=20){const part=all.slice(k,k+20);
+    try{const r=await api("/pantry/batch",{creates:part.filter(x=>x[0]==="c").map(x=>x[1]),updates:part.filter(x=>x[0]==="u").map(x=>x[1]),deletes:part.filter(x=>x[0]==="d").map(x=>x[1])});
+      (r.created||[]).forEach(c=>{const it=pantry.find(x=>x.id===c.ref);if(it){it.id=c.id;it.url=c.url}});
+      if(r.failed&&r.failed.length)bad={message:r.failed[0].message};
+    }catch(e){bad=e;break}}
+  savePantryLocal();
+  if(bad){$("pMsg").textContent=pErr(bad);return false}
+  $("pMsg").textContent="";pLast=0;pantryLoad(true);return true;
+}
+function renderPantryFilters(){
+  const box=$("pFilters");box.innerHTML="";
+  const group=(title,set,opts,count)=>{
+    const g=document.createElement("div");g.className="pan-group";g.innerHTML=`<h3>${title}</h3>`;
+    const row=document.createElement("div");row.className="pan-opts";
+    opts.forEach(o=>{const n=count(o);if(!n&&!set.has(o))return;
+      const b=document.createElement("button");b.className="pan-opt";b.setAttribute("aria-pressed",set.has(o));
+      b.innerHTML=`<span></span><span class="n">${n}</span>`;b.firstChild.textContent=o;
+      b.onclick=()=>{set.has(o)?set.delete(o):set.add(o);renderPantry()};row.appendChild(b)});
+    if(row.children.length){g.appendChild(row);box.appendChild(g)}
+  };
+  group("Location",pf.loc,LOCS,o=>pantry.filter(it=>it.location===o).length);
+  group("Category",pf.cat,CATS,o=>pantry.filter(it=>it.category===o).length);
+  group("Status",pf.st,["Expiring soon","Running low"],o=>pantry.filter(o==="Expiring soon"?expSoon:lowQ).length);
+}
+function renderPantry(){
+  if(ui.tab!=="pantry")return;
+  const list=filteredPantry();
+  $("pCount").textContent=`${list.length} of ${pantry.length} item${pantry.length===1?"":"s"}`;
+  $("pReset").hidden=!(pf.q||pf.loc.size||pf.cat.size||pf.st.size);
+  renderPantryFilters();
+  document.querySelectorAll("[data-pl]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.pl===ui.pl));
+  const listMode=ui.pl==="list"||p3Failed;
+  $("pCanvas").hidden=listMode;$("pList").hidden=!listMode;$("pMax").hidden=listMode;
+  const em=$("pEmpty");em.hidden=!!list.length;
+  em.textContent=pantry.length?"Nothing matches these filters.":"Your pantry is empty. Tap Add item, or check off your shopping list and use Add checked to pantry.";
+  if(listMode){
+    const box=$("pList");box.innerHTML="";
+    if(!list.length){box.innerHTML=`<p class="pan-msg">${esc(em.textContent)}</p>`}
+    LOCS.forEach(l=>{const its=list.filter(it=>it.location===l).sort((a,b)=>a.name.localeCompare(b.name));if(!its.length)return;
+      const h=document.createElement("h3");h.className="pl-h";h.textContent=`${l} (${its.length})`;box.appendChild(h);
+      its.forEach(it=>{const b=document.createElement("button");b.className="pl-row";
+        b.innerHTML=`<span class="nm"></span><span class="q"></span><span class="mt"></span>`;
+        b.querySelector(".nm").textContent=it.name;b.querySelector(".q").textContent=qtyLabel(it);
+        const mt=b.querySelector(".mt");mt.textContent=it.category;const ex=expLabel(it);
+        if(ex){const s=document.createElement("span");s.className=expSoon(it)?"exp":"";s.textContent=` · ${ex}`;mt.appendChild(s)}
+        b.onclick=()=>openPantryItem(it);box.appendChild(b)});
+    });
+  }
+  if(P3){P3.setItems(pantry);P3.setVisible(new Set(list.map(it=>it.id)))}
+}
+function ensureScene(){
+  if(P3||p3Failed)return Promise.resolve(P3);
+  if(!p3Loading)p3Loading=import("./pantry3d.js").then(m=>{
+    P3=m.createPantryScene($("pCanvas"),{
+      onPick:id=>{if(!id)return;const it=pantry.find(x=>x.id===id);if(it){P3.select(id);openPantryItem(it)}},
+      onHover:(id,x,y)=>{const tip=$("pTip"),it=id&&pantry.find(v=>v.id===id);if(!it){tip.hidden=true;return}
+        const r=$("pCanvas").getBoundingClientRect();tip.textContent=it.name+(qtyLabel(it)?` · ${qtyLabel(it)}`:"");tip.style.left=(x-r.left)+"px";tip.style.top=(y-r.top)+"px";tip.hidden=false}});
+    P3.setLayout(ui.pl==="shelves"?"shelves":"sphere");renderPantry();return P3;
+  }).catch(e=>{p3Failed=true;$("pMsg").textContent="3D view isn't available on this device, so here's the list.";renderPantry();return null});
+  return p3Loading;
+}
+function openPantry(){
+  renderPantry();pantryLoad(false);
+  if(ui.pl!=="list")ensureScene().then(s=>{if(s&&ui.tab==="pantry"&&ui.pl!=="list"){s.resize();s.start()}});
+}
+document.querySelectorAll("[data-pl]").forEach(b=>b.onclick=()=>{
+  ui.pl=b.dataset.pl;saveUi();renderPantry();
+  if(ui.pl==="list"){if(P3)P3.stop();return}
+  ensureScene().then(s=>{if(s){s.setLayout(ui.pl);s.resize();s.start()}});
+});
+$("pSearch").addEventListener("input",e=>{pf.q=e.target.value;renderPantry()});
+$("pReset").onclick=()=>{pf.q="";$("pSearch").value="";pf.loc.clear();pf.cat.clear();pf.st.clear();renderPantry()};
+$("pMax").onclick=()=>{const on=$("pan").classList.toggle("max");$("pMax").setAttribute("aria-pressed",on);$("pMax").setAttribute("aria-label",on?"Exit full screen":"Full screen");if(P3)requestAnimationFrame(()=>P3.resize())};
+// Filters are always open on wide screens and fold away on phones.
+{const mq=window.matchMedia("(min-width:900px)"),f=()=>{$("pFdet").open=mq.matches};f();mq.addEventListener?mq.addEventListener("change",f):mq.addListener(f)}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!e.defaultPrevented&&$("pan").classList.contains("max")&&$("sheet").hidden)$("pMax").click()});
+$("pAdd").onclick=()=>openPantryItem(null);
+function openPantryItem(it){
+  sheetFocus=document.activeElement;const isNew=!it;
+  const v=it?{...it}:{name:"",location:"Fridge",category:"Produce",quantity:1,unit:"",expires:""};
+  const opt=(list,sel)=>list.map(o=>`<option${o===sel?" selected":""}>${esc(o)}</option>`).join("");
+  $("sheetBox").innerHTML=`
+    <div class="sh-top"><p class="sh-sl">${isNew?"New item":esc(v.location)+", "+esc(v.category)}</p><button class="txt" id="shClose">Close</button></div>
+    <h2 id="shTitle">${isNew?"Add to pantry":esc(v.name)}</h2>
+    ${isNew?"":`<p class="sh-d">${esc([qtyLabel(v),expLabel(v)].filter(Boolean).join(" · "))||"&nbsp;"}</p>`}
+    <div class="pf">
+      <label for="pfName">Name</label><input id="pfName" type="text" maxlength="100" value="${esc(v.name)}" placeholder="e.g. Greek yogurt">
+      <label for="pfLoc">Where</label><select id="pfLoc">${opt(LOCS,v.location)}</select>
+      <label for="pfCat">Category</label><select id="pfCat">${opt(CATS,v.category)}</select>
+      <label for="pfQty">Quantity</label><span class="qty"><button class="sq" id="pfMinus" aria-label="One less">−</button><input id="pfQty" type="number" min="0" step="any" inputmode="decimal" value="${v.quantity??""}"><button class="sq" id="pfPlus" aria-label="One more">+</button></span>
+      <label for="pfUnit">Unit</label><input id="pfUnit" type="text" maxlength="20" value="${esc(v.unit||"")}" placeholder="e.g. oz, cups, bag">
+      <label for="pfExp">Expires</label><input id="pfExp" type="date" value="${esc(v.expires||"")}">
+    </div>
+    <div class="sh-foot"><button class="btn" id="pfSave">${isNew?"Add":"Save"}</button>${isNew?"":`<button class="txt" id="pfDel">Remove from pantry</button>`}${v.url?`<a class="txt" href="${esc(v.url)}" target="_blank" rel="noopener">Open in Notion</a>`:""}<span class="msg" id="pfMsg" role="status"></span></div>`;
+  $("sheet").hidden=false;document.body.style.overflow="hidden";
+  $("shClose").onclick=closeDetail;
+  const q=$("pfQty");$("pfMinus").onclick=()=>{q.value=Math.max(0,(+q.value||0)-1)};$("pfPlus").onclick=()=>{q.value=(+q.value||0)+1};
+  if(isNew)$("pfName").addEventListener("change",e=>{const g=guessPlace(e.target.value);$("pfLoc").value=g.location;$("pfCat").value=g.category});
+  $("pfSave").onclick=()=>{
+    const name=$("pfName").value.trim();if(!name){$("pfMsg").textContent="Add a name.";$("pfName").focus();return}
+    const d={name,location:$("pfLoc").value,category:$("pfCat").value,quantity:q.value===""?null:Math.max(0,+q.value),unit:$("pfUnit").value.trim(),expires:$("pfExp").value||""};
+    closeDetail();
+    if(isNew)pantryWrite({creates:[{...d,ref:"r"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}]});
+    else pantryWrite({updates:[{...d,id:it.id}]});
+  };
+  if(!isNew)$("pfDel").onclick=()=>{closeDetail();pantryWrite({deletes:[it.id]})};
+  (isNew?$("pfName"):$("shClose")).focus();
+}
+// Shop tab: move bought items into the pantry
+const UNIT_RE=/^([\d.\/¼½¾⅓⅔]+)\s*(cups?|tbsp|tsp|oz|lbs?|g|slices?|cans?|scoops?)?\s+(.+)$/i;
+const FRAC={"¼":.25,"½":.5,"¾":.75,"⅓":1/3,"⅔":2/3};
+$("toPantry").onclick=()=>{
+  const checked=new Set(state.checked),creates=[],updates=[];
+  buildList().forEach(g=>g.items.forEach(item=>{
+    if(!checked.has(item.n))return;
+    let name=item.n,qty=item.q,unit=item.u||"";
+    if(qty==null){const m=name.match(UNIT_RE);if(m){qty=(FRAC[m[1]]??parseFloat(m[1]))||1;unit=(m[2]||"").toLowerCase();name=m[3]}else qty=1}
+    if(/^(tbsp|tsp)$/.test(unit)){qty=1;unit=""}
+    qty=Math.ceil(qty*10)/10;name=name.replace(/\s*\(dry\)/i,"").trim();
+    const place=guessPlace(name,item.sec);
+    const have=pantry.find(p=>p.name.toLowerCase()===name.toLowerCase()&&p.location===place.location&&(p.unit||"")===unit);
+    if(have)updates.push({id:have.id,quantity:+((+have.quantity||0)+qty).toFixed(2)});
+    else creates.push({name,...place,quantity:qty,unit,expires:"",ref:"r"+Date.now().toString(36)+Math.random().toString(36).slice(2,8)});
+  }));
+  const n=creates.length+updates.length;
+  if(!n){$("shopMsg").textContent="Check off what you bought first.";return}
+  state.checked=state.checked.filter(x=>!buildList().some(g=>g.items.some(i=>i.n===x)));save();renderShop();
+  pantryWrite({creates,updates});$("shopMsg").textContent=`Added ${n} item${n===1?"":"s"} to your pantry.`;
+};
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&ui.tab==="pantry")pantryLoad(false);if(P3){document.visibilityState==="visible"&&ui.tab==="pantry"&&ui.pl!=="list"?P3.start():P3.stop()}});
 
 /* ---------- local save ---------- */
 function setSync(t){$("sync").textContent=t}

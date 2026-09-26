@@ -10,6 +10,7 @@ ALLOWED_ORIGINS = "https://graham-goebel.github.io"
 # Your Notion databases (the IDs from their URLs).
 MEALS_DB = "8037b0ec3a5842afaacb70681002a969"
 PLAN_DB = "d5d13ad654534258acc83e873f104599"
+PANTRY_DB = "679967489e5d4601989652293eead777"
 
 # History cleanup. Meal Plan rows older than this many weeks are moved to
 # Notion's trash once a day. "0" turns cleanup off and keeps every row.

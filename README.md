@@ -61,6 +61,12 @@ When it finishes, the log shows the Worker's address, something like `https://ga
 
 To install it like an app: on iPhone or iPad, tap Share, then **Add to Home Screen**. On Android, open the browser menu and choose **Install app** or **Add to Home screen**.
 
+## Pantry
+
+The **Pantry** tab shows what's in your fridge, freezer and pantry as a 3D gallery built with three.js (bundled in `web/vendor/three`, so nothing loads from a CDN). Items float in a slowly turning sphere; drag to spin it, pinch or scroll to zoom, and tap an item to change its quantity, expiry date or location. **Shelves** stacks everything on a fridge, freezer and pantry unit, and **List** is a plain list. Search and the filters on the left narrow the view.
+
+Items live in the **Pantry** database in Notion (`PANTRY_DB` in `worker/wrangler.toml`). On the Shop tab, check off what you bought and tap **Add checked to pantry**; items you already have get their quantity increased. Without a Notion connection the pantry is kept on the device.
+
 ## Meal times across time zones
 
 Each row in Meal Plan has a **Time** column with the wall-clock time the meal is planned for, such as `07:30`. The app syncs that, so a phone and a laptop set to different time zones show the same times. **When** is kept up to date for Notion's calendar view but can look shifted if your devices are in different zones. To change a meal's time from Notion, edit **Time**.

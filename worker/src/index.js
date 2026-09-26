@@ -10,6 +10,9 @@
 //        different time zones agree; "when" is the same moment as a full date for Notion's calendar.
 //   POST /plan/batch         -> { ok: [keys], failed: [{key, message}] }
 //        body: { creates: [item], updates: [item + id] }  (max 20 items per call)
+//   GET  /pantry             -> { items: [...] }        what's in the fridge, freezer and pantry
+//   POST /pantry/batch       -> { created: [{ref, id, url}], ok: [ids], failed: [{ref, message}] }
+//        body: { creates: [item + ref], updates: [item + id], deletes: [id] }  (max 20 in total)
 //   GET  /health             -> { ok: true }
 //
 // Optional history cleanup: when KEEP_WEEKS is set above 0, a daily cron moves
@@ -19,6 +22,8 @@ const NOTION_VERSION = "2025-09-03";
 const NOTION_API = "https://api.notion.com/v1";
 const SLOTS = ["Breakfast", "Morning snack", "Lunch", "Afternoon snack", "Dinner", "Before bed"];
 const MAX_ITEMS = 20;
+const LOCATIONS = ["Fridge", "Freezer", "Pantry"];
+const CATEGORIES = ["Produce", "Dairy & eggs", "Meat & fish", "Grains & bread", "Cans & jars", "Nuts & snacks", "Oils & sauces", "Frozen", "Drinks", "Other"];
 const CLEANUP_PER_RUN = 40; // stays under the free plan's 50 subrequests per invocation
 
 const dataSourceCache = new Map(); // database id -> data source id
@@ -50,6 +55,15 @@ export default {
       if (request.method === "GET" && url.pathname === "/health") return json({ ok: true });
       if (request.method === "GET" && url.pathname === "/meals") return json({ meals: await listMeals(env) });
       if (request.method === "GET" && url.pathname === "/plan") return json({ rows: await listPlan(env, url.searchParams.get("from")) });
+      if (url.pathname === "/pantry" || url.pathname === "/pantry/batch") {
+        if (!env.PANTRY_DB) return json({ error: "server_not_configured", message: "Set PANTRY_DB." }, 500);
+        if (request.method === "GET" && url.pathname === "/pantry") return json({ items: await listPantry(env) });
+        if (request.method === "POST" && url.pathname === "/pantry/batch") {
+          let body;
+          try { body = await request.json(); } catch { return json({ error: "bad_request", message: "Body must be JSON." }, 400); }
+          return json(await writePantry(env, body || {}));
+        }
+      }
       if (request.method === "POST" && url.pathname === "/plan/batch") {
         let body;
         try { body = await request.json(); } catch { return json({ error: "bad_request", message: "Body must be JSON." }, 400); }
@@ -284,4 +298,98 @@ async function cleanupHistory(env, now = new Date()) {
   };
   await Promise.all([worker(), worker()]);
   return { cutoff, trashed, failed, more: !!page.has_more };
+}
+
+// ---------- pantry ----------
+async function listPantry(env) {
+  const ds = await dataSourceId(env, env.PANTRY_DB);
+  const pages = await queryAll(env, ds, { sorts: [{ property: "Name", direction: "ascending" }] });
+  return pages
+    .filter((p) => !p.in_trash && !p.archived)
+    .map((p) => {
+      const pr = p.properties || {};
+      const sel = (x) => (x && x.select ? x.select.name : "");
+      return {
+        id: p.id,
+        url: p.url,
+        name: text(pr["Name"]).trim(),
+        location: LOCATIONS.includes(sel(pr["Location"])) ? sel(pr["Location"]) : "Pantry",
+        category: CATEGORIES.includes(sel(pr["Category"])) ? sel(pr["Category"]) : "Other",
+        quantity: numOrNull(pr["Quantity"]),
+        unit: text(pr["Unit"]).trim(),
+        expires: pr["Expires"] && pr["Expires"].date ? String(pr["Expires"].date.start).slice(0, 10) : "",
+      };
+    })
+    .filter((it) => it.name);
+}
+
+function cleanPantry(raw, needId) {
+  if (!raw || typeof raw !== "object") return null;
+  const q = raw.quantity === null || raw.quantity === "" || raw.quantity === undefined ? null : +raw.quantity;
+  const it = {
+    ref: String(raw.ref || "").slice(0, 40),
+    name: String(raw.name || "").trim().slice(0, 100),
+    location: LOCATIONS.includes(raw.location) ? raw.location : "Pantry",
+    category: CATEGORIES.includes(raw.category) ? raw.category : "Other",
+    quantity: q === null ? null : Number.isFinite(q) && q >= 0 && q <= 9999 ? Math.round(q * 100) / 100 : null,
+    unit: String(raw.unit || "").trim().slice(0, 20),
+    expires: /^\d{4}-\d{2}-\d{2}$/.test(String(raw.expires || "")) ? String(raw.expires) : "",
+  };
+  if (!it.name) return null;
+  if (needId) {
+    it.id = String(raw.id || "").replace(/-/g, "");
+    if (!/^[0-9a-f]{32}$/i.test(it.id)) return null;
+  }
+  return it;
+}
+
+function pantryProps(it) {
+  return {
+    Name: { title: [{ text: { content: it.name } }] },
+    Location: { select: { name: it.location } },
+    Category: { select: { name: it.category } },
+    Quantity: { number: it.quantity },
+    Unit: { rich_text: it.unit ? [{ text: { content: it.unit } }] : [] },
+    Expires: { date: it.expires ? { start: it.expires } : null },
+  };
+}
+
+async function writePantry(env, body) {
+  const creates = Array.isArray(body.creates) ? body.creates : [];
+  const updates = Array.isArray(body.updates) ? body.updates : [];
+  const deletes = Array.isArray(body.deletes) ? body.deletes : [];
+  if (creates.length + updates.length + deletes.length > MAX_ITEMS) {
+    return { created: [], ok: [], failed: [{ ref: "", message: `Send at most ${MAX_ITEMS} changes per request.` }] };
+  }
+  const created = [], ok = [], failed = [];
+  const jobs = [
+    ...creates.map((c) => ({ kind: "create", it: cleanPantry(c, false), ref: String((c && c.ref) || "") })),
+    ...updates.map((u) => ({ kind: "update", it: cleanPantry(u, true), ref: String((u && u.id) || "") })),
+    ...deletes.map((d) => { const id = String(d || "").replace(/-/g, ""); return { kind: "delete", id: /^[0-9a-f]{32}$/i.test(id) ? id : null, ref: String(d || "") }; }),
+  ];
+  let ds = null;
+  if (jobs.some((j) => j.kind === "create" && j.it)) ds = await dataSourceId(env, env.PANTRY_DB);
+  const queue = jobs.slice();
+  const worker = async () => {
+    while (queue.length) {
+      const j = queue.shift();
+      if (j.kind === "delete" ? !j.id : !j.it) { failed.push({ ref: j.ref, message: "Invalid item." }); continue; }
+      try {
+        if (j.kind === "create") {
+          const page = await notion(env, "/pages", "POST", { parent: { type: "data_source_id", data_source_id: ds }, properties: pantryProps(j.it) });
+          created.push({ ref: j.it.ref, id: page.id, url: page.url });
+        } else if (j.kind === "update") {
+          await notion(env, `/pages/${j.it.id}`, "PATCH", { properties: pantryProps(j.it) });
+          ok.push(j.it.id);
+        } else {
+          await notion(env, `/pages/${j.id}`, "PATCH", { in_trash: true });
+          ok.push(j.id);
+        }
+      } catch (e) {
+        failed.push({ ref: j.ref, message: e.message || "Notion request failed." });
+      }
+    }
+  };
+  await Promise.all([worker(), worker()]);
+  return { created, ok, failed };
 }
