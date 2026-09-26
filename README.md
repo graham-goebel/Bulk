@@ -61,6 +61,10 @@ When it finishes, the log shows the Worker's address, something like `https://ga
 
 To install it like an app: on iPhone or iPad, tap Share, then **Add to Home Screen**. On Android, open the browser menu and choose **Install app** or **Add to Home screen**.
 
+## Meal times across time zones
+
+Each row in Meal Plan has a **Time** column with the wall-clock time the meal is planned for, such as `07:30`. The app syncs that, so a phone and a laptop set to different time zones show the same times. **When** is kept up to date for Notion's calendar view but can look shifted if your devices are in different zones. To change a meal's time from Notion, edit **Time**.
+
 ## What syncs and what stays on the device
 
 Stored in Notion and shared across your devices:

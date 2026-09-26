@@ -975,10 +975,13 @@ function offStr(dt){const m=-dt.getTimezoneOffset(),a=Math.abs(m);return `${m>=0
 function whenISO(d,i){const [h,mi]=timeOf(d,i).split(":").map(Number);const b=dayDate(d);const dt=new Date(b.getFullYear(),b.getMonth(),b.getDate(),h,mi);return `${iso(dt)}T${toHM(h*60+mi)}:00${offStr(dt)}`}
 function localStamp(v){if(!v)return "";const dt=new Date(v);if(isNaN(dt))return "";return `${iso(dt)} ${toHM(dt.getHours()*60+dt.getMinutes())}`}
 function desiredOf(d,i){const o=SLOTS[i].opts[state.days[d].picks[i]];return{meal:o.skip?"Skipped":o.n,when:`${iso(dayDate(d))} ${timeOf(d,i)}`,locked:!!state.days[d].locked[i],k:o.k||0,p:o.p||0}}
-function rowVal(r){return{meal:String(r.meal||"").trim(),when:localStamp(r.when),locked:!!r.locked}}
+// Times sync as wall-clock HH:MM (the Time column) so devices in different time zones agree.
+// Older rows without it fall back to When in this device's zone, and get Time filled in on the next push.
+function rowVal(r){const t=String(r.time||"").trim(),has=/^\d{2}:\d{2}$/.test(t);
+  return{meal:String(r.meal||"").trim(),when:has?`${String(r.key||"").slice(0,10)} ${t}`:localStamp(r.when),locked:!!r.locked,hasTime:has}}
 const sameV=(a,b)=>!!a&&!!b&&a.meal===b.meal&&a.when===b.when&&a.locked===b.locked;
 const snapOf=v=>({meal:v.meal,when:v.when,locked:v.locked});
-function itemOf(d,i,v,id){const it={key:keyOf(d,i),meal:v.meal,when:whenISO(d,i),slot:SLOTS[i].name,calories:v.k,protein:v.p,locked:v.locked};if(id)it.id=id;return it}
+function itemOf(d,i,v,id){const it={key:keyOf(d,i),meal:v.meal,when:whenISO(d,i),time:timeOf(d,i),slot:SLOTS[i].name,calories:v.k,protein:v.p,locked:v.locked};if(id)it.id=id;return it}
 const STOP=["bad_passcode","origin_not_allowed","server_not_configured","notion_token","notion_access"];
 function nError(e,partial){
   const c=e&&e.code;let t;
@@ -1027,8 +1030,9 @@ async function notionSync(){
     const jobs=[];
     for(let d=0;d<D;d++)for(let i=0;i<N;i++){
       const key=keyOf(d,i),r=byKey.get(key),v=desiredOf(d,i);
+      const rv=r&&rowVal(r);
       if(!r)jobs.push({kind:"create",key,v,item:itemOf(d,i,v)});
-      else if(!sameV(rowVal(r),v))jobs.push({kind:"update",key,v,item:itemOf(d,i,v,r.id)});
+      else if(!sameV(rv,v)||!rv.hasTime)jobs.push({kind:"update",key,v,item:itemOf(d,i,v,r.id)});
       else snap[key]=snapOf(v);
     }
     for(let k=0;k<jobs.length;k+=20){

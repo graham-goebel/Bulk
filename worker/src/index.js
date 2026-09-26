@@ -6,6 +6,8 @@
 //   GET  /meals              -> { meals: [...] }        the meal library, with nutrients,
 //                                                       food groups and diversity score
 //   GET  /plan?from=YYYY-MM-DD -> { rows: [...] }       planned meals from that date on
+//        Each row's "time" is the wall-clock time (HH:MM) it was planned for, so devices in
+//        different time zones agree; "when" is the same moment as a full date for Notion's calendar.
 //   POST /plan/batch         -> { ok: [keys], failed: [{key, message}] }
 //        body: { creates: [item], updates: [item + id] }  (max 20 items per call)
 //   GET  /health             -> { ok: true }
@@ -183,6 +185,7 @@ async function listPlan(env, from) {
         key: text(pr["Key"]).trim(),
         meal: text(pr["Meal"]).trim(),
         when: pr["When"] && pr["When"].date ? pr["When"].date.start : null,
+        time: text(pr["Time"]).trim(),
         locked: !!(pr["Locked"] && pr["Locked"].checkbox),
       };
     })
@@ -198,6 +201,7 @@ function toProperties(item) {
     "Protein (g)": { number: item.protein },
     Locked: { checkbox: item.locked },
     Key: { rich_text: [{ text: { content: item.key } }] },
+    Time: { rich_text: item.time ? [{ text: { content: item.time } }] : [] },
   };
 }
 
@@ -211,6 +215,7 @@ function cleanItem(raw, needId) {
     calories: Number.isFinite(+raw.calories) ? +raw.calories : 0,
     protein: Number.isFinite(+raw.protein) ? +raw.protein : 0,
     locked: !!raw.locked,
+    time: /^\d{2}:\d{2}$/.test(String(raw.time || "")) ? String(raw.time) : "",
   };
   if (!/^\d{4}-\d{2}-\d{2} \d$/.test(item.key) || !item.meal || !SLOTS.includes(item.slot)) return null;
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?([+-]\d{2}:\d{2}|Z)$/.test(item.when)) return null;
