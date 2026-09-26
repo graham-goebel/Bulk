@@ -19,14 +19,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#141414; --muted:#8A8A8A; --line:#E7E7E7; --bg:#FFFFFF; --soft:#F6F6F6; --ev:#EEEEEE;
+  --ink:#141414; --muted:#8A8A8A; --line:#E7E7E7; --bg:#FFFFFF; --soft:#F1F1F1;
   color-scheme:light; box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){--ink:#EDEDED;--muted:#7C7C7C;--line:#2A2A2A;--bg:#0F0F0F;--soft:#181818;--ev:#232323;color-scheme:dark}
+  :root:not([data-theme="light"]){--ink:#EDEDED;--muted:#7C7C7C;--line:#2A2A2A;--bg:#0F0F0F;--soft:#181818;color-scheme:dark}
 }
-:root[data-theme="dark"]{--ink:#EDEDED;--muted:#7C7C7C;--line:#2A2A2A;--bg:#0F0F0F;--soft:#181818;--ev:#232323;color-scheme:dark}
+:root[data-theme="dark"]{--ink:#EDEDED;--muted:#7C7C7C;--line:#2A2A2A;--bg:#0F0F0F;--soft:#181818;color-scheme:dark}
 *,*::before,*::after{box-sizing:border-box}
 html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg)}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
@@ -87,8 +87,8 @@ main{max-width:960px;margin:0 auto;padding-bottom:calc(112px + env(safe-area-ins
 .icon-btn .ic{width:19px;height:19px}
 .icon-btn:focus-visible{border-radius:50%}
 .icon-btn.sm{width:34px;height:34px}.icon-btn.sm .ic{width:16px;height:16px}
-.hero{position:relative;overflow:hidden;isolation:isolate;margin:14px 24px 0;border-radius:28px;color:#fff;
-  background:radial-gradient(120% 90% at 20% 10%,#3a3a3a 0,transparent 55%),radial-gradient(90% 80% at 90% 90%,#202020 0,transparent 60%),radial-gradient(80% 70% at 80% 10%,#2c2c2c 0,transparent 60%),#0b0b0b}
+.hero{position:relative;overflow:hidden;isolation:isolate;margin:14px 24px 0;border-radius:28px;color:var(--ink);
+  background:radial-gradient(120% 90% at 20% 10%,#fbfbfa 0,transparent 55%),radial-gradient(90% 80% at 90% 90%,#e9e9e6 0,transparent 60%),#f2f2f0}
 .hero .fx-bg,.hero .fx-pt{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
 .hero .fx-bg{z-index:-2}.hero .fx-pt{z-index:-1}
 .rings{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:22px 12px 18px}
@@ -96,10 +96,10 @@ main{max-width:960px;margin:0 auto;padding-bottom:calc(112px + env(safe-area-ins
 .dial{position:relative;width:100%;max-width:112px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .dial svg{position:absolute;inset:0;width:100%;height:100%;display:block}
 .hero.fx-on .dial svg{visibility:hidden}
-.dial .val{position:relative;font-size:22px;font-weight:500;letter-spacing:-0.03em;line-height:1.1;text-shadow:0 1px 12px rgba(0,0,0,.35)}
-.dial .unit{position:relative;font-size:9.5px;color:rgba(255,255,255,.66);letter-spacing:.08em;margin-top:3px}
+.dial .val{position:relative;font-size:22px;font-weight:500;letter-spacing:-0.03em;line-height:1.1}
+.dial .unit{position:relative;font-size:9.5px;color:var(--muted);letter-spacing:.08em;margin-top:3px}
 .ring .lab{margin-top:10px;font-size:.84rem;font-weight:500}
-.ring .cap{font-size:.74rem;color:rgba(255,255,255,.62)}
+.ring .cap{font-size:.74rem;color:var(--muted)}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 24px 22px}
 .tile{display:block;width:100%;text-align:left;background:var(--soft);border-radius:20px;padding:14px 16px 15px;min-width:0}
 button.tile:hover{outline:1px solid var(--line)}
@@ -141,24 +141,23 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .eat{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--muted);min-height:36px;padding:0 2px}
 .eat .ic{width:16px;height:16px;opacity:.45}
 .eat[aria-pressed="true"]{color:var(--ink)}.eat[aria-pressed="true"] .ic{opacity:1}
-.slot.eaten .card.sel{background:var(--soft)}
+.slot.eaten .card.sel h3::before,.wb.eaten .n::before,.blk.eaten .n::before{content:"✓ ";font-weight:500}
+.slot.eaten .card.sel h3,.slot.missed .card.sel h3{color:var(--muted)}
+.slot.missed .card.sel h3,.wb.missed .n,.blk.missed .n{text-decoration:line-through;text-decoration-thickness:1px;color:var(--muted)}
+.eat.miss[aria-pressed="true"]{color:var(--ink)}
 .track{position:relative;display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;outline:none;padding:1px 0}
 .track::-webkit-scrollbar{display:none}
 .track::before,.track::after{content:"";flex:0 0 calc(8% - 10px)}
 .track:focus-visible .card.sel{outline:1.5px solid var(--ink);outline-offset:3px}
-.card{flex:0 0 84%;scroll-snap-align:center;border:1px solid var(--line);border-radius:14px;padding:18px;cursor:pointer;transition:border-color .2s}
-.card.sel{border-color:var(--ink)}
-.slot.locked .card:not(.sel){opacity:.35}
+.card{flex:0 0 84%;scroll-snap-align:center;background:var(--soft);border-radius:14px;padding:18px;cursor:pointer;transition:opacity .2s}
+.card:not(.sel){opacity:.5}
+.slot.locked .card:not(.sel){opacity:.3}
 .card h3{margin:0;font-size:1.05rem;font-weight:500;letter-spacing:-0.01em}
 .card .d{margin:4px 0 14px;color:var(--muted);font-size:.85rem;min-height:2.5em}
 .card .m{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.85rem;color:var(--muted)}
 .card .m span{white-space:nowrap}
 .card .m b{font-weight:500;color:var(--ink)}
-.card.skip{border-style:dashed}
-.dots{display:flex;justify-content:center;padding-top:6px}
-.dot{width:20px;height:20px;display:grid;place-items:center}
-.dot::after{content:"";width:4px;height:4px;border-radius:50%;background:var(--line)}
-.dot[aria-current="true"]::after{background:var(--ink)}
+.card.skip{background:none;box-shadow:inset 0 0 0 1px var(--line)}
 .actions{display:flex;flex-wrap:wrap;gap:10px 22px;padding:30px 24px 0}
 .txt{font-size:.87rem;text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--line);min-height:32px}
 .txt:hover{text-decoration-color:var(--ink)}
@@ -175,7 +174,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .hours{position:relative;margin:18px 24px 0}
 .hr{height:60px;border-top:1px solid var(--line);position:relative}
 .hr span{position:absolute;top:-9px;left:0;background:var(--bg);padding-right:8px;font-size:.72rem;color:var(--muted)}
-.blk{position:absolute;left:58px;right:0;height:50px;border:0;border-radius:10px;padding:0 12px;background:var(--ev);color:var(--ink);
+.blk{position:absolute;left:58px;right:0;height:50px;border:0;border-radius:10px;padding:0 12px;background:var(--soft);color:var(--ink);
   display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;z-index:1}
 .blk .n{font-size:.92rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .blk .t{font-size:.72rem;color:var(--muted);display:block}
@@ -247,12 +246,11 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .wg-ax span{position:absolute;left:0;font-size:.68rem;color:var(--muted);transform:translateY(-50%)}
 .wg-col{position:relative;border-left:1px solid var(--line);background-image:repeating-linear-gradient(to bottom,var(--line) 0 1px,transparent 1px 60px)}
 .wg-col.today{background-color:var(--soft)}
-.wb{position:absolute;left:4px;right:4px;border:0;border-radius:8px;background:var(--ev);color:var(--ink);padding:4px 7px;overflow:hidden;text-align:left;z-index:1;line-height:1.25}
+.wb{position:absolute;left:4px;right:4px;border:0;border-radius:8px;background:var(--soft);color:var(--ink);padding:4px 7px;overflow:hidden;text-align:left;z-index:1;line-height:1.25}
 .wb .t{display:block;font-size:.68rem;color:var(--muted)}
 .wb .n{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:.8rem;font-weight:500}
 .wb.half{right:auto;width:calc(50% - 6px)}.wb.half.r{left:auto;right:4px}
-.wb.eaten,.blk.eaten{background:var(--soft)}.wb.eaten .n,.blk.eaten .n{color:var(--muted)}
-.wb.eaten .n::before,.blk.eaten .n::before{content:"✓ ";font-weight:500}
+.wb.eaten .n,.blk.eaten .n{color:var(--muted)}
 .wb:hover{box-shadow:0 2px 10px rgba(0,0,0,.1)}
 .wg-now{position:absolute;left:0;right:0;border-top:1.5px solid var(--ink);z-index:2}
 .wg-hint{padding:0 24px;margin:6px 0 0;font-size:.8rem;color:var(--muted)}
@@ -266,7 +264,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .next .mark:hover span.c{background:var(--bg);color:var(--ink)}
 .next .mark .ic{width:20px;height:20px}
 .next .acts{display:flex;gap:10px}
-.next .mark.bell span.c{border-color:rgba(255,255,255,.3)}
+.next .mark.bell span.c,.next .mark.skip span.c{border-color:rgba(255,255,255,.3)}
 .rem-opts{display:grid;gap:8px;margin-top:18px}
 .rem-opt{display:flex;justify-content:space-between;align-items:center;width:100%;border:1px solid var(--line);border-radius:14px;padding:13px 16px;font-size:.95rem}
 .rem-opt:hover{border-color:var(--ink)}
@@ -410,26 +408,14 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .tabbar button[aria-current="page"],.tabbar.drag button.hot{color:#fff}
 .tabbar.drag button[aria-current="page"]:not(.hot){color:var(--muted)}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
-/* dashboard tab: the shader fills the page behind header, rings and tiles */
+/* dashboard tab: a light shader fills the page behind header, rings and tiles */
 #dashBg{position:fixed;inset:0;z-index:-1;pointer-events:none;display:none;
-  background:radial-gradient(120% 70% at 20% 10%,#383838 0,transparent 55%),radial-gradient(90% 60% at 90% 80%,#222 0,transparent 60%),#0b0b0b}
+  background:radial-gradient(120% 70% at 20% 10%,#fff 0,transparent 55%),radial-gradient(90% 60% at 90% 80%,#f1f1ef 0,transparent 60%),#f8f8f7}
 #dashBg .fx-bg{position:absolute;inset:0;width:100%;height:100%;display:block}
-html.dash-mode{background:#0b0b0b}
+html.dash-mode{background:#f8f8f7}
 html.dash-mode body{background:transparent}
 html.dash-mode #dashBg{display:block}
-html.dash-mode .app-head,html.dash-mode #strip,html.dash-mode #view-dash{--ink:#fff;--muted:rgba(255,255,255,.58);--line:rgba(255,255,255,.16);--soft:rgba(255,255,255,.08);--bg:#0e0e0e;color:var(--ink)}
 html.dash-mode .hero{background:none;margin-top:4px}
-html.dash-mode .next{background:rgba(255,255,255,.08);color:#fff;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
-html.dash-mode .next .prog i{background:#fff}
-html.dash-mode .next .mark:hover span.c{background:#fff;color:#111}
-html.dash-mode .tile{-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}
-html.dash-mode .tabbar{background:linear-gradient(180deg,rgba(60,60,60,.5),rgba(20,20,20,.45));
-  box-shadow:0 12px 32px rgba(0,0,0,.45),inset 0 1px 1px rgba(255,255,255,.22),inset 0 -1px 1px rgba(0,0,0,.3),0 0 0 .5px rgba(255,255,255,.12)}
-html.dash-mode .tabbar::before{background:radial-gradient(120% 90% at 50% -30%,rgba(255,255,255,.18),transparent 55%)}
-html.dash-mode .tabbar button{color:rgba(255,255,255,.6)}
-html.dash-mode .tabbar button[aria-current="page"],html.dash-mode .tabbar.drag button.hot{color:#111}
-html.dash-mode .tabbar.drag button[aria-current="page"]:not(.hot){color:rgba(255,255,255,.6)}
-html.dash-mode .tab-blob{background:linear-gradient(180deg,#fff,#e6e6e6);box-shadow:inset 0 -2px 4px rgba(0,0,0,.08),0 6px 16px rgba(0,0,0,.35)}
 @media (max-width:639px){
   .hours{margin:18px 12px 0}
   .blk{left:42px}
@@ -463,7 +449,7 @@ html.dash-mode .tab-blob{background:linear-gradient(180deg,#fff,#e6e6e6);box-sha
 <body>
 <!-- Heroicons v2.2.0 (MIT, https://heroicons.com) -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-bell" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M12 5a4 4 0 0 0-8 0v2.379a1.5 1.5 0 0 1-.44 1.06L2.294 9.707a1 1 0 0 0-.293.707V11a1 1 0 0 0 1 1h2a3 3 0 1 0 6 0h2a1 1 0 0 0 1-1v-.586a1 1 0 0 0-.293-.707L12.44 8.44A1.5 1.5 0 0 1 12 7.38V5Zm-5.5 7a1.5 1.5 0 0 0 3 0h-3Z" clip-rule="evenodd"/></g></symbol><symbol id="i-cog" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"/>
-  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></g></symbol><symbol id="i-cloud" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 0 0 4.5 4.5H18a3.75 3.75 0 0 0 1.332-7.257 3 3 0 0 0-3.758-3.848 5.25 5.25 0 0 0-10.233 2.33A4.502 4.502 0 0 0 2.25 15Z"/></g></symbol><symbol id="i-okl" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></g></symbol><symbol id="i-syncl" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></g></symbol><symbol id="i-warnl" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/></g></symbol><symbol id="i-plan" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z"/></g></symbol><symbol id="i-dash" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"/></g></symbol><symbol id="i-cal" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z"/></g></symbol><symbol id="i-shop" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></g></symbol><symbol id="i-pantry" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/></g></symbol><symbol id="i-clock" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8Zm7.75-4.25a.75.75 0 0 0-1.5 0V8c0 .414.336.75.75.75h3.25a.75.75 0 0 0 0-1.5h-2.5v-3.5Z" clip-rule="evenodd"/></g></symbol><symbol id="i-adjust" viewBox="0 0 16 16"><g fill="currentColor"><path d="M6.5 2.25a.75.75 0 0 0-1.5 0v3a.75.75 0 0 0 1.5 0V4.5h6.75a.75.75 0 0 0 0-1.5H6.5v-.75ZM11 6.5a.75.75 0 0 0-1.5 0v3a.75.75 0 0 0 1.5 0v-.75h2.25a.75.75 0 0 0 0-1.5H11V6.5ZM5.75 10a.75.75 0 0 1 .75.75v.75h6.75a.75.75 0 0 1 0 1.5H6.5v.75a.75.75 0 0 1-1.5 0v-3a.75.75 0 0 1 .75-.75ZM2.75 7.25H8.5v1.5H2.75a.75.75 0 0 1 0-1.5ZM4 3H2.75a.75.75 0 0 0 0 1.5H4V3ZM2.75 11.5H4V13H2.75a.75.75 0 0 1 0-1.5Z"/></g></symbol><symbol id="i-sync" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M13.836 2.477a.75.75 0 0 1 .75.75v3.182a.75.75 0 0 1-.75.75h-3.182a.75.75 0 0 1 0-1.5h1.37l-.84-.841a4.5 4.5 0 0 0-7.08.932.75.75 0 0 1-1.3-.75 6 6 0 0 1 9.44-1.242l.842.84V3.227a.75.75 0 0 1 .75-.75Zm-.911 7.5A.75.75 0 0 1 13.199 11a6 6 0 0 1-9.44 1.241l-.84-.84v1.371a.75.75 0 0 1-1.5 0V9.591a.75.75 0 0 1 .75-.75H5.35a.75.75 0 0 1 0 1.5H3.98l.841.841a4.5 4.5 0 0 0 7.08-.932.75.75 0 0 1 1.025-.273Z" clip-rule="evenodd"/></g></symbol><symbol id="i-ok" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z" clip-rule="evenodd"/></g></symbol><symbol id="i-warn" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M6.701 2.25c.577-1 2.02-1 2.598 0l5.196 9a1.5 1.5 0 0 1-1.299 2.25H2.804a1.5 1.5 0 0 1-1.3-2.25l5.197-9ZM8 4a.75.75 0 0 1 .75.75v3a.75.75 0 1 1-1.5 0v-3A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/></g></symbol><symbol id="i-lock" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M8 1a3.5 3.5 0 0 0-3.5 3.5V7A1.5 1.5 0 0 0 3 8.5v5A1.5 1.5 0 0 0 4.5 15h7a1.5 1.5 0 0 0 1.5-1.5v-5A1.5 1.5 0 0 0 11.5 7V4.5A3.5 3.5 0 0 0 8 1Zm2 6V4.5a2 2 0 1 0-4 0V7h4Z" clip-rule="evenodd"/></g></symbol><symbol id="i-unlock" viewBox="0 0 16 16"><g fill="currentColor"><path d="M11.5 1A3.5 3.5 0 0 0 8 4.5V7H2.5A1.5 1.5 0 0 0 1 8.5v5A1.5 1.5 0 0 0 2.5 15h7a1.5 1.5 0 0 0 1.5-1.5v-5A1.5 1.5 0 0 0 9.5 7V4.5a2 2 0 1 1 4 0v1.75a.75.75 0 0 0 1.5 0V4.5A3.5 3.5 0 0 0 11.5 1Z"/></g></symbol><symbol id="i-ext" viewBox="0 0 16 16"><g fill="currentColor"><path d="M6.22 8.72a.75.75 0 0 0 1.06 1.06l5.22-5.22v1.69a.75.75 0 0 0 1.5 0v-3.5a.75.75 0 0 0-.75-.75h-3.5a.75.75 0 0 0 0 1.5h1.69L6.22 8.72Z"/>
+  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></g></symbol><symbol id="i-cloud" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 0 0 4.5 4.5H18a3.75 3.75 0 0 0 1.332-7.257 3 3 0 0 0-3.758-3.848 5.25 5.25 0 0 0-10.233 2.33A4.502 4.502 0 0 0 2.25 15Z"/></g></symbol><symbol id="i-okl" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></g></symbol><symbol id="i-syncl" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></g></symbol><symbol id="i-warnl" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/></g></symbol><symbol id="i-plan" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z"/></g></symbol><symbol id="i-dash" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"/></g></symbol><symbol id="i-cal" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z"/></g></symbol><symbol id="i-shop" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></g></symbol><symbol id="i-pantry" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/></g></symbol><symbol id="i-clock" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8Zm7.75-4.25a.75.75 0 0 0-1.5 0V8c0 .414.336.75.75.75h3.25a.75.75 0 0 0 0-1.5h-2.5v-3.5Z" clip-rule="evenodd"/></g></symbol><symbol id="i-adjust" viewBox="0 0 16 16"><g fill="currentColor"><path d="M6.5 2.25a.75.75 0 0 0-1.5 0v3a.75.75 0 0 0 1.5 0V4.5h6.75a.75.75 0 0 0 0-1.5H6.5v-.75ZM11 6.5a.75.75 0 0 0-1.5 0v3a.75.75 0 0 0 1.5 0v-.75h2.25a.75.75 0 0 0 0-1.5H11V6.5ZM5.75 10a.75.75 0 0 1 .75.75v.75h6.75a.75.75 0 0 1 0 1.5H6.5v.75a.75.75 0 0 1-1.5 0v-3a.75.75 0 0 1 .75-.75ZM2.75 7.25H8.5v1.5H2.75a.75.75 0 0 1 0-1.5ZM4 3H2.75a.75.75 0 0 0 0 1.5H4V3ZM2.75 11.5H4V13H2.75a.75.75 0 0 1 0-1.5Z"/></g></symbol><symbol id="i-sync" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M13.836 2.477a.75.75 0 0 1 .75.75v3.182a.75.75 0 0 1-.75.75h-3.182a.75.75 0 0 1 0-1.5h1.37l-.84-.841a4.5 4.5 0 0 0-7.08.932.75.75 0 0 1-1.3-.75 6 6 0 0 1 9.44-1.242l.842.84V3.227a.75.75 0 0 1 .75-.75Zm-.911 7.5A.75.75 0 0 1 13.199 11a6 6 0 0 1-9.44 1.241l-.84-.84v1.371a.75.75 0 0 1-1.5 0V9.591a.75.75 0 0 1 .75-.75H5.35a.75.75 0 0 1 0 1.5H3.98l.841.841a4.5 4.5 0 0 0 7.08-.932.75.75 0 0 1 1.025-.273Z" clip-rule="evenodd"/></g></symbol><symbol id="i-ok" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z" clip-rule="evenodd"/></g></symbol><symbol id="i-warn" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M6.701 2.25c.577-1 2.02-1 2.598 0l5.196 9a1.5 1.5 0 0 1-1.299 2.25H2.804a1.5 1.5 0 0 1-1.3-2.25l5.197-9ZM8 4a.75.75 0 0 1 .75.75v3a.75.75 0 1 1-1.5 0v-3A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/></g></symbol><symbol id="i-skip" viewBox="0 0 20 20"><g fill="currentColor"><path fill-rule="evenodd" d="M5.965 4.904l9.131 9.131a6.5 6.5 0 00-9.131-9.131zm8.07 10.192L4.904 5.965a6.5 6.5 0 009.131 9.131zM4.343 4.343a8 8 0 1111.314 11.314A8 8 0 014.343 4.343z" clip-rule="evenodd"/></g></symbol><symbol id="i-lock" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M8 1a3.5 3.5 0 0 0-3.5 3.5V7A1.5 1.5 0 0 0 3 8.5v5A1.5 1.5 0 0 0 4.5 15h7a1.5 1.5 0 0 0 1.5-1.5v-5A1.5 1.5 0 0 0 11.5 7V4.5A3.5 3.5 0 0 0 8 1Zm2 6V4.5a2 2 0 1 0-4 0V7h4Z" clip-rule="evenodd"/></g></symbol><symbol id="i-unlock" viewBox="0 0 16 16"><g fill="currentColor"><path d="M11.5 1A3.5 3.5 0 0 0 8 4.5V7H2.5A1.5 1.5 0 0 0 1 8.5v5A1.5 1.5 0 0 0 2.5 15h7a1.5 1.5 0 0 0 1.5-1.5v-5A1.5 1.5 0 0 0 9.5 7V4.5a2 2 0 1 1 4 0v1.75a.75.75 0 0 0 1.5 0V4.5A3.5 3.5 0 0 0 11.5 1Z"/></g></symbol><symbol id="i-ext" viewBox="0 0 16 16"><g fill="currentColor"><path d="M6.22 8.72a.75.75 0 0 0 1.06 1.06l5.22-5.22v1.69a.75.75 0 0 0 1.5 0v-3.5a.75.75 0 0 0-.75-.75h-3.5a.75.75 0 0 0 0 1.5h1.69L6.22 8.72Z"/>
   <path d="M3.5 6.75c0-.69.56-1.25 1.25-1.25H7A.75.75 0 0 0 7 4H4.75A2.75 2.75 0 0 0 2 6.75v4.5A2.75 2.75 0 0 0 4.75 14h4.5A2.75 2.75 0 0 0 12 11.25V9a.75.75 0 0 0-1.5 0v2.25c0 .69-.56 1.25-1.25 1.25h-4.5c-.69 0-1.25-.56-1.25-1.25v-4.5Z"/></g></symbol><symbol id="i-down" viewBox="0 0 16 16"><g fill="currentColor"><path d="M8.75 2.75a.75.75 0 0 0-1.5 0v5.69L5.03 6.22a.75.75 0 0 0-1.06 1.06l3.5 3.5a.75.75 0 0 0 1.06 0l3.5-3.5a.75.75 0 0 0-1.06-1.06L8.75 8.44V2.75Z"/>
   <path d="M3.5 9.75a.75.75 0 0 0-1.5 0v1.5A2.75 2.75 0 0 0 4.75 14h6.5A2.75 2.75 0 0 0 14 11.25v-1.5a.75.75 0 0 0-1.5 0v1.5c0 .69-.56 1.25-1.25 1.25h-6.5c-.69 0-1.25-.56-1.25-1.25v-1.5Z"/></g></symbol><symbol id="i-sphere" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M3.757 4.5c.18.217.376.42.586.608.153-.61.354-1.175.596-1.678A5.53 5.53 0 0 0 3.757 4.5ZM8 1a6.994 6.994 0 0 0-7 7 7 7 0 1 0 7-7Zm0 1.5c-.476 0-1.091.386-1.633 1.427-.293.564-.531 1.267-.683 2.063A5.48 5.48 0 0 0 8 6.5a5.48 5.48 0 0 0 2.316-.51c-.152-.796-.39-1.499-.683-2.063C9.09 2.886 8.476 2.5 8 2.5Zm3.657 2.608a8.823 8.823 0 0 0-.596-1.678c.444.298.842.659 1.182 1.07-.18.217-.376.42-.586.608Zm-1.166 2.436A6.983 6.983 0 0 1 8 8a6.983 6.983 0 0 1-2.49-.456 10.703 10.703 0 0 0 .202 2.6c.72.231 1.49.356 2.288.356.798 0 1.568-.125 2.29-.356a10.705 10.705 0 0 0 .2-2.6Zm1.433 1.85a12.652 12.652 0 0 0 .018-2.609c.405-.276.78-.594 1.117-.947a5.48 5.48 0 0 1 .44 2.262 7.536 7.536 0 0 1-1.575 1.293Zm-2.172 2.435a9.046 9.046 0 0 1-3.504 0c.039.084.078.166.12.244C6.907 13.114 7.523 13.5 8 13.5s1.091-.386 1.633-1.427c.04-.078.08-.16.12-.244Zm1.31.74a8.5 8.5 0 0 0 .492-1.298c.457-.197.893-.43 1.307-.696a5.526 5.526 0 0 1-1.8 1.995Zm-6.123 0a8.507 8.507 0 0 1-.493-1.298 8.985 8.985 0 0 1-1.307-.696 5.526 5.526 0 0 0 1.8 1.995ZM2.5 8.1c.463.5.993.935 1.575 1.293a12.652 12.652 0 0 1-.018-2.608 7.037 7.037 0 0 1-1.117-.947 5.48 5.48 0 0 0-.44 2.262Z" clip-rule="evenodd"/></g></symbol><symbol id="i-shelves" viewBox="0 0 16 16"><g fill="currentColor"><path d="M9.836 3h-3.67v10h3.67V3ZM11.336 13H13.5a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 13.5 3h-2.164v10ZM2.5 3h2.166v10H2.5A1.5 1.5 0 0 1 1 11.5v-7A1.5 1.5 0 0 1 2.5 3Z"/></g></symbol><symbol id="i-list" viewBox="0 0 16 16"><g fill="currentColor"><path d="M3 4.75a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM6.25 3a.75.75 0 0 0 0 1.5h7a.75.75 0 0 0 0-1.5h-7ZM6.25 7.25a.75.75 0 0 0 0 1.5h7a.75.75 0 0 0 0-1.5h-7ZM6.25 11.5a.75.75 0 0 0 0 1.5h7a.75.75 0 0 0 0-1.5h-7ZM4 12.25a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM3 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></g></symbol><symbol id="i-grow" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M2.75 9a.75.75 0 0 1 .75.75v1.69l2.22-2.22a.75.75 0 0 1 1.06 1.06L4.56 12.5h1.69a.75.75 0 0 1 0 1.5h-3.5a.75.75 0 0 1-.75-.75v-3.5A.75.75 0 0 1 2.75 9ZM2.75 7a.75.75 0 0 0 .75-.75V4.56l2.22 2.22a.75.75 0 0 0 1.06-1.06L4.56 3.5h1.69a.75.75 0 0 0 0-1.5h-3.5a.75.75 0 0 0-.75.75v3.5c0 .414.336.75.75.75ZM13.25 9a.75.75 0 0 0-.75.75v1.69l-2.22-2.22a.75.75 0 1 0-1.06 1.06l2.22 2.22H9.75a.75.75 0 0 0 0 1.5h3.5a.75.75 0 0 0 .75-.75v-3.5a.75.75 0 0 0-.75-.75ZM13.25 7a.75.75 0 0 1-.75-.75V4.56l-2.22 2.22a.75.75 0 1 1-1.06-1.06l2.22-2.22H9.75a.75.75 0 0 1 0-1.5h3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-.75.75Z" clip-rule="evenodd"/></g></symbol><symbol id="i-shrink" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M2.22 2.22a.75.75 0 0 1 1.06 0L5.5 4.44V2.75a.75.75 0 0 1 1.5 0v3.5a.75.75 0 0 1-.75.75h-3.5a.75.75 0 0 1 0-1.5h1.69L2.22 3.28a.75.75 0 0 1 0-1.06Zm10.5 0a.75.75 0 1 1 1.06 1.06L11.56 5.5h1.69a.75.75 0 0 1 0 1.5h-3.5A.75.75 0 0 1 9 6.25v-3.5a.75.75 0 0 1 1.5 0v1.69l2.22-2.22ZM2.75 9h3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-1.69l-2.22 2.22a.75.75 0 0 1-1.06-1.06l2.22-2.22H2.75a.75.75 0 0 1 0-1.5ZM9 9.75A.75.75 0 0 1 9.75 9h3.5a.75.75 0 0 1 0 1.5h-1.69l2.22 2.22a.75.75 0 1 1-1.06 1.06l-2.22-2.22v1.69a.75.75 0 0 1-1.5 0v-3.5Z" clip-rule="evenodd"/></g></symbol><symbol id="i-plus" viewBox="0 0 16 16"><g fill="currentColor"><path d="M8.75 3.75a.75.75 0 0 0-1.5 0v3.5h-3.5a.75.75 0 0 0 0 1.5h3.5v3.5a.75.75 0 0 0 1.5 0v-3.5h3.5a.75.75 0 0 0 0-1.5h-3.5v-3.5Z"/></g></symbol><symbol id="i-search" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></g></symbol></svg>
 <div id="dashBg" aria-hidden="true"></div>
@@ -776,7 +762,7 @@ function fmtTime(hm){let [h,m]=hm.split(":").map(Number);const ap=h>=12?"PM":"AM
 
 /* ---------- state ---------- */
 function blank(){return{v:2,updatedAt:0,target:3000,protein:110,startDate:iso(new Date()),times:DEFAULT_TIMES.slice(),
-  days:Array.from({length:D},()=>({picks:Array(N).fill(0),locked:Array(N).fill(false),times:Array(N).fill(null),done:Array(N).fill(false)})),checked:[]}}
+  days:Array.from({length:D},()=>({picks:Array(N).fill(0),locked:Array(N).fill(false),times:Array(N).fill(null),done:Array(N).fill(false),missed:Array(N).fill(false)})),checked:[]}}
 function normalize(s){
   const b=blank(); if(!s||typeof s!=="object")return null;
   b.updatedAt=+s.updatedAt||0;
@@ -784,10 +770,10 @@ function normalize(s){
   if(typeof s.startDate==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s.startDate))b.startDate=s.startDate;
   if(Array.isArray(s.times)&&s.times.length===N&&s.times.every(t=>/^\d{2}:\d{2}$/.test(t)))b.times=s.times.slice();
   if(!Array.isArray(s.days)||s.days.length!==D)return null;
-  b.days=s.days.map(dy=>({picks:SLOTS.map((sl,i)=>{const nm=dy&&Array.isArray(dy.names)?dy.names[i]:null;if(typeof nm==="string"){const k=sl.opts.findIndex(o=>o.n===nm);if(k>=0)return k}return clamp((dy&&dy.picks&&dy.picks[i])|0,0,sl.opts.length-1)}),locked:SLOTS.map((_,i)=>!!(dy&&dy.locked&&dy.locked[i])),done:SLOTS.map((_,i)=>!!(dy&&dy.done&&dy.done[i])),
+  b.days=s.days.map(dy=>({picks:SLOTS.map((sl,i)=>{const nm=dy&&Array.isArray(dy.names)?dy.names[i]:null;if(typeof nm==="string"){const k=sl.opts.findIndex(o=>o.n===nm);if(k>=0)return k}return clamp((dy&&dy.picks&&dy.picks[i])|0,0,sl.opts.length-1)}),locked:SLOTS.map((_,i)=>!!(dy&&dy.locked&&dy.locked[i])),done:SLOTS.map((_,i)=>!!(dy&&dy.done&&dy.done[i])),missed:SLOTS.map((_,i)=>!!(dy&&dy.missed&&dy.missed[i])&&!(dy.done&&dy.done[i])),
     times:SLOTS.map((_,i)=>{const t=dy&&Array.isArray(dy.times)?dy.times[i]:null;return typeof t==="string"&&/^\d{2}:\d{2}$/.test(t)?t:null})}));
   b.checked=Array.isArray(s.checked)?s.checked.filter(x=>typeof x==="string").slice(0,300):[];
-  b.nsnap={};if(s.nsnap&&typeof s.nsnap==="object")Object.keys(s.nsnap).slice(0,400).forEach(k=>{const v=s.nsnap[k];if(v&&typeof v.meal==="string"&&typeof v.when==="string")b.nsnap[k]={meal:v.meal,when:v.when,locked:!!v.locked,eaten:!!v.eaten}});
+  b.nsnap={};if(s.nsnap&&typeof s.nsnap==="object")Object.keys(s.nsnap).slice(0,400).forEach(k=>{const v=s.nsnap[k];if(v&&typeof v.meal==="string"&&typeof v.when==="string")b.nsnap[k]={meal:v.meal,when:v.when,locked:!!v.locked,eaten:!!v.eaten,skipped:!!v.skipped}});
   return b;
 }
 let state=null, fresh=false;
@@ -796,7 +782,7 @@ if(!state){
   state=blank();fresh=true;
   try{const r=localStorage.getItem(KEY1);if(r){const o=JSON.parse(r);
     if(o&&Array.isArray(o.picks)&&o.picks.length===N){state.target=clamp(+o.target||3000,1800,4000);state.protein=clamp(+o.protein||110,60,200);
-      state.days[0]={picks:o.picks.map((v,i)=>clamp(v|0,0,SLOTS[i].opts.length-1)),locked:SLOTS.map((_,i)=>!!(o.locked&&o.locked[i])),times:Array(N).fill(null),done:Array(N).fill(false)}}}}catch(e){}
+      state.days[0]={picks:o.picks.map((v,i)=>clamp(v|0,0,SLOTS[i].opts.length-1)),locked:SLOTS.map((_,i)=>!!(o.locked&&o.locked[i])),times:Array(N).fill(null),done:Array(N).fill(false),missed:Array(N).fill(false)}}}}catch(e){}
 }
 let ui={tab:"plan",day:0,cal:"hour",scope:"week"};
 const TABS=["plan","dash","cal","shop","pantry"];
@@ -810,7 +796,8 @@ function save(){state.updatedAt=Date.now();saveLocal();scheduleRemote();schedule
 function rebalanceDay(d,fixed=-1,shuffle=false){
   const day=state.days[d],prev=state.days[d-1],next=state.days[d+1];
   const free=[];let bk=0,bp=0;
-  SLOTS.forEach((s,i)=>{if(day.locked[i]||i===fixed){const o=s.opts[day.picks[i]];bk+=o.k;bp+=o.p}else free.push(i)});
+  const out=i=>!!(day.missed&&day.missed[i]);
+  SLOTS.forEach((s,i)=>{if(out(i))return;if(day.locked[i]||i===fixed){const o=s.opts[day.picks[i]];bk+=o.k;bp+=o.p}else free.push(i)});
   if(!free.length)return;
   const cost=free.map(si=>SLOTS[si].opts.map((o,oi)=>{
     let c=o.skip?45:0;
@@ -820,7 +807,7 @@ function rebalanceDay(d,fixed=-1,shuffle=false){
   }));
   // Variety: each food group missing from the day costs as much as being 15 kcal off target.
   const useVar=SLOTS.some(s=>s.opts.some(o=>o.gm));let bm=0;
-  SLOTS.forEach((s,i)=>{if(day.locked[i]||i===fixed)bm|=s.opts[day.picks[i]].gm||0});
+  SLOTS.forEach((s,i)=>{if(!out(i)&&(day.locked[i]||i===fixed))bm|=s.opts[day.picks[i]].gm||0});
   let best=null,bestScore=Infinity;const ch=[];
   (function rec(j,k,p,c,m){
     if(c>=bestScore)return;
@@ -830,10 +817,10 @@ function rebalanceDay(d,fixed=-1,shuffle=false){
   free.forEach((si,j)=>day.picks[si]=best[j]);
 }
 function rebalanceAll(){for(let d=0;d<D;d++)rebalanceDay(d)}
-function totals(d){let k=0,p=0,c=0,f=0;SLOTS.forEach((s,i)=>{const o=s.opts[state.days[d].picks[i]];k+=o.k;p+=o.p;c+=o.c;f+=o.f});return{k,p,c,f}}
+function totals(d){let k=0,p=0,c=0,f=0;SLOTS.forEach((s,i)=>{if(isMissed(d,i))return;const o=s.opts[state.days[d].picks[i]];k+=o.k;p+=o.p;c+=o.c;f+=o.f});return{k,p,c,f}}
 function dayNutrition(d){
   const sum={};NUTR.forEach(([k])=>sum[k]=0);let m=0,has=false;
-  SLOTS.forEach((s,i)=>{const o=s.opts[state.days[d].picks[i]];if(o.skip)return;m|=o.gm||0;
+  SLOTS.forEach((s,i)=>{const o=s.opts[state.days[d].picks[i]];if(o.skip||isMissed(d,i))return;m|=o.gm||0;
     if(o.nu){has=true;NUTR.forEach(([k])=>{sum[k]+=o.nu[k]||0})}});
   return{sum,mask:m,has,groups:GROUPS.filter((_,j)=>m&(1<<j))};
 }
@@ -849,11 +836,18 @@ function mealNutrition(o){
 function timeOf(d,i){const t=state.days[d].times&&state.days[d].times[i];return t||state.times[i]}
 function toHM(m){return `${String(Math.floor(m/60)).padStart(2,"0")}:${String(m%60).padStart(2,"0")}`}
 function setTime(d,i,hm){const day=state.days[d];if(!day.times)day.times=Array(N).fill(null);day.times[i]=hm===state.times[i]?null:hm;save()}
-function mealsOf(d){return SLOTS.map((s,i)=>({i,slot:s.name,time:timeOf(d,i),o:s.opts[state.days[d].picks[i]],locked:state.days[d].locked[i],done:isDone(d,i)})).sort((a,b)=>mins(a.time)-mins(b.time))}
+function mealsOf(d){return SLOTS.map((s,i)=>({i,slot:s.name,time:timeOf(d,i),o:s.opts[state.days[d].picks[i]],locked:state.days[d].locked[i],done:isDone(d,i),missed:isMissed(d,i)})).sort((a,b)=>mins(a.time)-mins(b.time))}
 function isDone(d,i){const dy=state.days[d];return !!(dy.done&&dy.done[i])}
+function isMissed(d,i){const dy=state.days[d];return !!(dy.missed&&dy.missed[i])}
+const settled=m=>m.done||m.missed; // eaten or skipped: nothing left to do for this meal
 // Marking a meal eaten also locks it, so rebalancing never swaps out something already eaten.
-function setDone(d,i,v){const dy=state.days[d];if(!dy.done)dy.done=Array(N).fill(false);dy.done[i]=v;if(v)dy.locked[i]=true;save();
-  if(ui.tab==="plan")updatePlan(-1,false);else if(ui.tab==="cal")renderCal();if(sheetCtx)renderSheet()}
+function setDone(d,i,v){const dy=state.days[d];if(!dy.done)dy.done=Array(N).fill(false);dy.done[i]=v;if(v){dy.locked[i]=true;if(dy.missed&&dy.missed[i]){dy.missed[i]=false;rebalanceDay(d)}}save();
+  refreshAfterMark(d)}
+// Saying you skipped a meal takes it out of the day's totals; the other unlocked meals rebalance to make up for it.
+function setMissed(d,i,v){const dy=state.days[d];if(!dy.missed)dy.missed=Array(N).fill(false);dy.missed[i]=v;
+  if(v){dy.locked[i]=true;if(dy.done)dy.done[i]=false}rebalanceDay(d);save();refreshAfterMark(d)}
+function refreshAfterMark(d){
+  if(ui.tab==="plan"||ui.tab==="dash")updatePlan(-1,false);else if(ui.tab==="cal")renderCal();if(sheetCtx)renderSheet()}
 if(fresh){if(state.days[0].locked.some(Boolean)){for(let d=0;d<D;d++)rebalanceDay(d)}else{for(let d=0;d<D;d++)rebalanceDay(d,-1,d>0)}saveLocal()}
 
 /* ---------- day strip ---------- */
@@ -875,7 +869,7 @@ function buildSlots(){
 $("slots").innerHTML="";T.length=0;
 SLOTS.forEach((s,i)=>{
   const sec=document.createElement("section");sec.className="slot";sec.setAttribute("aria-label",s.name);
-  sec.innerHTML=`<div class="slot-head"><h2>${s.name}<span></span></h2><div class="sh-btns"><button class="eat" aria-pressed="false"></button><button class="lock" aria-pressed="false"></button></div></div>`;
+  sec.innerHTML=`<div class="slot-head"><h2>${s.name}<span></span></h2><div class="sh-btns"><button class="eat" aria-pressed="false"></button><button class="eat miss" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="#i-skip"/></svg></button><button class="lock" aria-pressed="false"></button></div></div>`;
   const track=document.createElement("div");track.className="track";track.tabIndex=0;
   track.setAttribute("aria-label",`${s.name} options. Left and right arrow keys choose.`);
   s.opts.forEach((o,oi)=>{
@@ -884,17 +878,16 @@ SLOTS.forEach((s,i)=>{
     c.addEventListener("click",()=>{if(state.days[ui.day].picks[i]!==oi)choose(i,oi);else if(!o.skip)openDetail(ui.day,i)});
     track.appendChild(c);
   });
-  const dots=document.createElement("div");dots.className="dots";
-  s.opts.forEach((o,oi)=>{const d=document.createElement("button");d.className="dot";d.setAttribute("aria-label",`${s.name}: ${o.n}`);d.onclick=()=>choose(i,oi);dots.appendChild(d)});
-  sec.append(track,dots);$("slots").appendChild(sec);
-  const lock=sec.querySelector(".lock"),eat=sec.querySelector(".eat");
+  sec.append(track);$("slots").appendChild(sec);
+  const lock=sec.querySelector(".lock"),eat=sec.querySelector(".eat:not(.miss)"),miss=sec.querySelector(".miss");
   eat.onclick=()=>setDone(ui.day,i,!isDone(ui.day,i));
+  miss.onclick=()=>setMissed(ui.day,i,!isMissed(ui.day,i));
   lock.onclick=()=>{const day=state.days[ui.day];day.locked[i]=!day.locked[i];if(!day.locked[i])rebalanceDay(ui.day);updatePlan();save()};
   track._user=false;let t=null;const mark=()=>{track._user=true};
   track.addEventListener("touchstart",mark,{passive:true});track.addEventListener("pointerdown",mark);track.addEventListener("wheel",mark,{passive:true});
   track.addEventListener("scroll",()=>{clearTimeout(t);t=setTimeout(()=>{if(!track._user)return;track._user=false;const idx=nearest(track);if(idx!==state.days[ui.day].picks[i])choose(i,idx,false)},120)},{passive:true});
   track.addEventListener("keydown",e=>{if(e.key==="ArrowRight"||e.key==="ArrowLeft"){e.preventDefault();const cur=state.days[ui.day].picks[i];const n=clamp(cur+(e.key==="ArrowRight"?1:-1),0,s.opts.length-1);if(n!==cur)choose(i,n)}});
-  T.push({sec,track,lock,eat,label:sec.querySelector("h2 span"),dots:[...dots.children],cards:[...track.querySelectorAll(".card")]});
+  T.push({sec,track,lock,eat,miss,label:sec.querySelector("h2 span"),cards:[...track.querySelectorAll(".card")]});
 });
 }
 buildSlots();
@@ -913,12 +906,12 @@ function updatePlan(except=-1,smooth=true){
     x.sec.classList.toggle("locked",L);x.lock.setAttribute("aria-pressed",L);
     x.lock.setAttribute("aria-label",(L?"Unlock ":"Lock ")+s.name);
     x.lock.innerHTML=(L?LOCKED:OPEN);
-    const E=isDone(ui.day,i),sk=s.opts[day.picks[i]].skip;x.eat.hidden=sk;x.sec.classList.toggle("eaten",E&&!sk);
+    const E=isDone(ui.day,i),M=isMissed(ui.day,i),sk=s.opts[day.picks[i]].skip;x.eat.hidden=x.miss.hidden=sk;x.sec.classList.toggle("eaten",E&&!sk);x.sec.classList.toggle("missed",M&&!sk);
     x.eat.setAttribute("aria-pressed",E);x.eat.setAttribute("aria-label",(E?"Unmark ":"Mark ")+s.name+" as eaten");
+    x.miss.setAttribute("aria-pressed",M);x.miss.setAttribute("aria-label",M?`Undo: I skipped ${s.name}`:`I skipped ${s.name}`);x.miss.title=M?"Skipped (tap to undo)":"I skipped this";
     x.eat.innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-ok"/></svg>';
     x.label.textContent=fmtTime(timeOf(ui.day,i));
     x.cards.forEach((el,oi)=>el.classList.toggle("sel",oi===day.picks[i]));
-    x.dots.forEach((d,oi)=>d.setAttribute("aria-current",oi===day.picks[i]));
     if(i!==except)scrollToPick(i,smooth);
   });
   $("kGoal").textContent=fmt(state.target);$("pGoal").textContent=`${state.protein} g`;
@@ -948,7 +941,7 @@ $("copyAll").onclick=()=>{
   const b=$("copyAll");
   if(!copyArm){b.textContent="Tap again to replace every day";copyArm=setTimeout(()=>{copyArm=null;b.textContent="Copy this day to the whole week"},3500);return}
   clearTimeout(copyArm);copyArm=null;b.textContent="Copied to all 7 days";
-  const src=state.days[ui.day];state.days=state.days.map(dy=>({picks:src.picks.slice(),locked:src.locked.slice(),times:(src.times||Array(N).fill(null)).slice(),done:(dy.done||Array(N).fill(false)).slice()}));save();
+  const src=state.days[ui.day];state.days=state.days.map(dy=>({picks:src.picks.slice(),locked:src.locked.slice(),times:(src.times||Array(N).fill(null)).slice(),done:(dy.done||Array(N).fill(false)).slice(),missed:(dy.missed||Array(N).fill(false)).slice()}));save();
   setTimeout(()=>{b.textContent="Copy this day to the whole week"},2000);
 };
 
@@ -957,19 +950,19 @@ var dashFx=null,meterData=[]; // particle rings (dashfx.js) once loaded; the SVG
 function ringSvg(planned,eaten,val,unit){
   // two arcs: the day's plan dimmed, what's been eaten solid
   const r=42,C=2*Math.PI*r,arc=(f,col,w)=>f>0?`<circle cx="50" cy="50" r="${r}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" stroke-dasharray="${Math.max(0.001,Math.min(1,f)*C)} ${C}" transform="rotate(-90 50 50)"/>`:"";
-  return `<div class="dial"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="${r}" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="6"/>${arc(planned,"rgba(255,255,255,.4)",6)}${arc(eaten,"#fff",6)}</svg>
+  return `<div class="dial"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="${r}" fill="none" stroke="rgba(0,0,0,.07)" stroke-width="6"/>${arc(planned,"rgba(0,0,0,.2)",6)}${arc(eaten,"var(--ink)",6)}</svg>
     <span class="val">${val}</span><span class="unit">${unit}</span></div>`;
 }
 function renderMeter(){
   const d=ui.day,ms=mealsOf(d).filter(m=>!m.o.skip),today=isToday(d),past=iso(dayDate(d))<iso(new Date());
-  const t=totals(d),done=ms.filter(m=>m.done),ek=done.reduce((a,m)=>a+m.o.k,0),ep=done.reduce((a,m)=>a+m.o.p,0);
+  const t=totals(d),done=ms.filter(m=>m.done),nMiss=ms.filter(m=>m.missed).length,ek=done.reduce((a,m)=>a+m.o.k,0),ep=done.reduce((a,m)=>a+m.o.p,0);
   const showEaten=today||past||done.length>0;
   const ring=(label,cap,planned,eaten,val,unit)=>`<div class="ring">${ringSvg(planned,eaten,val,unit)}<span class="lab">${label}</span><span class="cap">${cap}</span></div>`;
   $("rings").innerHTML=
     ring("Calories",`of ${fmt(state.target)}`,t.k/state.target,showEaten?ek/state.target:0,fmt(showEaten?ek:t.k),showEaten?"EATEN":"PLANNED")+
     ring("Protein",`of ${state.protein} g`,t.p/state.protein,showEaten?ep/state.protein:0,`${fmt(showEaten?ep:t.p)}`,showEaten?"G EATEN":"G PLANNED")+
-    ring("Meals",showEaten?`${ms.length-done.length} to go`:"planned",1,ms.length?done.length/ms.length:0,showEaten?`${done.length}/${ms.length}`:String(ms.length),showEaten?"DONE":"MEALS");
-  meterData=[{p:t.k/state.target,e:showEaten?ek/state.target:0},{p:t.p/state.protein,e:showEaten?ep/state.protein:0},{p:1,e:showEaten&&ms.length?done.length/ms.length:0}];
+    ring("Meals",showEaten?`${ms.length-done.length-nMiss} to go${nMiss?`, ${nMiss} skipped`:""}`:"planned",ms.length?(ms.length-nMiss)/ms.length:1,ms.length?done.length/ms.length:0,showEaten?`${done.length}/${ms.length}`:String(ms.length),showEaten?"DONE":"MEALS");
+  meterData=[{p:t.k/state.target,e:showEaten?ek/state.target:0},{p:t.p/state.protein,e:showEaten?ep/state.protein:0},{p:ms.length?(ms.length-nMiss)/ms.length:1,e:showEaten&&ms.length?done.length/ms.length:0}];
   if(dashFx)dashFx.update(meterData);
   $("rings").setAttribute("aria-label",`${fmt(ek)} of ${fmt(state.target)} kcal eaten, ${fmt(ep)} of ${state.protein} g protein, ${done.length} of ${ms.length} meals`);
   // tiles
@@ -1045,7 +1038,7 @@ function openCalendarFile(events){
 function openReminderAll(){
   sheetFocus=document.activeElement;sheetCtx=null;
   const now=new Date(),nm=now.getHours()*60+now.getMinutes();
-  const today=iso(now),upcoming=x=>{const di=iso(dayDate(x._d));return !x.o.skip&&!x.done&&di>=today&&(di>today||mins(x.time)>nm)};
+  const today=iso(now),upcoming=x=>{const di=iso(dayDate(x._d));return !x.o.skip&&!settled(x)&&di>=today&&(di>today||mins(x.time)>nm)};
   let list=[];
   if(ui.cal==="week"){for(let d=0;d<D;d++)mealsOf(d).forEach(m=>{m._d=d;if(upcoming(m))list.push({d,i:m.i})})}
   else{const d=ui.day;mealsOf(d).forEach(m=>{m._d=d;if(upcoming(m))list.push({d,i:m.i})})}
@@ -1062,7 +1055,7 @@ $("calRemind").onclick=openReminderAll;
 function openReminder(d,i){
   sheetFocus=document.activeElement;sheetCtx=null;
   const o=SLOTS[i].opts[state.days[d].picks[i]],t=timeOf(d,i),at=mins(t),now=new Date(),nm=isToday(d)?now.getHours()*60+now.getMinutes():-1;
-  const rest=mealsOf(d).filter(m=>!m.o.skip&&!m.done&&m.i!==i&&mins(m.time)>Math.max(nm,-1));
+  const rest=mealsOf(d).filter(m=>!m.o.skip&&!settled(m)&&m.i!==i&&mins(m.time)>Math.max(nm,-1));
   const opt=(a,label)=>at-a>nm?`<button class="rem-opt" data-a="${a}">${label}<span>${fmtTime(toHM(((at-a)%1440+1440)%1440))}</span></button>`:"";
   $("sheetBox").innerHTML=`
     <div class="sh-head"><div class="sh-top"><p class="sh-sl">${SLOTS[i].name}, ${shortDate(d)}</p><button class="txt" id="shClose">Close</button></div>
@@ -1086,11 +1079,11 @@ function nextMeal(){
   if(d<0)return null;
   const list=x=>mealsOf(x).filter(m=>!m.o.skip);
   // a meal whose time has come in the last 3 hours and isn't marked eaten comes first
-  const today_=list(d),cur=today_.filter(m=>!m.done&&mins(m.time)<=nm&&nm-mins(m.time)<180).pop();
+  const today_=list(d),cur=today_.filter(m=>!settled(m)&&mins(m.time)<=nm&&nm-mins(m.time)<180).pop();
   if(cur)return{d,m:cur,diff:0,late:nm-mins(cur.time),from:mins(cur.time),to:mins(cur.time)+30,now:nm};
-  const up=today_.find(m=>!m.done&&mins(m.time)>nm),prev=today_.filter(m=>mins(m.time)<=nm).pop();
+  const up=today_.find(m=>!settled(m)&&mins(m.time)>nm),prev=today_.filter(m=>mins(m.time)<=nm).pop();
   if(up)return{d,m:up,diff:mins(up.time)-nm,from:prev?mins(prev.time):Math.max(0,mins(up.time)-180),to:mins(up.time),now:nm,prev};
-  if(d+1<D){const t=list(d+1).find(m=>!m.done);if(t)return{d:d+1,m:t,diff:24*60-nm+mins(t.time),from:prev?mins(prev.time):nm,to:24*60+mins(t.time),now:nm,prev}}
+  if(d+1<D){const t=list(d+1).find(m=>!settled(m));if(t)return{d:d+1,m:t,diff:24*60-nm+mins(t.time),from:prev?mins(prev.time):nm,to:24*60+mins(t.time),now:nm,prev}}
   return null;
 }
 function inText(min){if(min<1)return "now";const h=Math.floor(min/60),m=min%60;return "in "+(h?`${h} h`+(m?` ${m} min`:""):`${m} min`)}
@@ -1101,15 +1094,16 @@ function renderNext(){
   const lbl=diff>0?"Next meal":late<30?"Now":"Not marked yet",state_=diff>0?inText(diff):late<30?"is now":"was due";
   el.innerHTML=`<button class="main"><span class="top"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><span>${lbl}</span><span>·</span><span></span></span><span class="big"><b></b> <span></span></span><span class="sm"></span>
     <span class="prog" aria-hidden="true"><i style="width:${pct}%"></i></span></button>
-    <div class="acts"><button class="mark bell"><span class="c"><svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg></span>Remind</button><button class="mark"><span class="c"><svg class="ic" aria-hidden="true"><use href="#i-ok"/></svg></span>Eaten</button></div>`;
+    <div class="acts">${diff>0?`<button class="mark bell"><span class="c"><svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg></span>Remind</button>`:`<button class="mark skip"><span class="c"><svg class="ic" aria-hidden="true"><use href="#i-skip"/></svg></span>Skipped</button>`}<button class="mark done"><span class="c"><svg class="ic" aria-hidden="true"><use href="#i-ok"/></svg></span>Eaten</button></div>`;
   el.querySelector(".top span:last-child").textContent=fmtTime(m.time)+(isToday(d)?"":" tomorrow");
   el.querySelector(".big b").textContent=m.slot;
   el.querySelector(".big span").textContent=state_;
   el.querySelector(".sm").textContent=`${m.o.n} · ${fmt(m.o.k)} kcal · ${fmt(m.o.p)} g protein`;
   el.querySelector(".main").setAttribute("aria-label",`${lbl}: ${m.slot} ${state_}, ${m.o.n} at ${fmtTime(m.time)}. Open recipe.`);
   el.querySelector(".main").onclick=()=>openDetail(d,m.i);
-  const mk=el.querySelector(".mark:not(.bell)");mk.setAttribute("aria-label",`Mark ${m.slot} as eaten`);mk.onclick=()=>setDone(d,m.i,true);
-  const bl=el.querySelector(".bell");bl.setAttribute("aria-label",`Set a reminder for ${m.slot}`);bl.onclick=()=>openReminder(d,m.i);
+  const mk=el.querySelector(".mark.done");mk.setAttribute("aria-label",`Mark ${m.slot} as eaten`);mk.onclick=()=>setDone(d,m.i,true);
+  const bl=el.querySelector(".bell");if(bl){bl.setAttribute("aria-label",`Set a reminder for ${m.slot}`);bl.onclick=()=>openReminder(d,m.i)}
+  const sk=el.querySelector(".mark.skip");if(sk){sk.setAttribute("aria-label",`I skipped ${m.slot}`);sk.onclick=()=>setMissed(d,m.i,true)}
   el.classList.add("has-mark");el.hidden=false;
 }
 setInterval(()=>{if((ui.tab==="plan"||ui.tab==="dash")&&document.visibilityState==="visible"){renderNext();renderMeter()}},30000);
@@ -1141,7 +1135,7 @@ function renderHour(body){
     it.lane=pv&&it.mm-pv.mm<H?1-pv.lane:0;it.half=(pv&&it.mm-pv.mm<H)||(nx&&nx.mm-it.mm<H)});
   const topOf=m=>((m-start*60)/60*ph)+"px";
   items.forEach(m=>{
-    const b=document.createElement("button");b.className="blk"+(m.half?" half":"")+(m.done?" eaten":"");b.dataset.slot=m.i;
+    const b=document.createElement("button");b.className="blk"+(m.half?" half":"")+(m.done?" eaten":"")+(m.missed?" missed":"");b.dataset.slot=m.i;
     b.style.top=topOf(m.mm);
     if(m.half){b.style.right="auto";b.style.width="calc((100% - 58px) / 2 - 3px)";if(m.lane)b.style.left="calc(58px + (100% - 58px) / 2 + 3px)"}
     b.innerHTML=`<span style="min-width:0"><span class="t"></span><span class="n"></span></span><span class="kc">${fmt(m.o.k)}</span>`;
@@ -1194,7 +1188,7 @@ function renderDay(body){
     const b=document.createElement("button");b.className="ag"+(m.o.skip?" skipped":"");
     b.innerHTML=`<span class="tm"></span><span><span class="sl"></span><span class="n"></span><span class="d"></span>${m.o.skip?"":`<span class="m"><b>${fmt(m.o.k)}</b> kcal &nbsp; <b>${fmt(m.o.p)} g</b> protein &nbsp; ${fmt(m.o.c)} g carbs &nbsp; ${fmt(m.o.f)} g fat</span>`}</span>`;
     b.querySelector(".tm").textContent=fmtTime(m.time);
-    b.querySelector(".sl").textContent=m.slot+(m.done?", eaten":m.locked?", locked":"");
+    b.querySelector(".sl").textContent=m.slot+(m.done?", eaten":m.missed?", skipped":m.locked?", locked":"");b.classList.toggle("missed",m.missed);
     b.querySelector(".n").textContent=m.o.skip?"Skipped":m.o.n;
     b.querySelector(".d").textContent=m.o.skip?"":m.o.d;
     b.onclick=()=>openDetail(ui.day,m.i);list.appendChild(b);
@@ -1228,7 +1222,7 @@ function renderWeek(body){
     const items=mealsOf(d).filter(m=>!m.o.skip).map(m=>({...m,mm:clamp(mins(m.time),start*60,end*60-45)}));
     items.forEach((it,k)=>{const pv=items[k-1];it.lane=pv&&it.mm-pv.mm<60?1-pv.lane:0;it.half=(pv&&it.mm-pv.mm<60)||(items[k+1]&&items[k+1].mm-it.mm<60)});
     items.forEach(m=>{
-      const b=document.createElement("button");b.className="wb"+(m.half?" half"+(m.lane?" r":""):"")+(m.locked?" locked":"")+(m.done?" eaten":"");
+      const b=document.createElement("button");b.className="wb"+(m.half?" half"+(m.lane?" r":""):"")+(m.locked?" locked":"")+(m.done?" eaten":"")+(m.missed?" missed":"");
       b.style.top=topOf(m.mm);b.style.height=BH+"px";
       b.innerHTML=`<span class="t"></span><span class="n"></span>`;
       b.querySelector(".t").textContent=fmtTime(m.time)+(m.locked?" · locked":"");b.querySelector(".n").textContent=m.o.n;
@@ -1376,7 +1370,7 @@ function renderSheet(){
     :(ING[o.n]||[]).map(([n,q,u,,gf])=>`<li><span>${n}${gf?'<span class="gf">check GF label</span>':""}</span><span class="q">${rq(q,u)}</span></li>`).join("");
   const steps=((o.steps&&o.steps.length)?o.steps:(STEPS[o.n]||[])).map(x=>`<li>${esc(x)}</li>`).join("");
   box.innerHTML=`
-    <div class="sh-head"><div class="sh-top"><p class="sh-sl">${SLOTS[i].name}, ${shortDate(d)}${locked?", locked":""}</p><button class="txt" id="shClose">Close</button></div>
+    <div class="sh-head"><div class="sh-top"><p class="sh-sl">${SLOTS[i].name}, ${shortDate(d)}${isMissed(d,i)?", skipped":locked?", locked":""}</p><button class="txt" id="shClose">Close</button></div>
     <h2 id="shTitle">${o.skip?"Skipped":esc(o.n)}</h2></div>
     <p class="sh-d">${esc(o.d)}</p>
     ${o.skip?"":`<div class="sh-m"><span><b>${fmt(o.k)}</b> kcal</span><span><b>${fmt(o.p)} g</b> protein</span><span><b>${fmt(o.c)} g</b> carbs</span><span><b>${fmt(o.f)} g</b> fat</span></div>`}
@@ -1386,7 +1380,7 @@ function renderSheet(){
       ${overridden?`<button class="txt" id="shReset">Reset to ${fmtTime(state.times[i])}</button>`:""}
       <span class="msg" id="shMsg" role="status"></span></div>
     ${o.skip?"":`<h3>Ingredients</h3><ul class="ing">${ing}</ul><h3>Steps</h3><ol class="steps">${steps}</ol>`}
-    <div class="sh-foot">${o.skip?"":`<button class="btn with-ic" id="shEat" aria-pressed="${isDone(d,i)}"><svg class="ic" aria-hidden="true"><use href="#i-ok"/></svg>${isDone(d,i)?"Eaten · undo":"Mark eaten"}</button>`}${o.skip?"":`<button class="btn with-ic" id="shRemind"><svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg>Remind me</button>`}<button class="btn" id="shChange">Change meal</button><button class="txt" id="shLock">${locked?"Unlock":"Lock"} this meal</button>${o.url?`<a class="txt" href="${esc(o.url)}" target="_blank" rel="noopener">Open in Notion <svg class="ic" aria-hidden="true"><use href="#i-ext"/></svg></a>`:""}</div>`;
+    <div class="sh-foot">${o.skip?"":`<button class="btn with-ic" id="shEat" aria-pressed="${isDone(d,i)}"><svg class="ic" aria-hidden="true"><use href="#i-ok"/></svg>${isDone(d,i)?"Eaten · undo":"Mark eaten"}</button><button class="btn with-ic" id="shMiss" aria-pressed="${isMissed(d,i)}"><svg class="ic" aria-hidden="true"><use href="#i-skip"/></svg>${isMissed(d,i)?"Skipped · undo":"I skipped it"}</button>`}${o.skip?"":`<button class="btn with-ic" id="shRemind"><svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg>Remind me</button>`}<button class="btn" id="shChange">Change meal</button><button class="txt" id="shLock">${locked?"Unlock":"Lock"} this meal</button>${o.url?`<a class="txt" href="${esc(o.url)}" target="_blank" rel="noopener">Open in Notion <svg class="ic" aria-hidden="true"><use href="#i-ext"/></svg></a>`:""}</div>`;
   $("shClose").onclick=closeDetail;
   $("shTime").onchange=e=>{const v=e.target.value;if(/^\d{2}:\d{2}/.test(v)){setTime(d,i,v.slice(0,5));refreshBehind();renderSheetKeep("shTime")}};
   $("shAll").onclick=()=>{const v=timeOf(d,i);state.times[i]=v;state.days.forEach(dy=>{if(dy.times)dy.times[i]=null});save();renderSettings();refreshBehind();renderSheetKeep("shAll");$("shMsg").textContent=`${SLOTS[i].name} is now ${fmtTime(v)} every day.`};
@@ -1394,6 +1388,7 @@ function renderSheet(){
   $("shChange").onclick=()=>{closeDetail();gotoPlan(d,i)};
   if($("shRemind"))$("shRemind").onclick=()=>openReminder(d,i);
   if($("shEat"))$("shEat").onclick=()=>{setDone(d,i,!isDone(d,i));renderSheetKeep("shEat")};
+  if($("shMiss"))$("shMiss").onclick=()=>{setMissed(d,i,!isMissed(d,i));renderSheetKeep("shMiss")};
   $("shLock").onclick=()=>{const dy=state.days[d];dy.locked[i]=!dy.locked[i];if(!dy.locked[i])rebalanceDay(d);save();refreshBehind();renderSheetKeep("shLock")};
 }
 function renderSheetKeep(id){renderSheet();const el=$(id);if(el)el.focus()}
@@ -1460,7 +1455,7 @@ function renderAll(smooth=true){
   renderHead();
   document.querySelectorAll("[data-tab]").forEach(b=>b.dataset.tab===ui.tab?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current"));
   const dm=ui.tab==="dash"&&!wideMQ.matches;document.documentElement.classList.toggle("dash-mode",dm);
-  document.querySelector('meta[name="theme-color"]').content=dm?"#0b0b0b":"#FFFFFF";if(dashFx)dashFx.setPage(dm);
+  if(dashFx)dashFx.setPage(dm);
   moveBlob(blobTab!==null&&blobTab!==ui.tab);blobTab=ui.tab;
   $("view-plan").hidden=ui.tab!=="plan";$("view-dash").hidden=ui.tab!=="dash";$("view-cal").hidden=ui.tab!=="cal";$("view-shop").hidden=ui.tab!=="shop";$("view-pantry").hidden=ui.tab!=="pantry";
   $("strip").hidden=ui.tab==="pantry";renderStrip();placeDash();
@@ -1473,10 +1468,10 @@ function renderAll(smooth=true){
 
 /* ---------- Notion backend (through your Cloudflare Worker) ---------- */
 // Notion status is a single icon in the header; the full message is its label and shows in Settings.
-function nSet(t,title){const b=$("notionBtn");b.hidden=false;
+function nSet(t,title){const b=$("notionBtn");
   const k=/syncing/.test(t)?"sync":/synced/.test(t)?"ok":/wrong|isn't|can't|failed|missing|share|didn't/i.test(t)?"warn":"off";
   const icon={sync:"syncl",ok:"okl",warn:"warnl",off:"cloud"}[k];nState.status=k;
-  b.dataset.s=k;b.innerHTML=`<svg class="ic" aria-hidden="true"><use href="#i-${icon}"/></svg>`;
+  b.hidden=!(k==="warn"||(k==="off"&&API_URL&&!passcode()));b.dataset.s=k;b.innerHTML=`<svg class="ic" aria-hidden="true"><use href="#i-${icon}"/></svg>`;
   const label=k==="off"&&!passcode()?"Connect Notion":t;b.setAttribute("aria-label",label);b.title=(title?label+": "+title:label);
   if($("syncLine"))$("syncLine").textContent=label+(title&&k==="warn"?` (${title})`:"")}
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
@@ -1513,14 +1508,14 @@ function keyOf(d,i){return `${iso(dayDate(d))} ${i}`}
 function offStr(dt){const m=-dt.getTimezoneOffset(),a=Math.abs(m);return `${m>=0?"+":"-"}${String(Math.floor(a/60)).padStart(2,"0")}:${String(a%60).padStart(2,"0")}`}
 function whenISO(d,i){const [h,mi]=timeOf(d,i).split(":").map(Number);const b=dayDate(d);const dt=new Date(b.getFullYear(),b.getMonth(),b.getDate(),h,mi);return `${iso(dt)}T${toHM(h*60+mi)}:00${offStr(dt)}`}
 function localStamp(v){if(!v)return "";const dt=new Date(v);if(isNaN(dt))return "";return `${iso(dt)} ${toHM(dt.getHours()*60+dt.getMinutes())}`}
-function desiredOf(d,i){const o=SLOTS[i].opts[state.days[d].picks[i]];return{meal:o.skip?"Skipped":o.n,when:`${iso(dayDate(d))} ${timeOf(d,i)}`,locked:!!state.days[d].locked[i],eaten:isDone(d,i),k:o.k||0,p:o.p||0}}
+function desiredOf(d,i){const o=SLOTS[i].opts[state.days[d].picks[i]];return{meal:o.skip?"Skipped":o.n,when:`${iso(dayDate(d))} ${timeOf(d,i)}`,locked:!!state.days[d].locked[i],eaten:isDone(d,i),skipped:isMissed(d,i),k:o.k||0,p:o.p||0}}
 // Times sync as wall-clock HH:MM (the Time column) so devices in different time zones agree.
 // Older rows without it fall back to When in this device's zone, and get Time filled in on the next push.
 function rowVal(r){const t=String(r.time||"").trim(),has=/^\d{2}:\d{2}$/.test(t);
-  return{meal:String(r.meal||"").trim(),when:has?`${String(r.key||"").slice(0,10)} ${t}`:localStamp(r.when),locked:!!r.locked,eaten:!!r.eaten,hasTime:has}}
-const sameV=(a,b)=>!!a&&!!b&&a.meal===b.meal&&a.when===b.when&&a.locked===b.locked&&!!a.eaten===!!b.eaten;
-const snapOf=v=>({meal:v.meal,when:v.when,locked:v.locked,eaten:!!v.eaten});
-function itemOf(d,i,v,id){const it={key:keyOf(d,i),meal:v.meal,when:whenISO(d,i),time:timeOf(d,i),slot:SLOTS[i].name,calories:v.k,protein:v.p,locked:v.locked,eaten:!!v.eaten};if(id)it.id=id;return it}
+  return{meal:String(r.meal||"").trim(),when:has?`${String(r.key||"").slice(0,10)} ${t}`:localStamp(r.when),locked:!!r.locked,eaten:!!r.eaten,skipped:!!r.skipped&&!r.eaten,hasTime:has}}
+const sameV=(a,b)=>!!a&&!!b&&a.meal===b.meal&&a.when===b.when&&a.locked===b.locked&&!!a.eaten===!!b.eaten&&!!a.skipped===!!b.skipped;
+const snapOf=v=>({meal:v.meal,when:v.when,locked:v.locked,eaten:!!v.eaten,skipped:!!v.skipped});
+function itemOf(d,i,v,id){const it={key:keyOf(d,i),meal:v.meal,when:whenISO(d,i),time:timeOf(d,i),slot:SLOTS[i].name,calories:v.k,protein:v.p,locked:v.locked,eaten:!!v.eaten,skipped:!!v.skipped};if(id)it.id=id;return it}
 const STOP=["bad_passcode","origin_not_allowed","server_not_configured","notion_token","notion_access"];
 function nError(e,partial){
   const c=e&&e.code;let t;
@@ -1556,7 +1551,7 @@ async function notionSync(){
       if(!s){
         // First time this device sees the row: Notion's version wins, so a new device never overwrites the plan.
         const idx=optIndex(i,v.meal);if(idx>=0)day.picks[i]=idx;
-        day.locked[i]=v.locked;if(!day.done)day.done=Array(N).fill(false);day.done[i]=v.eaten;pullTime(day,i,key,v.when);pulled=true;continue;
+        day.locked[i]=v.locked;if(!day.done)day.done=Array(N).fill(false);day.done[i]=v.eaten;if(!day.missed)day.missed=Array(N).fill(false);day.missed[i]=v.skipped;pullTime(day,i,key,v.when);pulled=true;continue;
       }
       if(sameV(v,s))continue;
       if(v.meal!==s.meal){
@@ -1565,6 +1560,7 @@ async function notionSync(){
       }else if(v.locked!==s.locked){day.locked[i]=v.locked;touched.add(d);pulled=true}
       if(v.when!==s.when&&pullTime(day,i,key,v.when))pulled=true;
       if(v.eaten!==!!s.eaten){if(!day.done)day.done=Array(N).fill(false);day.done[i]=v.eaten;pulled=true}
+      if(v.skipped!==!!s.skipped){if(!day.missed)day.missed=Array(N).fill(false);day.missed[i]=v.skipped;touched.add(d);pulled=true}
     }
     touched.forEach(d=>rebalanceDay(d));
     const jobs=[];

@@ -12,17 +12,27 @@ float n(vec2 q){vec2 i=floor(q),f=fract(q);f=f*f*(3.-2.*f);
   return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
 float fbm(vec2 q){float v=0.,a=.5;for(int i=0;i<4;i++){v+=a*n(q);q=q*2.03+vec2(1.7,9.2);a*=.5;}return v;}
 void main(){
-  vec2 uv=gl_FragCoord.xy/r;vec2 q=uv*vec2(r.x/r.y,1.)*1.5;float T=t*.045;
-  vec2 w=vec2(fbm(q+vec2(0.,T)),fbm(q+vec2(5.2,1.3)-T));
-  float f=fbm(q+2.2*w+vec2(T*.6,-T*.3));
-  // monochrome: a single gray value, brightening a little as more calories are eaten
-  float base=mix(.035,.24,f)+smoothstep(.4,.95,w.x)*.05+p*.05;
-  vec3 col=vec3(base);
-  col*=.8+.35*smoothstep(1.25,.15,length(uv-vec2(.5,.62)));
-  // heavy film grain
-  float g1=h(gl_FragCoord.xy+fract(t*53.));
-  float g2=h(gl_FragCoord.xy*1.7+fract(t*97.)+3.1);
-  col+=(g1-.5)*.11+(g2-.5)*.05;
+  vec2 uv=gl_FragCoord.xy/r;vec2 q=uv*vec2(r.x/r.y,1.);
+  // a very soft, slow wash of light grays
+  float f=fbm(q*1.1+vec2(t*.012,-t*.008));
+  vec3 col=vec3(mix(.985,.945,f));
+  col*=1.-.03*length(uv-vec2(.5,.35));
+  // sparse specks drifting slowly upward, each wobbling a little and fading in and out
+  float dust=0.;
+  for(int L=0;L<2;L++){
+    float sc=L==0?14.:26.;
+    vec2 g=q*sc+vec2(0.,-t*(L==0?.10:.16));
+    vec2 id=floor(g),fr=fract(g);
+    float h1=h(id),h2=h(id+17.3),h3=h(id+5.1);
+    if(h1>.62){
+      vec2 pos=vec2(h2,h3)*.7+.15+.07*vec2(sin(t*.35+h1*9.),cos(t*.3+h2*9.));
+      float rad=L==0?.07:.06;
+      float tw=.55+.45*sin(t*.6+h3*30.);
+      dust+=smoothstep(rad,0.,length(fr-pos))*tw*(L==0?.16:.10);
+    }
+  }
+  col-=dust;
+  col+=(h(floor(gl_FragCoord.xy))-.5)*.016; // fixed fine grain, no flicker
   gl_FragColor=vec4(col,1.);
 }`;
 
@@ -65,14 +75,14 @@ export function createDashFx(hero, { reduceMotion = false, pageHost = null } = {
   const rings = [makeRing(1), makeRing(2), makeRing(3)];
   const halo = document.createElement("canvas"); halo.width = halo.height = 32; // soft glow sprite for eaten particles
   { const h = halo.getContext("2d"), gr = h.createRadialGradient(16, 16, 0, 16, 16, 16);
-    gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(0.35, "rgba(240,240,240,.35)"); gr.addColorStop(1, "rgba(230,230,230,0)");
+    gr.addColorStop(0, "rgba(20,20,20,.55)"); gr.addColorStop(0.35, "rgba(20,20,20,.18)"); gr.addColorStop(1, "rgba(20,20,20,0)");
     h.fillStyle = gr; h.fillRect(0, 0, 32, 32); }
   let W = 0, H = 0, dpr = 1, running = false, visible = true, raf = 0, last = 0, clock = Math.random() * 100;
 
   function measure() {
     const hb = hero.getBoundingClientRect(); W = hb.width; H = hb.height; dpr = Math.min(window.devicePixelRatio || 1, 2);
     pt.width = Math.round(W * dpr); pt.height = Math.round(H * dpr);
-    if (drawBg) { const b = bg.getBoundingClientRect(), k = Math.min(dpr, 1.5) * 0.5; bg.width = Math.max(2, Math.round(b.width * k)); bg.height = Math.max(2, Math.round(b.height * k)); }
+    if (drawBg) { const b = bg.getBoundingClientRect(), k = Math.min(dpr, 2) * 0.5; bg.width = Math.max(2, Math.round(b.width * k)); bg.height = Math.max(2, Math.round(b.height * k)); }
     hero.querySelectorAll(".dial").forEach((d, i) => {
       const r = d.getBoundingClientRect(), g = rings[i]; if (!g) return;
       g.cx = r.left - hb.left + r.width / 2; g.cy = r.top - hb.top + r.height / 2; g.R = r.width * 0.43;
@@ -89,7 +99,7 @@ export function createDashFx(hero, { reduceMotion = false, pageHost = null } = {
         q.st += (tgt - q.st) * (1 - Math.exp(-dt * 6));
       }
       // sparks shed from the leading edge of the eaten arc
-      if (g.e > 0.01 && g.e < 0.995 && Math.random() < dt * 9) {
+      if (g.e > 0.01 && g.e < 0.995 && Math.random() < dt * 4) {
         const th = g.e * Math.PI * 2 - Math.PI / 2;
         g.sparks.push({ th, r: g.R, vr: 6 + Math.random() * 14, vt: 0.25 + Math.random() * 0.5, life: 0, max: 0.9 + Math.random() * 0.8 });
       }
@@ -102,7 +112,6 @@ export function createDashFx(hero, { reduceMotion = false, pageHost = null } = {
     const prog = rings[0].e;
     if (drawBg) drawBg(clock, Math.min(1, prog));
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
-    ctx.globalCompositeOperation = "lighter";
     for (const g of rings) {
       if (!g.R) continue;
       const head = g.e;
@@ -116,17 +125,16 @@ export function createDashFx(hero, { reduceMotion = false, pageHost = null } = {
         const lit = Math.max(0, st * 2 - 1);                     // 0 below planned, 1 when eaten
         const a = 0.1 + Math.min(1, st * 2) * 0.2 + lit * 0.7, size = (0.55 + st * 0.35 + lit * 0.45 + glow * 0.9) * q.sz;
         const x = g.cx + Math.cos(th) * R, y = g.cy + Math.sin(th) * R;
-        if (lit > 0.05) { const hs = (5 + glow * 7) * q.sz; ctx.globalAlpha = lit * (0.22 + glow * 0.35); ctx.drawImage(halo, x - hs, y - hs, hs * 2, hs * 2); ctx.globalAlpha = 1; }
-        ctx.fillStyle = `rgba(255,255,255,${Math.min(1, a).toFixed(3)})`;
+        if (lit > 0.05) { const hs = (5 + glow * 7) * q.sz; ctx.globalAlpha = lit * glow * 0.18; ctx.drawImage(halo, x - hs, y - hs, hs * 2, hs * 2); ctx.globalAlpha = 1; }
+        ctx.fillStyle = `rgba(20,20,20,${Math.min(1, a).toFixed(3)})`;
         ctx.beginPath(); ctx.arc(x, y, size, 0, 6.2832); ctx.fill();
       }
       for (const s of g.sparks) {
         const f = 1 - s.life / s.max;
-        ctx.fillStyle = `rgba(235,235,235,${(f * 0.8).toFixed(3)})`;
+        ctx.fillStyle = `rgba(20,20,20,${(f * 0.5).toFixed(3)})`;
         ctx.beginPath(); ctx.arc(g.cx + Math.cos(s.th) * s.r, g.cy + Math.sin(s.th) * s.r, 0.6 + f, 0, 6.2832); ctx.fill();
       }
     }
-    ctx.globalCompositeOperation = "source-over";
   }
 
   function frame(t) {

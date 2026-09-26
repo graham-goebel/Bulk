@@ -56,7 +56,7 @@ When it finishes, the log shows the Worker's address, something like `https://ga
 ## 6. Connect on each device
 
 1. Open https://graham-goebel.github.io/Bulk/.
-2. Tap the cloud icon at the top right. It opens Goals & settings on the Settings tab. Enter the passcode there. After that the icon shows sync state: a check when synced, spinning arrows while syncing, a warning when a sync fails (tap it for details).
+2. Tap the cloud icon at the top right. It opens Goals & settings on the Settings tab. Enter the passcode there. Once connected the icon goes away, and only comes back as a warning if a sync fails (tap it for details). Sync status is always shown in Goals & settings → Settings.
 3. Enter your passcode and tap **Save**. The status changes to "Notion: synced". The first sync creates the week's 42 rows in Meal Plan.
 
 To install it like an app: on iPhone or iPad, tap Share, then **Add to Home Screen**. On Android, open the browser menu and choose **Install app** or **Add to Home screen**.
@@ -78,6 +78,8 @@ Each row in Meal Plan has a **Time** column with the wall-clock time the meal is
 ## Marking meals eaten
 
 Only meals you mark as eaten count toward the day's progress. Tap **Mark eaten** on a meal in the Plan tab, on the next-meal card, or in a meal's detail sheet. Marking a meal also locks it so rebalancing won't swap it. Meals whose time has passed without being marked show as striped "not marked yet" on the calorie bar. The mark is stored in the **Eaten** column of Meal Plan, so it syncs across devices and you can tick it in Notion too.
+
+If you skip a meal, tap the skip icon (a circle with a line through it) next to the check, **Skipped** on the next-meal card once the meal is due, or **I skipped it** in the meal's sheet. A skipped meal comes out of the day's totals, and the day's other unlocked meals rebalance to make up for it. It's stored in the **Skipped** column of Meal Plan.
 
 ## Meal reminders
 
