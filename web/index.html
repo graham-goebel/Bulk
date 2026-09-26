@@ -279,7 +279,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .wg-now{position:absolute;left:0;right:0;border-top:1.5px solid var(--ink);z-index:2}
 .wg-hint{padding:0 24px;margin:6px 0 0;font-size:.8rem;color:var(--muted)}
 /* next meal */
-.next{position:relative;display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;width:calc(100% - 48px);margin:8px 24px 0;padding:15px 14px 15px 18px;text-align:left;
+.next{position:relative;display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;width:calc(100% - 48px);margin:14px 24px 0;padding:15px 14px 15px 18px;text-align:left;
   border-radius:22px;background:var(--ink);color:var(--bg)}
 
 .next .main{display:block;min-width:0;text-align:left;color:inherit}
@@ -431,7 +431,15 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .toast .msg{color:inherit;flex:1;min-width:0}
 .toast button{flex:none;color:#fff;font-weight:500;padding:4px 8px;margin:-4px -4px -4px 0;border-radius:8px;background:rgba(255,255,255,.14)}
 @media (min-width:900px){.toasts{bottom:calc(84px + env(safe-area-inset-bottom,0px))}}
-@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+@keyframes scrimIn{from{background:rgba(0,0,0,0)}}@keyframes scrimOut{to{background:rgba(0,0,0,0)}}
+@keyframes sheetUp{from{transform:translateY(100%)}}@keyframes sheetDown{to{transform:translateY(100%)}}
+@keyframes sheetIn{from{transform:translateY(28px) scale(.98);opacity:0}}@keyframes sheetOut{to{transform:translateY(20px) scale(.98);opacity:0}}
+.sheet-bg:not([hidden]){animation:scrimIn .28s ease-out}
+.sheet-bg:not([hidden])>.sheet{animation:sheetUp .42s cubic-bezier(.2,.8,.2,1)}
+.sheet-bg.closing{animation:scrimOut .26s ease-in forwards}
+.sheet-bg.closing>.sheet{animation:sheetDown .26s cubic-bezier(.5,0,.9,.6) forwards}
+@media (min-width:700px){.sheet-bg:not([hidden])>.sheet{animation-name:sheetIn;animation-duration:.3s}.sheet-bg.closing>.sheet{animation-name:sheetOut;animation-duration:.2s}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}.sheet-bg,.sheet-bg>.sheet{animation:none!important}}
 @media (max-width:639px){
   .hours{margin:18px 12px 0}
   .blk{left:42px}
@@ -483,7 +491,9 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   <section id="view-plan" class="narrow" aria-label="Plan">
    <div class="plan-side" id="dashMountPlan"></div>
    <div class="plan-main">
+    <div class="seg seg-row" role="group" aria-label="Plan view" id="planSeg"><button data-pv="cards" aria-pressed="true">Cards</button><button data-pv="list" aria-pressed="false">List</button></div>
     <div id="slots"></div>
+    <div id="planList" hidden></div>
 
     <div class="actions">
       <button class="txt" id="shuffle">Shuffle unlocked meals</button>
@@ -504,7 +514,6 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
     <div class="seg-row narrow" id="calSegRow">
       <div class="seg" role="group" aria-label="Calendar view">
         <button data-cv="hour" aria-pressed="true">Hour</button>
-        <button data-cv="day" aria-pressed="false">Day</button>
         <button data-cv="three" aria-pressed="false">3 days</button>
         <button data-cv="week" aria-pressed="false">Week</button>
       </div>
@@ -554,8 +563,8 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 </main>
 
 <div id="dashWrap">
-  <div class="hero" id="hero"><div class="rings" id="rings" aria-live="polite"></div></div>
   <div class="next" id="nextMeal" hidden></div>
+  <div class="hero" id="hero"><div class="rings" id="rings" aria-live="polite"></div></div>
   <div class="tiles" id="tiles"></div>
 </div>
 <div class="sheet-bg" id="goals" hidden><div class="sheet" id="goalsBox" role="dialog" aria-modal="true" aria-labelledby="goalsTitle">
@@ -798,9 +807,9 @@ if(!state){
     if(o&&Array.isArray(o.picks)&&o.picks.length===N){state.target=clamp(+o.target||3000,1800,4000);state.protein=clamp(+o.protein||110,60,200);
       state.days[0]={picks:o.picks.map((v,i)=>clamp(v|0,0,SLOTS[i].opts.length-1)),locked:SLOTS.map((_,i)=>!!(o.locked&&o.locked[i])),times:Array(N).fill(null),done:Array(N).fill(false),missed:Array(N).fill(false)}}}}catch(e){}
 }
-let ui={tab:"plan",day:0,cal:"hour",scope:"week"};
+let ui={tab:"plan",day:0,cal:"hour",scope:"week",pv:"cards"};
 const TABS=["plan","dash","cal","shop","pantry"];
-try{const u=JSON.parse(localStorage.getItem(UIKEY)||"null");if(u){ui.tab=TABS.includes(u.tab)?u.tab:"plan";ui.pl=["sphere","shelves","list"].includes(u.pl)?u.pl:"sphere";ui.day=clamp(u.day|0,0,D-1);ui.cal=["hour","day","three","week"].includes(u.cal)?u.cal:"hour";ui.scope=u.scope==="day"?"day":"week"}}catch(e){}
+try{const u=JSON.parse(localStorage.getItem(UIKEY)||"null");if(u){ui.tab=TABS.includes(u.tab)?u.tab:"plan";ui.pl=["sphere","shelves","list"].includes(u.pl)?u.pl:"sphere";ui.day=clamp(u.day|0,0,D-1);ui.cal=["hour","three","week"].includes(u.cal)?u.cal:"hour";ui.pv=u.pv==="list"?"list":"cards";ui.scope=u.scope==="day"?"day":"week"}}catch(e){}
 function saveUi(){try{localStorage.setItem(UIKEY,JSON.stringify(ui))}catch(e){}}
 function syncNames(){state.days.forEach(dy=>{dy.names=dy.picks.map((p,i)=>(SLOTS[i].opts[p]||{}).n||null)})}
 function saveLocal(){syncNames();try{localStorage.setItem(KEY2,JSON.stringify(state))}catch(e){}}
@@ -884,7 +893,7 @@ function renderStrip(){
     const inR=rg&&d>=rg[0]&&d<=rg[1];b.setAttribute("aria-label",longDate(d));b.setAttribute("aria-current",rg?!!inR:d===ui.day);
     if(rg?inR:d===ui.day)b.classList.add("in");
     if(isToday(d))b.classList.add("today");
-    b.onclick=()=>{ui.day=d;if(ui.tab==="cal"&&ui.cal==="week")ui.cal="day";if(ui.tab==="shop")ui.scope="day";saveUi();renderAll(false)};
+    b.onclick=()=>{ui.day=d;if(ui.tab==="cal"&&ui.cal==="week")ui.cal="hour";if(ui.tab==="shop")ui.scope="day";saveUi();renderAll(false)};
     el.appendChild(b);
   }
   placeStripBar(false);
@@ -972,7 +981,11 @@ function updatePlan(except=-1,smooth=true){
   $("kGoal").textContent=fmt(state.target);$("pGoal").textContent=`${state.protein} g`;
   document.querySelectorAll(".preset").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.v===state.target));
   renderMeter();renderNext();renderHead();
+  document.querySelectorAll("[data-pv]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.pv===ui.pv));
+  $("slots").hidden=ui.pv==="list";$("planList").hidden=ui.pv!=="list";
+  if(ui.pv==="list"){$("planList").innerHTML="";renderDay($("planList"))}
 }
+document.querySelectorAll("[data-pv]").forEach(b=>b.onclick=()=>{ui.pv=b.dataset.pv;saveUi();updatePlan(-1,false)});
 function renderSettings(){
   const el=$("times");el.innerHTML="";
   SLOTS.forEach((s,i)=>{
@@ -1017,8 +1030,8 @@ function renderMeter(){
   const showEaten=today||past||done.length>0;
   const ring=(planned,eaten,val,unit,c)=>`<div class="ring">${ringSvg(planned,eaten,val,unit,c.hex)}</div>`;
   $("rings").innerHTML=
-    ring(t.k/state.target,showEaten?ek/state.target:0,fmt(showEaten?ek:t.k),`of ${fmt(state.target)} kcal`,RING.k)+
-    ring(t.p/state.protein,showEaten?ep/state.protein:0,fmt(showEaten?ep:t.p),`of ${state.protein} g protein`,RING.p)+
+    ring(t.k/state.target,showEaten?ek/state.target:0,fmt(showEaten?ek:t.k),`${fmt(state.target)} kcal`,RING.k)+
+    ring(t.p/state.protein,showEaten?ep/state.protein:0,fmt(showEaten?ep:t.p),`${state.protein} g protein`,RING.p)+
     ring(ms.length?(ms.length-nMiss)/ms.length:1,ms.length?done.length/ms.length:0,showEaten?`${done.length}/${ms.length}`:String(ms.length),showEaten?(nMiss?`meals, ${nMiss} skipped`:"meals eaten"):"meals planned",RING.m);
   meterData=[{p:t.k/state.target,e:showEaten?ek/state.target:0,rgb:RING.k.rgb},{p:t.p/state.protein,e:showEaten?ep/state.protein:0,rgb:RING.p.rgb},{p:ms.length?(ms.length-nMiss)/ms.length:1,e:showEaten&&ms.length?done.length/ms.length:0,rgb:RING.m.rgb}];
   if(dashFx)dashFx.update(meterData);
@@ -1053,9 +1066,13 @@ let infoFocus=null;
 function tileModal(title,sub,bodyHtml){
   infoFocus=document.activeElement;
   $("infoBox").innerHTML=sheetHead(esc(sub||""),esc(title),{id:"infoTitle",close:"infoClose"})+bodyHtml;
-  $("infoBg").hidden=false;resetSheet($("infoBox"));document.body.style.overflow="hidden";$("infoClose").onclick=closeInfo;$("infoClose").focus();
+  showBg($("infoBg"));resetSheet($("infoBox"));document.body.style.overflow="hidden";$("infoClose").onclick=closeInfo;$("infoClose").focus();
 }
-function closeInfo(){$("infoBg").hidden=true;document.body.style.overflow="";if(infoFocus&&document.contains(infoFocus))infoFocus.focus()}
+// Sheets animate out, then hide. Opening one again cancels a close that's still running.
+function hideBg(bg){if(bg.hidden)return;clearTimeout(bg._t);if(reduceMotion){bg.hidden=true;return}
+  bg.classList.add("closing");bg._t=setTimeout(()=>{bg.hidden=true;bg.classList.remove("closing")},260)}
+function showBg(bg){clearTimeout(bg._t);bg.classList.remove("closing");bg.hidden=false}
+function closeInfo(){hideBg($("infoBg"));document.body.style.overflow="";if(infoFocus&&document.contains(infoFocus))infoFocus.focus()}
 $("infoBg").addEventListener("click",e=>{if(e.target===$("infoBg"))closeInfo()});
 document.addEventListener("keydown",e=>{
   if($("infoBg").hidden)return;
@@ -1116,7 +1133,7 @@ function openReminderAll(){
     <p class="sh-d">${list.length} upcoming meal${list.length===1?"":"s"} ${scopeTxt}.</p>
     <div class="rem-opts">${list.length?`<button class="rem-opt" data-a="0">At meal time</button><button class="rem-opt" data-a="10">10 minutes before</button><button class="rem-opt" data-a="30">30 minutes before</button>`:`<p class="hint">Nothing left to remind you about.</p>`}</div>
     <p class="hint" style="margin-top:14px">Opens your phone's Calendar with an alert for each meal. Tap Add All to save them.</p>`;
-  $("sheet").hidden=false;resetSheet($("sheetBox"));document.body.style.overflow="hidden";$("shClose").onclick=closeDetail;$("shClose").focus();
+  showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";$("shClose").onclick=closeDetail;$("shClose").focus();
   $("sheetBox").querySelectorAll(".rem-opt").forEach(b=>b.onclick=()=>{const a=+b.dataset.a;closeDetail();openCalendarFile(list.map(x=>reminderEvent(x.d,x.i,a)))});
 }
 $("calRemind").onclick=openReminderAll;
@@ -1131,7 +1148,7 @@ function openReminder(d,i){
     ${rest.length?`<label class="rem-all"><input type="checkbox" id="remAll"> Also the rest of ${isToday(d)?"today":wk(d,"long")}'s meals (${rest.length})</label>`:""}
     <p class="hint" style="margin-top:14px">Opens your phone's Calendar with an alert set. Tap <b>Add</b> (or <b>Add All</b>) to save it.</p>`;
   if(!$("sheetBox").querySelector(".rem-opt"))$("sheetBox").querySelector(".rem-opts").innerHTML=`<p class="hint">That meal time has passed.</p>`;
-  $("sheet").hidden=false;resetSheet($("sheetBox"));document.body.style.overflow="hidden";$("shClose").onclick=closeDetail;$("shClose").focus();
+  showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";$("shClose").onclick=closeDetail;$("shClose").focus();
   $("sheetBox").querySelectorAll(".rem-opt").forEach(b=>b.onclick=()=>{
     const a=+b.dataset.a,evs=[reminderEvent(d,i,a)];
     if($("remAll")&&$("remAll").checked)rest.forEach(m=>evs.push(reminderEvent(d,m.i,a)));
@@ -1181,10 +1198,10 @@ function gotoPlan(d,slot){
 }
 function renderCal(){
   document.querySelectorAll("[data-cv]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.cv===ui.cal));
-  document.getElementById("calSegRow").classList.toggle("narrow",ui.cal==="hour"||ui.cal==="day");
+  document.getElementById("calSegRow").classList.toggle("narrow",ui.cal==="hour");
   $("strip").hidden=false;renderStrip();
   const body=$("calBody");body.innerHTML="";
-  if(ui.cal==="hour")renderHour(body);else if(ui.cal==="day")renderDay(body);else renderWeek(body,ui.cal==="three"?3:D);
+  if(ui.cal==="hour")renderHour(body);else renderWeek(body,ui.cal==="three"?3:D);
 }
 function titleRow(d){
   const t=totals(d);const w=document.createElement("div");w.className="cal-title narrow";
@@ -1247,8 +1264,8 @@ function renderHour(body){
   body.appendChild(wrap);
 }
 function focusBlk(i,doFocus){const b=document.querySelector(`.blk[data-slot="${i}"]`);if(b&&doFocus)b.focus()}
+// The day as a list (Plan > List): time and meal type on the left, the meal and its macros on the right.
 function renderDay(body){
-  body.appendChild(titleRow(ui.day));
   const list=document.createElement("div");list.className="agenda narrow";
   mealsOf(ui.day).forEach(m=>{
     const b=document.createElement("button");b.className="ag"+(m.o.skip?" skipped":"");
@@ -1277,7 +1294,7 @@ function renderWeek(body,n=D){
     const h=document.createElement("button");h.className="wg-h"+(isToday(d)?" today":"")+(d===ui.day?" sel":"");
     h.innerHTML=`<b>${wk(d)} ${dayDate(d).getDate()}</b><span>${fmt(t.k)} kcal</span>${few?"":`<span>${fmt(t.p)} g protein</span>`}`;
     h.setAttribute("aria-label",`${longDate(d)}, ${fmt(t.k)} kcal. Open day view.`);
-    h.onclick=()=>{ui.day=d;ui.cal="day";saveUi();renderAll(false)};
+    h.onclick=()=>{ui.day=d;ui.cal="hour";saveUi();renderAll(false)};
     g.appendChild(h);
   }
   const ax=document.createElement("div");ax.className="wg-ax";ax.style.height=H+"px";
@@ -1303,7 +1320,7 @@ function renderWeek(body,n=D){
   const top=document.createElement("div");top.className="cal-title";
   const md=d=>dayDate(d).toLocaleDateString("en-US",{month:"short",day:"numeric"});
   top.innerHTML=`<h2>${md(days[0])} to ${md(days[n-1])}</h2>`;
-  const hint=document.createElement("p");hint.className="wg-hint";hint.textContent=few?"Tap a meal for the recipe. Pick a date above to move the three days.":"Tap a meal for the recipe, or a day for its details. Drag meals to new times in the Hour view.";
+  const hint=document.createElement("p");hint.className="wg-hint";hint.textContent=few?"Tap a meal for the recipe. Pick a date above to move the three days.":"Tap a meal for the recipe, or a day to see its hours. Drag meals to new times in the Hour view.";
   body.append(top,hint,wrap);
   if(few)return;
   requestAnimationFrame(()=>{const sc=wrap.querySelector(".wg-h.today")||wrap.querySelector(".wg-h.sel");if(sc&&wrap.scrollWidth>wrap.clientWidth)wrap.scrollLeft=Math.max(0,sc.offsetLeft-60)});
@@ -1433,8 +1450,8 @@ function sheetHead(eyebrow,title,{id="shTitle",close="shClose",more=null}={}){
 }
 function resetSheet(box){box.scrollTop=0;box.style.setProperty("--p","0")}
 function refreshBehind(){if(ui.tab==="cal")renderCal();else if(ui.tab==="plan")updatePlan(-1,false)}
-function openDetail(d,i){sheetCtx={d,i};sheetFocus=document.activeElement;renderSheet();resetSheet($("sheetBox"));$("sheet").hidden=false;document.body.style.overflow="hidden";const c=$("shClose");if(c)c.focus()}
-function closeDetail(){$("sheet").hidden=true;document.body.style.overflow="";sheetCtx=null;if(P3)P3.select(null);
+function openDetail(d,i){sheetCtx={d,i};sheetFocus=document.activeElement;renderSheet();resetSheet($("sheetBox"));showBg($("sheet"));document.body.style.overflow="hidden";const c=$("shClose");if(c)c.focus()}
+function closeDetail(){hideBg($("sheet"));document.body.style.overflow="";sheetCtx=null;if(P3)P3.select(null);
   const slot=sheetFocus&&sheetFocus.dataset?sheetFocus.dataset.slot:null;
   if(sheetFocus&&document.contains(sheetFocus))sheetFocus.focus();else if(slot!=null)focusBlk(slot,true)}
 function renderSheet(){
@@ -1657,9 +1674,9 @@ let goalsFocus=null;
 function goalsTab(t){document.querySelectorAll("[data-gt]").forEach(b=>b.setAttribute("aria-selected",b.dataset.gt===t));$("gpGoals").hidden=t!=="goals";$("gpSettings").hidden=t!=="settings";
   $("goalsBox").style.setProperty("--p",Math.min(1,$(t==="goals"?"gpGoals":"gpSettings").scrollTop/72).toFixed(3))}
 document.querySelectorAll("[data-gt]").forEach(b=>b.onclick=()=>goalsTab(b.dataset.gt));
-function openGoals(focusId,tab){goalsFocus=document.activeElement;renderSettings();$("gpGoals").scrollTop=$("gpSettings").scrollTop=0;goalsTab(tab||(focusId==="passcode"?"settings":"goals"));$("goals").hidden=false;document.body.style.overflow="hidden";
+function openGoals(focusId,tab){goalsFocus=document.activeElement;renderSettings();$("gpGoals").scrollTop=$("gpSettings").scrollTop=0;goalsTab(tab||(focusId==="passcode"?"settings":"goals"));showBg($("goals"));document.body.style.overflow="hidden";
   setTimeout(()=>{const el=$(focusId||"goalsClose");if(el){el.focus();if(focusId)el.scrollIntoView({block:"center"})}},30)}
-function closeGoals(){$("goals").hidden=true;document.body.style.overflow="";if(goalsFocus&&document.contains(goalsFocus))goalsFocus.focus()}
+function closeGoals(){hideBg($("goals"));document.body.style.overflow="";if(goalsFocus&&document.contains(goalsFocus))goalsFocus.focus()}
 $("goalsBtn").onclick=()=>openGoals();$("goalsClose").onclick=closeGoals;
 $("goals").addEventListener("click",e=>{if(e.target===$("goals"))closeGoals()});
 document.addEventListener("keydown",e=>{
@@ -1965,7 +1982,7 @@ function openPantryItem(it){
     <p class="msg" id="pfNutMsg" role="status"></p>
     <details class="pf-ocr" id="pfOcr" hidden><summary>Text read from the label</summary><pre id="pfOcrText"></pre></details>
     <div class="sh-foot"><button class="btn" id="pfSave">${isNew?"Add":"Save"}</button><span class="msg" id="pfMsg" role="status"></span></div>`;
-  $("sheet").hidden=false;resetSheet($("sheetBox"));document.body.style.overflow="hidden";
+  showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";
   $("shClose").onclick=closeDetail;
   const q=$("pfQty");$("pfMinus").onclick=()=>{q.value=Math.max(0,(+q.value||0)-1)};$("pfPlus").onclick=()=>{q.value=(+q.value||0)+1};
   if(isNew)$("pfName").addEventListener("change",e=>{const g=guessPlace(e.target.value);$("pfLoc").value=g.location;$("pfCat").value=g.category});
