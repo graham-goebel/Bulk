@@ -34,8 +34,9 @@ jobs:
           grep -o -i -E 'robot or human|px-captcha|captcha|__NEXT_DATA__|og:image[^>]{0,200}' page.html | head -8 || true
       - name: Search Open Food Facts by the name in the link
         run: |
-          q=$(node -e 'const u=new URL(process.env.PRODUCT_URL);const seg=u.pathname.split("/").filter(Boolean);const s=seg.find(x=>/[a-z]-[a-z]/i.test(x))||"";console.log(s.replace(/-/g," "))')
-          echo "query: $q"
-          enc=$(node -e 'console.log(encodeURIComponent(process.argv[1]))' "$q")
-          echo "--- search.pl"; curl -s --max-time 30 -A "GainPlanner/1.0 (github.com/graham-goebel/Bulk)" "https://world.openfoodfacts.org/cgi/search.pl?search_terms=$enc&search_simple=1&json=1&page_size=4&fields=product_name,brands,image_front_url,serving_size,nutriments" | head -c 2500; echo
-          echo "--- search-a-licious"; curl -s --max-time 30 -A "GainPlanner/1.0 (github.com/graham-goebel/Bulk)" "https://search.openfoodfacts.org/search?q=$enc&page_size=4&fields=product_name,brands,image_front_url,serving_size" | head -c 1500; echo
+          UA="GainPlanner/1.0 (github.com/graham-goebel/Bulk)"
+          q=$(node -e 'const u=new URL(process.env.PRODUCT_URL);const seg=u.pathname.split("/").filter(Boolean).sort((a,b)=>b.length-a.length);let s=(seg.find(x=>/[a-z]{2,}-[a-z]{2,}/i.test(x))||"").replace(/[-_]+/g," ");s=s.replace(/\b\d+(\.\d+)?\s*(fl|oz|ounce|ounces|lb|lbs|pound|g|kg|ml|l|gallon|gal|ct|count|pack|pk|qt|quart|pt|pint)\b/gi," ").replace(/\b(fl|oz)\b/gi," ").replace(/\b\d+\b/g," ").replace(/\s+/g," ").trim();console.log(s)')
+          echo "query: $q"; enc=$(node -e 'console.log(encodeURIComponent(process.argv[1]))' "$q")
+          F="fields=code,product_name,brands,image_front_url,serving_size,nutriments"
+          echo "--- search.pl US"; curl -s --max-time 30 -A "$UA" "https://world.openfoodfacts.org/cgi/search.pl?search_terms=$enc&search_simple=1&json=1&page_size=4&tagtype_0=countries&tag_contains_0=contains&tag_0=united-states&$F" | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>{try{const j=JSON.parse(d);console.log("count",j.count);(j.products||[]).forEach(p=>console.log(JSON.stringify({n:p.product_name,b:p.brands,i:p.image_front_url,s:p.serving_size,k:(p.nutriments||{})["energy-kcal_serving"],pr:(p.nutriments||{}).proteins_serving})))}catch(e){console.log(d.slice(0,300))}})'
+          echo "--- search-a-licious US"; curl -s --max-time 30 -A "$UA" "https://search.openfoodfacts.org/search?q=$(node -e 'console.log(encodeURIComponent(process.argv[1]+" countries_tags:\"en:united-states\""))' "$q")&page_size=4&$F" | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>{try{const j=JSON.parse(d);(j.hits||[]).forEach(p=>console.log(JSON.stringify({n:p.product_name,b:p.brands,i:p.image_front_url,s:p.serving_size})))}catch(e){console.log(d.slice(0,300))}})'
