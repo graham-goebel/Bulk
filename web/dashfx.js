@@ -62,7 +62,7 @@ const COUNT = 120;
 function makeRing(seed) {
   let s = seed * 9301 + 49297; const rnd = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
   const ps = [];
-  for (let i = 0; i < COUNT; i++) ps.push({ a: i / COUNT + rnd() * 0.004, rj: rnd() * 2 - 1, sp: 0.018 + rnd() * 0.01, ph: rnd() * 6.28, st: 0, sz: 0.7 + rnd() * 0.6 });
+  for (let i = 0; i < COUNT; i++) ps.push({ a: i / COUNT + rnd() * 0.004, rj: rnd() * 2 - 1, sp: 0.003 + rnd() * 0.002, ph: rnd() * 6.28, st: 0, sz: 0.7 + rnd() * 0.6 });
   return { ps, e: 0, p: 0, te: 0, tp: 0, sparks: [], cx: 0, cy: 0, R: 0 };
 }
 
@@ -100,11 +100,6 @@ export function createDashFx(hero, { reduceMotion = false, pageHost = null } = {
         const tgt = q.a < g.e ? 1 : q.a < g.p ? 0.5 : 0;
         q.st += (tgt - q.st) * (1 - Math.exp(-dt * 6));
       }
-      // sparks shed from the leading edge of the eaten arc
-      if (g.e > 0.01 && g.e < 0.995 && Math.random() < dt * 4) {
-        const th = g.e * Math.PI * 2 - Math.PI / 2;
-        g.sparks.push({ th, r: g.R, vr: 6 + Math.random() * 14, vt: 0.25 + Math.random() * 0.5, life: 0, max: 0.9 + Math.random() * 0.8 });
-      }
       for (const s of g.sparks) { s.life += dt; s.r += s.vr * dt; s.th += s.vt * dt; }
       g.sparks = g.sparks.filter(s => s.life < s.max);
     }
@@ -123,7 +118,7 @@ export function createDashFx(hero, { reduceMotion = false, pageHost = null } = {
       for (const q of g.ps) {
         const th = q.a * Math.PI * 2 - Math.PI / 2, st = q.st;
         const loose = 1 - Math.min(1, st * 2);                   // 1 for dust, 0 once planned or eaten
-        const wob = Math.sin(clock * 0.9 + q.ph) * (0.015 + loose * 0.02);
+        const wob = Math.sin(clock * 0.4 + q.ph) * (0.004 + loose * 0.006);
         const R = g.R * (1 + q.rj * (0.03 + loose * 0.025) + wob);
         let d = Math.abs(q.a - head); d = Math.min(d, 1 - d);
         const glow = head > 0.01 && head < 0.995 ? Math.exp(-((d / 0.035) ** 2)) : 0;
