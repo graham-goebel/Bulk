@@ -206,6 +206,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .note{padding:18px 24px 0;margin:0;font-size:.8rem;color:var(--muted)}
 
 .seg-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 24px 4px}
+.seg-row.end{justify-content:flex-end}
 .seg.seg-row{justify-content:flex-start;gap:22px}
 .seg{display:flex;gap:22px}
 .seg button{color:var(--muted);font-size:.92rem;padding:6px 0;border-bottom:1.5px solid transparent}
@@ -519,6 +520,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   <div class="head-r">
     <button class="icon-btn sync-btn" id="notionBtn" hidden aria-label="Notion" title="Notion"><svg class="ic" aria-hidden="true"><use href="#i-cloud"/></svg></button>
     <button class="icon-btn span-btn" id="spanBtn" aria-label="Days shown" title="Days shown"></button>
+    <button class="icon-btn" id="plBtn" hidden aria-label="Pantry view" title="Pantry view"></button>
     <button class="icon-btn" id="goalsBtn" aria-haspopup="dialog" aria-label="Goals and settings" title="Goals and settings"><svg class="ic" aria-hidden="true"><use href="#i-cog"/></svg></button>
   </div>
 </header>
@@ -550,12 +552,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 
   <!-- CALENDAR -->
   <section id="view-cal" aria-label="Calendar" hidden>
-    <div class="seg-row narrow" id="calSegRow">
-      <div class="seg" role="group" aria-label="Calendar view">
-        <button data-cv="hour" aria-pressed="true">Day</button>
-        <button data-cv="three" aria-pressed="false">3 days</button>
-        <button data-cv="week" aria-pressed="false">Week</button>
-      </div>
+    <div class="seg-row narrow end" id="calSegRow">
       <button class="icon-btn sm" id="calRemind" aria-label="Remind me about these meals" title="Remind me"><svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg></button>
     </div>
     <div id="calBody"></div>
@@ -563,9 +560,6 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 
   <!-- SHOP -->
   <section id="view-shop" class="narrow" aria-label="Shopping list" hidden>
-    <div class="seg seg-row" role="group" aria-label="List covers">
-      <button data-sc="day" aria-pressed="false">Day</button><button data-sc="three" aria-pressed="false">3 days</button><button data-sc="week" aria-pressed="true">Week</button>
-    </div>
     <div class="list" id="listBody"></div>
     <div class="foot">
       <button class="pdf with-ic" id="shopPdf" hidden><svg class="ic" aria-hidden="true"><use href="#i-down"/></svg>Download PDF</button>
@@ -586,9 +580,6 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
       </aside>
       <div class="pan-stage">
         <div class="pan-tools">
-          <div class="pan-seg" role="group" aria-label="View">
-            <button data-pl="sphere" aria-pressed="true" class="with-ic"><svg class="ic" aria-hidden="true"><use href="#i-sphere"/></svg>Sphere</button><button data-pl="shelves" aria-pressed="false" class="with-ic"><svg class="ic" aria-hidden="true"><use href="#i-shelves"/></svg>Shelves</button><button data-pl="list" aria-pressed="false" class="with-ic"><svg class="ic" aria-hidden="true"><use href="#i-list"/></svg>List</button>
-          </div>
           <button class="pan-btn" id="pMax" aria-pressed="false" aria-label="Full screen" title="Full screen"><svg class="ic" aria-hidden="true"><use href="#i-grow"/></svg></button>
           <button class="pan-btn primary with-ic" id="pAdd"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>Add</button>
         </div>
@@ -846,7 +837,7 @@ if(!state){
     if(o&&Array.isArray(o.picks)&&o.picks.length===N){state.target=clamp(+o.target||3000,1800,4000);state.protein=clamp(+o.protein||110,60,200);
       state.days[0]={picks:o.picks.map((v,i)=>clamp(v|0,0,SLOTS[i].opts.length-1)),locked:SLOTS.map((_,i)=>!!(o.locked&&o.locked[i])),times:Array(N).fill(null),done:Array(N).fill(false),missed:Array(N).fill(false)}}}}catch(e){}
 }
-let ui={tab:"plan",day:0,cal:"hour",scope:"week",pv:"cards",span:1};
+let ui={tab:"plan",day:0,cal:"hour",scope:"week",pv:"cards",pl:"sphere",span:1};
 const TABS=["plan","dash","cal","shop","pantry"];
 try{const u=JSON.parse(localStorage.getItem(UIKEY)||"null");if(u){ui.tab=TABS.includes(u.tab)?u.tab:"plan";ui.pl=["sphere","shelves","list"].includes(u.pl)?u.pl:"sphere";ui.day=clamp(u.day|0,0,D-1);ui.cal=["hour","three","week"].includes(u.cal)?u.cal:"hour";ui.pv=u.pv==="list"?"list":"cards";ui.scope=u.scope==="day"?"day":"week";ui.span=[1,3,7].includes(u.span)?u.span:ui.cal==="week"?7:ui.cal==="three"?3:1}}catch(e){}
 // One setting for how many days every tab shows (the header button cycles it): the calendar view, the
@@ -1302,7 +1293,6 @@ function gotoPlan(d,slot){
   requestAnimationFrame(()=>{const s=T[slot].sec;s.scrollIntoView({behavior:reduceMotion?"auto":"smooth",block:"center"})});
 }
 function renderCal(){
-  document.querySelectorAll("[data-cv]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.cv===ui.cal));
   document.getElementById("calSegRow").classList.toggle("narrow",ui.cal==="hour");
   $("strip").hidden=false;renderStrip();
   const body=$("calBody");body.innerHTML="";
@@ -1441,7 +1431,6 @@ function renderWeek(body,n=D){
   btn.onclick=()=>savePdf(btn,msg,weekPdf,`meal-plan-${state.startDate}.pdf`);
   f.append(btn,msg);body.appendChild(f);
 }
-document.querySelectorAll("[data-cv]").forEach(b=>b.onclick=()=>{setSpan({hour:1,three:3,week:7}[b.dataset.cv]);saveUi();renderAll(false)});
 
 /* ---------- shopping ---------- */
 function frac(q){const w=Math.floor(q),r=Math.round((q-w)*4)/4,whole=r===1?w+1:w,f=r===1?0:r;const fs=f===0.25?"1/4":f===0.5?"1/2":f===0.75?"3/4":"";return whole&&fs?`${whole} ${fs}`:whole?`${whole}`:(fs||"1/4")}
@@ -1462,7 +1451,6 @@ function buildList(){
 }
 function scopeLabel(){const[a,b]=spanRange();return a===b?longDate(a):`${shortDate(a)} to ${shortDate(b)}`}
 function renderShop(){
-  document.querySelectorAll("[data-sc]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.sc===ui.scope));
   const body=$("listBody");body.innerHTML="";const checked=new Set(state.checked);
   buildList().forEach(g=>{
     const sec=document.createElement("section");sec.className="grp";
@@ -1479,7 +1467,6 @@ function renderShop(){
     body.appendChild(sec);
   });
 }
-document.querySelectorAll("[data-sc]").forEach(b=>b.onclick=()=>{setSpan({day:1,three:3,week:7}[b.dataset.sc]);saveUi();renderAll(false)});
 $("clearChecks").onclick=()=>{state.checked=[];save();renderShop()};
 $("shopPdf").onclick=()=>savePdf($("shopPdf"),$("shopMsg"),shopPdf,ui.span===7?`shopping-list-week-${state.startDate}.pdf`:`shopping-list-${iso(dayDate(spanRange()[0]))}${ui.span===3?"-3-days":""}.pdf`);
 
@@ -1613,7 +1600,7 @@ function renderSpanBtn(){
 }
 $("spanBtn").onclick=()=>{setSpan(ui.span===1?3:ui.span===3?7:1);saveUi();renderAll(false)};
 function renderHead(){
-  let k="",t="";renderSpanBtn();
+  let k="",t="";renderSpanBtn();renderPlBtn();
   if((ui.tab==="plan"||ui.tab==="dash")&&ui.span>1){k=spanKick();t=ui.tab==="dash"?"Dashboard":ui.span===7?"This week":"3 days"}
   else if(ui.tab==="plan"||ui.tab==="dash"){const d=ui.day,dd=dayDate(d),today=isToday(d),tmr=iso(dd)===iso(new Date(Date.now()+864e5)),yst=iso(dd)===iso(new Date(Date.now()-864e5));
     k=dd.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"});t=ui.tab==="dash"?"Dashboard":today?"Today":tmr?"Tomorrow":yst?"Yesterday":wk(d,"long")}
@@ -2011,7 +1998,7 @@ function renderPantry(){
   $("pCount").textContent=`${list.length} of ${pantry.length} item${pantry.length===1?"":"s"}`;
   $("pReset").hidden=!(pf.q||pf.loc.size||pf.cat.size||pf.st.size);
   renderPantryFilters();
-  document.querySelectorAll("[data-pl]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.pl===ui.pl));
+  renderPlBtn();
   const listMode=ui.pl==="list"||p3Failed;
   $("pCanvas").hidden=listMode;$("pList").hidden=!listMode;$("pMax").hidden=listMode;
   const em=$("pEmpty");em.hidden=!!list.length;
@@ -2055,11 +2042,20 @@ function openPantry(){
   renderPantry();pantryLoad(false);sizePantryMobile();
   if(ui.pl!=="list")ensureScene().then(s=>{if(s&&ui.tab==="pantry"&&ui.pl!=="list"){s.resize();s.start()}});
 }
-document.querySelectorAll("[data-pl]").forEach(b=>b.onclick=()=>{
-  ui.pl=b.dataset.pl;saveUi();renderPantry();
+// One button cycles the pantry between its three views (sphere, shelves, list), like the days-shown button elsewhere.
+const PL_ORDER=["sphere","shelves","list"],PL_ICON={sphere:"i-sphere",shelves:"i-shelves",list:"i-list"},PL_LABEL={sphere:"Sphere",shelves:"Shelves",list:"List"};
+function renderPlBtn(){
+  const b=$("plBtn");b.hidden=ui.tab!=="pantry";
+  const next=PL_ORDER[(PL_ORDER.indexOf(ui.pl)+1)%PL_ORDER.length];
+  b.innerHTML=`<svg class="ic" aria-hidden="true"><use href="#${PL_ICON[ui.pl]}"/></svg>`;
+  b.setAttribute("aria-label",`${PL_LABEL[ui.pl]} view. Show ${PL_LABEL[next]}`);b.title=b.getAttribute("aria-label");
+}
+function setPantryView(v){
+  ui.pl=v;saveUi();renderPantry();
   if(ui.pl==="list"){if(P3)P3.stop();return}
   ensureScene().then(s=>{if(s){s.setLayout(ui.pl);s.resize();s.start()}});
-});
+}
+$("plBtn").onclick=()=>setPantryView(PL_ORDER[(PL_ORDER.indexOf(ui.pl)+1)%PL_ORDER.length]);
 $("pSearch").addEventListener("input",e=>{pf.q=e.target.value;renderPantry()});
 $("pReset").onclick=()=>{pf.q="";$("pSearch").value="";pf.loc.clear();pf.cat.clear();pf.st.clear();renderPantry()};
 $("pMax").onclick=()=>{const on=$("pan").classList.toggle("max");$("pMax").setAttribute("aria-pressed",on);$("pMax").setAttribute("aria-label",on?"Exit full screen":"Full screen");$("pMax").innerHTML=on?'<svg class="ic" aria-hidden="true"><use href="#i-shrink"/></svg>':'<svg class="ic" aria-hidden="true"><use href="#i-grow"/></svg>';if(P3)requestAnimationFrame(()=>P3.resize())};
