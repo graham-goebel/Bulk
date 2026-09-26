@@ -56,7 +56,7 @@ When it finishes, the log shows the Worker's address, something like `https://ga
 ## 6. Connect on each device
 
 1. Open https://graham-goebel.github.io/Bulk/.
-2. Tap **Connect Notion** at the top right. It opens Goals & schedule.
+2. Tap the cloud icon at the top right. It opens Goals & settings on the Settings tab. Enter the passcode there. After that the icon shows sync state: a check when synced, spinning arrows while syncing, a warning when a sync fails (tap it for details).
 3. Enter your passcode and tap **Save**. The status changes to "Notion: synced". The first sync creates the week's 42 rows in Meal Plan.
 
 To install it like an app: on iPhone or iPad, tap Share, then **Add to Home Screen**. On Android, open the browser menu and choose **Install app** or **Add to Home screen**.
@@ -109,7 +109,7 @@ Every week adds 42 rows to Meal Plan. They're kept as history by default. To tid
 
 | Message | What to do |
 |---|---|
-| Connect Notion | Enter your passcode in Goals & schedule. |
+| Connect Notion | Enter your passcode in Goals & settings → Settings. |
 | Wrong passcode | Re-enter it. It must match `APP_PASSCODE` exactly. |
 | This site isn't on the server's allowed list | Fix `ALLOWED_ORIGINS` in `worker/wrangler.toml` (origin only, no path, no trailing slash) and deploy the Worker again. |
 | The server is missing its settings | Add the `NOTION_TOKEN` and `APP_PASSCODE` secrets, then deploy the Worker again. |
