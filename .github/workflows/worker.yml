@@ -44,26 +44,26 @@ jobs:
         if: steps.check.outputs.ready == 'true'
         run: node --check worker/src/index.js
 
+      - name: Install Wrangler
+        if: steps.check.outputs.ready == 'true'
+        working-directory: worker
+        run: npm install --no-audit --no-fund
+
+      - name: Deploy
+        if: steps.check.outputs.ready == 'true'
+        working-directory: worker
+        run: npx wrangler deploy
+
       # Only secrets that are set get uploaded, so ones already set with
       # `wrangler secret put` or the Cloudflare dashboard are left alone.
-      - name: Pick Worker secrets
-        id: secrets
+      - name: Upload Worker secrets
         if: steps.check.outputs.ready == 'true'
+        working-directory: worker
         run: |
-          names=""
-          [ -n "$NOTION_TOKEN" ] && names="$names NOTION_TOKEN"
-          [ -n "$APP_PASSCODE" ] && names="$names APP_PASSCODE"
-          {
-            echo "names<<EOF"
-            for n in $names; do echo "$n"; done
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-
-      - uses: cloudflare/wrangler-action@v3
-        if: steps.check.outputs.ready == 'true'
-        with:
-          apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: worker
-          wranglerVersion: "4"
-          secrets: ${{ steps.secrets.outputs.names }}
+          for name in NOTION_TOKEN APP_PASSCODE; do
+            if [ -n "${!name}" ]; then
+              printf '%s' "${!name}" | npx wrangler secret put "$name"
+            else
+              echo "$name not set in GitHub secrets; leaving the Worker's value alone."
+            fi
+          done
