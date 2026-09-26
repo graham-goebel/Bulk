@@ -81,9 +81,13 @@ Only meals you mark as eaten count toward the day's progress. Tap a meal's **⋯
 
 If you skip a meal, choose **I skipped it** from its **⋯** menu or in its sheet, or tap **Skipped** on the next-meal card once the meal is due. A skipped meal comes out of the day's totals, and the day's other unlocked meals rebalance to make up for it. It's stored in the **Skipped** column of Meal Plan.
 
+## Day status
+
+Below the rings on the Dashboard, a bar shows the whole day from the first meal to the last, with a dot for each meal, a mark for the current time, and a one-line status: on track, behind by some calories, goal met, or short at the end of the day. A meal counts toward "behind" only once it's an hour past its start time, so you aren't flagged the moment a meal begins. The next-meal card says a meal "is now" for five minutes after it starts, then how long ago it started.
+
 ## Meal reminders
 
-Tap the bell on the next-meal card, or **Remind me** in a meal's sheet, and choose when to be alerted (at meal time, 10 or 30 minutes before). You can include the rest of the day's meals too. On the Calendar tab, the bell next to Hour/Day/Week does the same for every upcoming meal in view (the day, or the whole week). The app opens a calendar invite with the alert already set; tap **Add** (or **Add All**) and your phone's Calendar handles the reminder, even when the app is closed. The invite is built by the Worker's `/ics` endpoint, which needs no passcode because it only turns the meal name, time and calories it's given into a calendar file.
+Tap the bell on the next-meal card, or **Remind me** in a meal's sheet, and choose when to be alerted (at meal time, 10 or 30 minutes before). You can include the rest of the day's meals too. On the Calendar tab, the bell next to Day/3 days/Week does the same for every upcoming meal in view (the day, or the whole week). The app opens a calendar invite with the alert already set; tap **Add** (or **Add All**) and your phone's Calendar handles the reminder, even when the app is closed. The invite is built by the Worker's `/ics` endpoint, which needs no passcode because it only turns the meal name, time and calories it's given into a calendar file.
 
 ## Shake to shuffle
 

@@ -101,6 +101,18 @@ main{max-width:960px;margin:0 auto;padding-bottom:calc(100px + env(safe-area-ins
 .hero.fx-on .dial svg{visibility:hidden}
 .dial .val{position:relative;font-size:22px;font-weight:500;letter-spacing:-0.03em;line-height:1.1}
 .dial .unit{position:relative;max-width:74%;text-align:center;line-height:1.25;font-size:10.5px;color:var(--muted);letter-spacing:0;margin-top:3px}
+.dayline{margin:4px 24px 0;padding:14px 16px 12px;border-radius:20px;background:var(--soft)}
+.dl-top{display:flex;flex-direction:column;gap:2px;margin-bottom:14px}
+.dl-st{display:flex;align-items:center;gap:6px;font-size:.95rem;font-weight:500}.dl-st .ic{width:16px;height:16px;color:var(--muted)}.dl-st.warn .ic{color:#b23a2a}
+.dl-sub{font-size:.8rem;color:var(--muted);}
+.dl-bar{position:relative;height:8px;margin:0 6px;border-radius:4px;background:rgba(0,0,0,.07)}
+.dl-el{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:rgba(0,0,0,.14)}
+.dl-bar .mk{position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--card);box-shadow:inset 0 0 0 2px #1baf7a}
+.dl-bar .mk.on{background:#1baf7a;box-shadow:0 0 0 2px var(--soft)}
+.dl-bar .mk.due{box-shadow:inset 0 0 0 2px var(--ink)}
+.dl-bar .mk.miss{width:8px;height:8px;margin:-4px 0 0 -4px;background:rgba(0,0,0,.2);box-shadow:none}
+.dl-now{position:absolute;top:-6px;bottom:-6px;width:2px;margin-left:-1px;border-radius:1px;background:var(--ink)}
+.dl-ax{display:flex;justify-content:space-between;margin-top:8px;font-size:.72rem;color:var(--muted)}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 24px 22px}
 .tile{display:block;width:100%;text-align:left;background:var(--soft);border-radius:20px;padding:14px 16px 15px;min-width:0}
 button.tile:hover{outline:1px solid var(--line)}
@@ -182,9 +194,9 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .seg{display:flex;gap:22px}
 .seg button{color:var(--muted);font-size:.92rem;padding:6px 0;border-bottom:1.5px solid transparent}
 .seg button[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--ink)}
-.cal-title{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:14px 24px 6px}
+.cal-title{display:block;padding:14px 24px 6px}
 .cal-title h2{margin:0;font-size:1.35rem;font-weight:400;letter-spacing:-0.02em}
-.cal-title span{font-size:.85rem;color:var(--muted)}
+.cal-title span{display:block;margin-top:2px;font-size:.85rem;color:var(--muted)}
 
 .hours{position:relative;margin:18px 24px 0}
 .hr{height:60px;border-top:1px solid var(--line);position:relative}
@@ -513,7 +525,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   <section id="view-cal" aria-label="Calendar" hidden>
     <div class="seg-row narrow" id="calSegRow">
       <div class="seg" role="group" aria-label="Calendar view">
-        <button data-cv="hour" aria-pressed="true">Hour</button>
+        <button data-cv="hour" aria-pressed="true">Day</button>
         <button data-cv="three" aria-pressed="false">3 days</button>
         <button data-cv="week" aria-pressed="false">Week</button>
       </div>
@@ -565,6 +577,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 <div id="dashWrap">
   <div class="next" id="nextMeal" hidden></div>
   <div class="hero" id="hero"><div class="rings" id="rings" aria-live="polite"></div></div>
+  <div class="dayline" id="dayline" hidden></div>
   <div class="tiles" id="tiles"></div>
 </div>
 <div class="sheet-bg" id="goals" hidden><div class="sheet" id="goalsBox" role="dialog" aria-modal="true" aria-labelledby="goalsTitle">
@@ -1024,6 +1037,27 @@ function ringSvg(planned,eaten,val,unit,col){
   return `<div class="dial"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="${r}" fill="none" stroke="rgba(0,0,0,.06)" stroke-width="6"/>${arc(planned,.3)}${arc(eaten,1)}</svg>
     <span class="val">${val}</span><span class="unit">${unit}</span></div>`;
 }
+// The whole day at a glance: each meal on a timeline (eaten, skipped, due, to come), the part of the day
+// that's gone by, and whether the calories eaten keep pace with the meals that were due by now.
+function renderDayline(d,ms,ek,t){
+  const el=$("dayline");if(!ms.length){el.hidden=true;return}
+  const now=new Date(),nm=now.getHours()*60+now.getMinutes(),today=isToday(d),past=iso(dayDate(d))<iso(now),future=!today&&!past;
+  const times=ms.map(m=>mins(m.time)),first=Math.min(...times),last=Math.max(...times),t0=first-30,t1=last+30,pos=v=>clamp((v-t0)/(t1-t0),0,1)*100;
+  // a meal is "due" on the timeline once it starts, but only counts against the day an hour later
+  const due=m=>!m.missed&&(past||today&&mins(m.time)<=nm),owed=m=>!m.missed&&(past||today&&mins(m.time)+60<=nm);
+  const expected=ms.filter(owed).reduce((a,m)=>a+m.o.k,0)+ms.filter(m=>m.done&&!owed(m)).reduce((a,m)=>a+m.o.k,0),gap=expected-ek;
+  let kind="info",text,sub="";
+  if(future){text=`${ms.length} meals planned`;sub=`first at ${fmtTime(ms[0].time)}`}
+  else if(today&&!ms.some(due)&&!ek){text="Day hasn't started";sub=`first meal at ${fmtTime(ms[0].time)}`}
+  else if(gap<=100){kind="ok";text=past||today&&nm>last?(ek>=state.target-100?"Goal met":"Day done"):"On track";sub=`${fmt(ek)} of ${fmt(past?t.k:expected)} kcal${past?"":" so far"}`}
+  else{kind="warn";text=past?`${fmt(gap)} kcal short`:`Behind by ${fmt(gap)} kcal`;sub=`${fmt(ek)} of ${fmt(expected)} kcal due by now`}
+  const nowP=today?pos(nm):past?100:0;
+  const marks=ms.map(m=>{const st=m.done?"on":m.missed?"miss":due(m)?"due":"";return `<i class="mk ${st}" style="left:${pos(mins(m.time)).toFixed(1)}%" title="${esc(m.slot)} ${fmtTime(m.time)}${m.done?", eaten":m.missed?", skipped":due(m)?", not marked":""}"></i>`}).join("");
+  el.innerHTML=`<div class="dl-top"><span class="dl-st ${kind}"><svg class="ic" aria-hidden="true"><use href="#i-${kind==="ok"?"ok":kind==="warn"?"warn":"clock"}"/></svg>${text}</span><span class="dl-sub">${sub}</span></div>
+    <div class="dl-bar" aria-hidden="true"><span class="dl-el" style="width:${nowP.toFixed(1)}%"></span>${marks}${today&&nm>=t0&&nm<=t1?`<span class="dl-now" style="left:${nowP.toFixed(1)}%"></span>`:""}</div>
+    <div class="dl-ax" aria-hidden="true"><span>${fmtTime(ms[0].time)}</span><span>${fmtTime(ms[ms.length-1].time)}</span></div>`;
+  el.setAttribute("aria-label",`${text}. ${sub}.`);el.hidden=false;
+}
 function renderMeter(){
   const d=ui.day,ms=mealsOf(d).filter(m=>!m.o.skip),today=isToday(d),past=iso(dayDate(d))<iso(new Date());
   const t=totals(d),done=ms.filter(m=>m.done),nMiss=ms.filter(m=>m.missed).length,ek=done.reduce((a,m)=>a+m.o.k,0),ep=done.reduce((a,m)=>a+m.o.p,0);
@@ -1036,6 +1070,7 @@ function renderMeter(){
   meterData=[{p:t.k/state.target,e:showEaten?ek/state.target:0,rgb:RING.k.rgb},{p:t.p/state.protein,e:showEaten?ep/state.protein:0,rgb:RING.p.rgb},{p:ms.length?(ms.length-nMiss)/ms.length:1,e:showEaten&&ms.length?done.length/ms.length:0,rgb:RING.m.rgb}];
   if(dashFx)dashFx.update(meterData);
   $("rings").setAttribute("aria-label",`${fmt(ek)} of ${fmt(state.target)} kcal eaten, ${fmt(ep)} of ${state.protein} g protein, ${done.length} of ${ms.length} meals`);
+  renderDayline(d,ms,ek,t);
   // tiles: a small abstract picture of each number
   const diff=t.k-state.target,dn=dayNutrition(d);
   const low=dn.has?NUTR.filter(([k,,,dv])=>dn.sum[k]<dv).map(([k,l,,dv])=>`${l} ${Math.round(dn.sum[k]/dv*100)}%`):[];
@@ -1170,12 +1205,13 @@ function nextMeal(){
   if(d+1<D){const t=list(d+1).find(m=>!settled(m));if(t)return{d:d+1,m:t,diff:24*60-nm+mins(t.time),from:prev?mins(prev.time):nm,to:24*60+mins(t.time),now:nm,prev}}
   return null;
 }
-function inText(min){if(min<1)return "now";const h=Math.floor(min/60),m=min%60;return "in "+(h?`${h} h`+(m?` ${m} min`:""):`${m} min`)}
+function dur(min){const h=Math.floor(min/60),m=min%60;return h?`${h} h`+(m?` ${m} min`:""):`${m} min`}
+function inText(min){return min<1?"now":"in "+dur(min)}
 function renderNext(){
   const el=$("nextMeal"),n=nextMeal();
   if(!n){el.hidden=true;return}
   const{d,m,diff,from,to,now,prev,late}=n,pct=Math.max(0,Math.min(100,(now-from)/Math.max(1,to-from)*100));
-  const lbl=diff>0?"Next meal":late<30?"Now":"",state_=diff>0?inText(diff):late<30?"is now":"was due";
+  const lbl=diff>0?"Next meal":"",state_=diff>0?inText(diff):late<=5?"is now":`started ${dur(late)} ago`;
   el.innerHTML=`<button class="main"><span class="top"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg>${lbl?`<span>${lbl}</span><span>·</span>`:""}<span></span></span><span class="big"><b></b> <span></span></span><span class="sm"></span>
     <span class="prog" aria-hidden="true"><i style="width:${pct}%"></i></span></button>
     <button class="more nm-more" aria-haspopup="menu" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="#i-dots"/></svg></button>`;
@@ -1320,7 +1356,7 @@ function renderWeek(body,n=D){
   const top=document.createElement("div");top.className="cal-title";
   const md=d=>dayDate(d).toLocaleDateString("en-US",{month:"short",day:"numeric"});
   top.innerHTML=`<h2>${md(days[0])} to ${md(days[n-1])}</h2>`;
-  const hint=document.createElement("p");hint.className="wg-hint";hint.textContent=few?"Tap a meal for the recipe. Pick a date above to move the three days.":"Tap a meal for the recipe, or a day to see its hours. Drag meals to new times in the Hour view.";
+  const hint=document.createElement("p");hint.className="wg-hint";hint.textContent=few?"Tap a meal for the recipe. Pick a date above to move the three days.":"Tap a meal for the recipe, or a day to see its hours. Drag meals to new times in the Day view.";
   body.append(top,hint,wrap);
   if(few)return;
   requestAnimationFrame(()=>{const sc=wrap.querySelector(".wg-h.today")||wrap.querySelector(".wg-h.sel");if(sc&&wrap.scrollWidth>wrap.clientWidth)wrap.scrollLeft=Math.max(0,sc.offsetLeft-60)});
