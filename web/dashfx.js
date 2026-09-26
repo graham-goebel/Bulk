@@ -6,7 +6,7 @@
 
 const VERT = `attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}`;
 const FRAG = `precision mediump float;
-uniform vec2 r;uniform float t;uniform float p;
+uniform vec2 r;uniform float t;uniform float p;uniform vec4 c; // c: the rings' area, kept clear of specks
 float h(vec2 q){return fract(sin(dot(q,vec2(127.1,311.7)))*43758.5453);}
 float n(vec2 q){vec2 i=floor(q),f=fract(q);f=f*f*(3.-2.*f);
   return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
@@ -17,20 +17,21 @@ void main(){
   float f=fbm(q*1.1+vec2(t*.012,-t*.008));
   vec3 col=vec3(mix(.985,.945,f));
   col*=1.-.03*length(uv-vec2(.5,.35));
-  // sparse specks drifting slowly upward, each wobbling a little and fading in and out
+  // a few soft, out-of-focus specks drifting slowly upward, fading in and out; none behind the rings
   float dust=0.;
   for(int L=0;L<2;L++){
-    float sc=L==0?14.:26.;
-    vec2 g=q*sc+vec2(0.,-t*(L==0?.10:.16));
+    float sc=L==0?7.:12.;
+    vec2 g=q*sc+vec2(0.,-t*(L==0?.05:.08));
     vec2 id=floor(g),fr=fract(g);
     float h1=h(id),h2=h(id+17.3),h3=h(id+5.1);
-    if(h1>.62){
-      vec2 pos=vec2(h2,h3)*.7+.15+.07*vec2(sin(t*.35+h1*9.),cos(t*.3+h2*9.));
-      float rad=L==0?.07:.06;
-      float tw=.55+.45*sin(t*.6+h3*30.);
-      dust+=smoothstep(rad,0.,length(fr-pos))*tw*(L==0?.16:.10);
+    if(h1>.68){
+      vec2 pos=vec2(h2,h3)*.6+.2+.08*vec2(sin(t*.25+h1*9.),cos(t*.21+h2*9.));
+      float k=smoothstep(L==0?.2:.14,0.,length(fr-pos));
+      dust+=k*k*(.5+.5*sin(t*.4+h3*30.))*(L==0?.05:.035);
     }
   }
+  vec2 e=max(c.xy-gl_FragCoord.xy,gl_FragCoord.xy-(c.xy+c.zw));
+  dust*=smoothstep(0.,48.,max(e.x,e.y));
   col-=dust;
   col+=(h(floor(gl_FragCoord.xy))-.5)*.016; // fixed fine grain, no flicker
   gl_FragColor=vec4(col,1.);
@@ -48,8 +49,9 @@ function shaderLayer(canvas) {
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
   const loc = gl.getAttribLocation(prog, "a"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-  const ur = gl.getUniformLocation(prog, "r"), ut = gl.getUniformLocation(prog, "t"), up = gl.getUniformLocation(prog, "p");
-  return (time, prog01) => {
+  const ur = gl.getUniformLocation(prog, "r"), ut = gl.getUniformLocation(prog, "t"), up = gl.getUniformLocation(prog, "p"), uc = gl.getUniformLocation(prog, "c");
+  return (time, prog01, clear) => {
+    gl.uniform4f(uc, clear[0], clear[1], clear[2], clear[3]);
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.uniform2f(ur, canvas.width, canvas.height); gl.uniform1f(ut, time); gl.uniform1f(up, prog01);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
@@ -110,7 +112,10 @@ export function createDashFx(hero, { reduceMotion = false, pageHost = null } = {
 
   function draw() {
     const prog = rings[0].e;
-    if (drawBg) drawBg(clock, Math.min(1, prog));
+    if (drawBg) {
+      const b = bg.getBoundingClientRect(), hb = hero.getBoundingClientRect(), k = bg.width / Math.max(1, b.width);
+      drawBg(clock, Math.min(1, prog), [(hb.left - b.left) * k, (b.bottom - hb.bottom) * k, hb.width * k, hb.height * k]);
+    }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
     for (const g of rings) {
       if (!g.R) continue;
@@ -118,12 +123,12 @@ export function createDashFx(hero, { reduceMotion = false, pageHost = null } = {
       for (const q of g.ps) {
         const th = q.a * Math.PI * 2 - Math.PI / 2, st = q.st;
         const loose = 1 - Math.min(1, st * 2);                   // 1 for dust, 0 once planned or eaten
-        const wob = Math.sin(clock * 0.9 + q.ph) * (0.03 + loose * 0.09);
-        const R = g.R * (1 + q.rj * (0.035 + loose * 0.1) + wob);
+        const wob = Math.sin(clock * 0.9 + q.ph) * (0.015 + loose * 0.02);
+        const R = g.R * (1 + q.rj * (0.03 + loose * 0.025) + wob);
         let d = Math.abs(q.a - head); d = Math.min(d, 1 - d);
         const glow = head > 0.01 && head < 0.995 ? Math.exp(-((d / 0.035) ** 2)) : 0;
         const lit = Math.max(0, st * 2 - 1);                     // 0 below planned, 1 when eaten
-        const a = 0.1 + Math.min(1, st * 2) * 0.2 + lit * 0.7, size = (0.55 + st * 0.35 + lit * 0.45 + glow * 0.9) * q.sz;
+        const a = 0.16 + Math.min(1, st * 2) * 0.16 + lit * 0.68, size = (0.55 + st * 0.35 + lit * 0.45 + glow * 0.9) * q.sz;
         const x = g.cx + Math.cos(th) * R, y = g.cy + Math.sin(th) * R;
         if (lit > 0.05) { const hs = (5 + glow * 7) * q.sz; ctx.globalAlpha = lit * glow * 0.18; ctx.drawImage(halo, x - hs, y - hs, hs * 2, hs * 2); ctx.globalAlpha = 1; }
         ctx.fillStyle = `rgba(20,20,20,${Math.min(1, a).toFixed(3)})`;

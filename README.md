@@ -77,9 +77,9 @@ Each row in Meal Plan has a **Time** column with the wall-clock time the meal is
 
 ## Marking meals eaten
 
-Only meals you mark as eaten count toward the day's progress. Tap **Mark eaten** on a meal in the Plan tab, on the next-meal card, or in a meal's detail sheet. Marking a meal also locks it so rebalancing won't swap it. Meals whose time has passed without being marked show as striped "not marked yet" on the calorie bar. The mark is stored in the **Eaten** column of Meal Plan, so it syncs across devices and you can tick it in Notion too.
+Only meals you mark as eaten count toward the day's progress. Tap a meal's **⋯** menu in the Plan tab and choose **Mark eaten**, or use the next-meal card or the meal's detail sheet. The same menu can lock a meal, say you skipped it, or shuffle it to another option. Marking a meal also locks it so rebalancing won't swap it. Meals whose time has passed without being marked show as striped "not marked yet" on the calorie bar. The mark is stored in the **Eaten** column of Meal Plan, so it syncs across devices and you can tick it in Notion too.
 
-If you skip a meal, tap the skip icon (a circle with a line through it) next to the check, **Skipped** on the next-meal card once the meal is due, or **I skipped it** in the meal's sheet. A skipped meal comes out of the day's totals, and the day's other unlocked meals rebalance to make up for it. It's stored in the **Skipped** column of Meal Plan.
+If you skip a meal, choose **I skipped it** from its **⋯** menu or in its sheet, or tap **Skipped** on the next-meal card once the meal is due. A skipped meal comes out of the day's totals, and the day's other unlocked meals rebalance to make up for it. It's stored in the **Skipped** column of Meal Plan.
 
 ## Meal reminders
 
