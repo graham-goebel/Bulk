@@ -13,7 +13,8 @@
 //   GET  /pantry             -> { items: [...] }        what's in the fridge, freezer and pantry
 //   POST /pantry/batch       -> { created: [{ref, id, url}], ok: [ids], failed: [{ref, message}] }
 //        body: { creates: [item + ref], updates: [item + id], deletes: [id] }  (max 20 in total)
-//   GET  /product?url=...    -> { title, image, images: [...], nutrition, nutritionText }  reads a store's product page
+//   GET  /product?url=...    -> { title, image, images: [...], nutrition, nutritionText, note? }  reads a store's product page;
+//        if the store blocks it (Walmart shows bots a "Robot or human?" page), searches Open Food Facts by the name in the link
 //   GET  /img?url=...        -> the image itself, with CORS so the app can cut out its background
 //   GET  /ics?e=...          -> a calendar file (text/calendar) with alerts, for meal reminders.
 //        No passcode: it only echoes the titles and times it's given and reads nothing from Notion.
@@ -453,11 +454,65 @@ async function fetchOut(target, accept) {
 }
 const decode = (s) => String(s || "").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#0?39;|&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#x2F;/gi, "/").trim();
 
+// Some stores answer anything that isn't a person with a challenge page instead of the product.
+function blockedPage(finalUrl, html) {
+  return /\/blocked\b|captcha|challenge/i.test(finalUrl) ||
+    /Robot or human\?|px-captcha|Pardon Our Interruption|verify (that )?you are (a )?human|Access Denied<\/title>/i.test(html.slice(0, 30000));
+}
+// The product name as written in the link, e.g. walmart.com/ip/Great-Value-Whole-Vitamin-D-Milk-1-Gallon/10450114,
+// without sizes and counts so a search matches the product rather than one package size.
+function nameFromLink(target) {
+  let seg = [];
+  try { seg = new URL(target).pathname.split("/").filter(Boolean).map((x) => { try { return decodeURIComponent(x); } catch { return x; } }); } catch { return ""; }
+  const slug = seg.filter((x) => /[a-z]{2,}[-_][a-z]{2,}/i.test(x)).sort((a, b) => b.length - a.length)[0] || "";
+  return slug.replace(/[-_]+/g, " ")
+    .replace(/\b\d+(\.\d+)?\s*(fl|oz|ounces?|lbs?|pounds?|g|kg|ml|l|gallons?|gal|ct|count|packs?|pk|qt|quarts?|pt|pints?)\b/gi, " ")
+    .replace(/\b(fl|oz)\b/gi, " ").replace(/\b\d+\b/g, " ").replace(/\s+/g, " ").trim().slice(0, 100);
+}
+// Open Food Facts: an open grocery database with front-of-pack photos and per-serving nutrition.
+// Tries the full name first, then drops words from the end, US products first.
+async function searchFoodFacts(name) {
+  const words = name.split(" ");
+  const tries = [];
+  for (let n = words.length; n >= Math.min(2, words.length); n--) tries.push([words.slice(0, n).join(" "), true]);
+  tries.push([name, false]);
+  for (const [q, us] of tries.slice(0, 5)) {
+    const url = "https://world.openfoodfacts.org/cgi/search.pl?search_simple=1&json=1&page_size=6&search_terms=" + encodeURIComponent(q) +
+      (us ? "&tagtype_0=countries&tag_contains_0=contains&tag_0=united-states" : "") + "&fields=product_name,brands,image_front_url,serving_size,nutriments";
+    let data = null;
+    try {
+      const res = await fetch(url, { headers: { "User-Agent": "GainPlanner/1.0 (github.com/graham-goebel/Bulk)", Accept: "application/json" }, signal: AbortSignal.timeout(8000) });
+      if (res.ok) data = await res.json();
+    } catch {}
+    const found = ((data && data.products) || []).filter((p) => p.image_front_url);
+    if (found.length) return found;
+  }
+  return [];
+}
+async function productFromFoodFacts(target, why) {
+  const name = nameFromLink(target), host = (() => { try { return new URL(target).hostname.replace(/^www\./, ""); } catch { return "That store"; } })();
+  if (!name) throw fetchFail(`${host} blocks lookups from apps. Open the product photo, copy its image address, and paste that instead.`);
+  const found = await searchFoodFacts(name);
+  if (!found.length) throw fetchFail(`${host} blocks lookups from apps, and Open Food Facts has no match for “${name}”. Paste the photo's image address instead.`);
+  const p = found[0], n = p.nutriments || {}, nutrition = {};
+  const put = (k, v, unit) => { if (typeof v === "number" && isFinite(v)) nutrition[k] = `${+v.toFixed(2)}${unit}`; };
+  put("calories", n["energy-kcal_serving"], ""); put("proteinContent", n.proteins_serving, " g"); put("carbohydrateContent", n.carbohydrates_serving, " g");
+  put("fatContent", n.fat_serving, " g"); put("fiberContent", n.fiber_serving, " g"); put("sugarContent", n.sugars_serving, " g"); put("sodiumContent", n.sodium_serving, " g");
+  const hasNut = Object.keys(nutrition).length > 0;
+  if (hasNut && p.serving_size) nutrition.servingSize = String(p.serving_size).slice(0, 60);
+  const title = name.replace(/\b\w/g, (c) => c.toUpperCase());
+  return { title, image: p.image_front_url, images: found.map((x) => x.image_front_url).slice(0, 6), nutrition: hasNut ? nutrition : null, nutritionText: "",
+    note: `${host} ${why}, so these photos are from Open Food Facts. Pick the one that matches.` };
+}
+
 async function readProduct(target) {
-  const res = await fetchOut(target, "text/html,application/xhtml+xml,image/*;q=0.9,*/*;q=0.8");
+  let res;
+  try { res = await fetchOut(target, "text/html,application/xhtml+xml,image/*;q=0.9,*/*;q=0.8"); }
+  catch (e) { if (e.fetchError && /blocked/.test(e.message)) return productFromFoodFacts(target, "blocked the lookup"); throw e; }
   const base = res.url || target, ct = res.headers.get("content-type") || "";
   if (ct.startsWith("image/")) return { title: "", image: base, images: [base] };
   const html = (await res.text()).slice(0, 2_000_000);
+  if (blockedPage(base, html)) return productFromFoodFacts(target, "shows apps a “Robot or human?” check");
   const images = [], add = (v) => { try { const u = new URL(decode(v), base).href; if (/^https?:/.test(u) && !images.includes(u)) images.push(u); } catch {} };
   let title = "", nutrition = null;
   // JSON-LD Product data is the most reliable source on store pages.
@@ -503,7 +558,8 @@ async function readProduct(target) {
   const flat = decode(plain).replace(/\s+/g, " ");
   const at = flat.search(/nutrition(al)? (facts|information|info)|serving size/i);
   const nutritionText = at >= 0 ? flat.slice(Math.max(0, at - 100), at + 2500) : "";
-  if (!images.length && !nutrition && !nutritionText) throw fetchFail("Couldn't find a product photo on that page. Paste the image address instead.");
+  if (!images.length && !nutrition && !nutritionText) return productFromFoodFacts(target, "has no photo the app can read on that page").catch(() => {
+    throw fetchFail("Couldn't find a product photo on that page. Paste the image address instead."); });
   return { title, image: images[0] || "", images: images.slice(0, 8), nutrition, nutritionText };
 }
 

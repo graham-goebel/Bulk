@@ -2005,7 +2005,7 @@ function openPantryItem(it){
     try{const r=await api("/product?url="+encodeURIComponent(link));
       alts=(r.images||[]).slice(0,5);photo=r.image||alts[0]||"";
       if(r.title&&!$("pfName").value.trim()){$("pfName").value=r.title;const g=guessPlace(r.title);if(isNew){$("pfLoc").value=g.location;$("pfCat").value=g.category}}
-      msg(r.title&&$("pfName").value.trim()!==r.title?`Found “${r.title}”.`:"");showPhoto();
+      msg(r.note||(r.title&&$("pfName").value.trim()!==r.title?`Found “${r.title}”.`:""));showPhoto();
     }catch(e){msg(e.message||"Couldn't read that page.")}
     finally{$("pfGet").disabled=false}
   };
