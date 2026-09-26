@@ -45,7 +45,7 @@ button:focus-visible,summary:focus-visible,input:focus-visible{outline:1.5px sol
 .head-r{display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right}
 .nbtn{text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line);min-height:24px}
 a.txt{color:inherit}
-main{max-width:960px;margin:0 auto;padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+main{max-width:960px;margin:0 auto;padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
 
 .strip{display:flex;gap:4px;padding:10px 20px 6px}
 .strip button{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 0 8px;border-radius:12px;font-size:.72rem;color:var(--muted);position:relative}
@@ -332,13 +332,21 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--bg);border-top:1px solid var(--line);
   display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom,0px)}
-.tabbar button{flex:1;max-width:180px;height:56px;font-size:.87rem;color:var(--muted);text-align:center;position:relative}
+.tabbar button{flex:1;max-width:180px;height:60px;font-size:.74rem;color:var(--muted);text-align:center;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.tabbar button .ic{width:22px;height:22px}
+.ic{width:1em;height:1em;flex:none;vertical-align:-0.14em}
+.ic.spin{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+.with-ic{display:inline-flex;align-items:center;gap:6px}
 .tabbar button[aria-current="page"]{color:var(--ink)}
 .tabbar button[aria-current="page"]::before{content:"";position:absolute;top:-1px;left:30%;right:30%;height:1.5px;background:var(--ink)}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
+<!-- Heroicons v2.2.0 (MIT, https://heroicons.com) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-plan" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z"/></g></symbol><symbol id="i-cal" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z"/></g></symbol><symbol id="i-shop" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></g></symbol><symbol id="i-pantry" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/></g></symbol><symbol id="i-clock" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8Zm7.75-4.25a.75.75 0 0 0-1.5 0V8c0 .414.336.75.75.75h3.25a.75.75 0 0 0 0-1.5h-2.5v-3.5Z" clip-rule="evenodd"/></g></symbol><symbol id="i-adjust" viewBox="0 0 16 16"><g fill="currentColor"><path d="M6.5 2.25a.75.75 0 0 0-1.5 0v3a.75.75 0 0 0 1.5 0V4.5h6.75a.75.75 0 0 0 0-1.5H6.5v-.75ZM11 6.5a.75.75 0 0 0-1.5 0v3a.75.75 0 0 0 1.5 0v-.75h2.25a.75.75 0 0 0 0-1.5H11V6.5ZM5.75 10a.75.75 0 0 1 .75.75v.75h6.75a.75.75 0 0 1 0 1.5H6.5v.75a.75.75 0 0 1-1.5 0v-3a.75.75 0 0 1 .75-.75ZM2.75 7.25H8.5v1.5H2.75a.75.75 0 0 1 0-1.5ZM4 3H2.75a.75.75 0 0 0 0 1.5H4V3ZM2.75 11.5H4V13H2.75a.75.75 0 0 1 0-1.5Z"/></g></symbol><symbol id="i-sync" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M13.836 2.477a.75.75 0 0 1 .75.75v3.182a.75.75 0 0 1-.75.75h-3.182a.75.75 0 0 1 0-1.5h1.37l-.84-.841a4.5 4.5 0 0 0-7.08.932.75.75 0 0 1-1.3-.75 6 6 0 0 1 9.44-1.242l.842.84V3.227a.75.75 0 0 1 .75-.75Zm-.911 7.5A.75.75 0 0 1 13.199 11a6 6 0 0 1-9.44 1.241l-.84-.84v1.371a.75.75 0 0 1-1.5 0V9.591a.75.75 0 0 1 .75-.75H5.35a.75.75 0 0 1 0 1.5H3.98l.841.841a4.5 4.5 0 0 0 7.08-.932.75.75 0 0 1 1.025-.273Z" clip-rule="evenodd"/></g></symbol><symbol id="i-ok" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z" clip-rule="evenodd"/></g></symbol><symbol id="i-warn" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M6.701 2.25c.577-1 2.02-1 2.598 0l5.196 9a1.5 1.5 0 0 1-1.299 2.25H2.804a1.5 1.5 0 0 1-1.3-2.25l5.197-9ZM8 4a.75.75 0 0 1 .75.75v3a.75.75 0 1 1-1.5 0v-3A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/></g></symbol><symbol id="i-lock" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M8 1a3.5 3.5 0 0 0-3.5 3.5V7A1.5 1.5 0 0 0 3 8.5v5A1.5 1.5 0 0 0 4.5 15h7a1.5 1.5 0 0 0 1.5-1.5v-5A1.5 1.5 0 0 0 11.5 7V4.5A3.5 3.5 0 0 0 8 1Zm2 6V4.5a2 2 0 1 0-4 0V7h4Z" clip-rule="evenodd"/></g></symbol><symbol id="i-unlock" viewBox="0 0 16 16"><g fill="currentColor"><path d="M11.5 1A3.5 3.5 0 0 0 8 4.5V7H2.5A1.5 1.5 0 0 0 1 8.5v5A1.5 1.5 0 0 0 2.5 15h7a1.5 1.5 0 0 0 1.5-1.5v-5A1.5 1.5 0 0 0 9.5 7V4.5a2 2 0 1 1 4 0v1.75a.75.75 0 0 0 1.5 0V4.5A3.5 3.5 0 0 0 11.5 1Z"/></g></symbol><symbol id="i-ext" viewBox="0 0 16 16"><g fill="currentColor"><path d="M6.22 8.72a.75.75 0 0 0 1.06 1.06l5.22-5.22v1.69a.75.75 0 0 0 1.5 0v-3.5a.75.75 0 0 0-.75-.75h-3.5a.75.75 0 0 0 0 1.5h1.69L6.22 8.72Z"/>
+  <path d="M3.5 6.75c0-.69.56-1.25 1.25-1.25H7A.75.75 0 0 0 7 4H4.75A2.75 2.75 0 0 0 2 6.75v4.5A2.75 2.75 0 0 0 4.75 14h4.5A2.75 2.75 0 0 0 12 11.25V9a.75.75 0 0 0-1.5 0v2.25c0 .69-.56 1.25-1.25 1.25h-4.5c-.69 0-1.25-.56-1.25-1.25v-4.5Z"/></g></symbol><symbol id="i-down" viewBox="0 0 16 16"><g fill="currentColor"><path d="M8.75 2.75a.75.75 0 0 0-1.5 0v5.69L5.03 6.22a.75.75 0 0 0-1.06 1.06l3.5 3.5a.75.75 0 0 0 1.06 0l3.5-3.5a.75.75 0 0 0-1.06-1.06L8.75 8.44V2.75Z"/>
+  <path d="M3.5 9.75a.75.75 0 0 0-1.5 0v1.5A2.75 2.75 0 0 0 4.75 14h6.5A2.75 2.75 0 0 0 14 11.25v-1.5a.75.75 0 0 0-1.5 0v1.5c0 .69-.56 1.25-1.25 1.25h-6.5c-.69 0-1.25-.56-1.25-1.25v-1.5Z"/></g></symbol><symbol id="i-sphere" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M3.757 4.5c.18.217.376.42.586.608.153-.61.354-1.175.596-1.678A5.53 5.53 0 0 0 3.757 4.5ZM8 1a6.994 6.994 0 0 0-7 7 7 7 0 1 0 7-7Zm0 1.5c-.476 0-1.091.386-1.633 1.427-.293.564-.531 1.267-.683 2.063A5.48 5.48 0 0 0 8 6.5a5.48 5.48 0 0 0 2.316-.51c-.152-.796-.39-1.499-.683-2.063C9.09 2.886 8.476 2.5 8 2.5Zm3.657 2.608a8.823 8.823 0 0 0-.596-1.678c.444.298.842.659 1.182 1.07-.18.217-.376.42-.586.608Zm-1.166 2.436A6.983 6.983 0 0 1 8 8a6.983 6.983 0 0 1-2.49-.456 10.703 10.703 0 0 0 .202 2.6c.72.231 1.49.356 2.288.356.798 0 1.568-.125 2.29-.356a10.705 10.705 0 0 0 .2-2.6Zm1.433 1.85a12.652 12.652 0 0 0 .018-2.609c.405-.276.78-.594 1.117-.947a5.48 5.48 0 0 1 .44 2.262 7.536 7.536 0 0 1-1.575 1.293Zm-2.172 2.435a9.046 9.046 0 0 1-3.504 0c.039.084.078.166.12.244C6.907 13.114 7.523 13.5 8 13.5s1.091-.386 1.633-1.427c.04-.078.08-.16.12-.244Zm1.31.74a8.5 8.5 0 0 0 .492-1.298c.457-.197.893-.43 1.307-.696a5.526 5.526 0 0 1-1.8 1.995Zm-6.123 0a8.507 8.507 0 0 1-.493-1.298 8.985 8.985 0 0 1-1.307-.696 5.526 5.526 0 0 0 1.8 1.995ZM2.5 8.1c.463.5.993.935 1.575 1.293a12.652 12.652 0 0 1-.018-2.608 7.037 7.037 0 0 1-1.117-.947 5.48 5.48 0 0 0-.44 2.262Z" clip-rule="evenodd"/></g></symbol><symbol id="i-shelves" viewBox="0 0 16 16"><g fill="currentColor"><path d="M9.836 3h-3.67v10h3.67V3ZM11.336 13H13.5a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 13.5 3h-2.164v10ZM2.5 3h2.166v10H2.5A1.5 1.5 0 0 1 1 11.5v-7A1.5 1.5 0 0 1 2.5 3Z"/></g></symbol><symbol id="i-list" viewBox="0 0 16 16"><g fill="currentColor"><path d="M3 4.75a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM6.25 3a.75.75 0 0 0 0 1.5h7a.75.75 0 0 0 0-1.5h-7ZM6.25 7.25a.75.75 0 0 0 0 1.5h7a.75.75 0 0 0 0-1.5h-7ZM6.25 11.5a.75.75 0 0 0 0 1.5h7a.75.75 0 0 0 0-1.5h-7ZM4 12.25a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM3 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></g></symbol><symbol id="i-grow" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M2.75 9a.75.75 0 0 1 .75.75v1.69l2.22-2.22a.75.75 0 0 1 1.06 1.06L4.56 12.5h1.69a.75.75 0 0 1 0 1.5h-3.5a.75.75 0 0 1-.75-.75v-3.5A.75.75 0 0 1 2.75 9ZM2.75 7a.75.75 0 0 0 .75-.75V4.56l2.22 2.22a.75.75 0 0 0 1.06-1.06L4.56 3.5h1.69a.75.75 0 0 0 0-1.5h-3.5a.75.75 0 0 0-.75.75v3.5c0 .414.336.75.75.75ZM13.25 9a.75.75 0 0 0-.75.75v1.69l-2.22-2.22a.75.75 0 1 0-1.06 1.06l2.22 2.22H9.75a.75.75 0 0 0 0 1.5h3.5a.75.75 0 0 0 .75-.75v-3.5a.75.75 0 0 0-.75-.75ZM13.25 7a.75.75 0 0 1-.75-.75V4.56l-2.22 2.22a.75.75 0 1 1-1.06-1.06l2.22-2.22H9.75a.75.75 0 0 1 0-1.5h3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-.75.75Z" clip-rule="evenodd"/></g></symbol><symbol id="i-shrink" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M2.22 2.22a.75.75 0 0 1 1.06 0L5.5 4.44V2.75a.75.75 0 0 1 1.5 0v3.5a.75.75 0 0 1-.75.75h-3.5a.75.75 0 0 1 0-1.5h1.69L2.22 3.28a.75.75 0 0 1 0-1.06Zm10.5 0a.75.75 0 1 1 1.06 1.06L11.56 5.5h1.69a.75.75 0 0 1 0 1.5h-3.5A.75.75 0 0 1 9 6.25v-3.5a.75.75 0 0 1 1.5 0v1.69l2.22-2.22ZM2.75 9h3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-1.69l-2.22 2.22a.75.75 0 0 1-1.06-1.06l2.22-2.22H2.75a.75.75 0 0 1 0-1.5ZM9 9.75A.75.75 0 0 1 9.75 9h3.5a.75.75 0 0 1 0 1.5h-1.69l2.22 2.22a.75.75 0 1 1-1.06 1.06l-2.22-2.22v1.69a.75.75 0 0 1-1.5 0v-3.5Z" clip-rule="evenodd"/></g></symbol><symbol id="i-plus" viewBox="0 0 16 16"><g fill="currentColor"><path d="M8.75 3.75a.75.75 0 0 0-1.5 0v3.5h-3.5a.75.75 0 0 0 0 1.5h3.5v3.5a.75.75 0 0 0 1.5 0v-3.5h3.5a.75.75 0 0 0 0-1.5h-3.5v-3.5Z"/></g></symbol><symbol id="i-search" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></g></symbol></svg>
 <header class="app-head">
   <div class="brand">Gain planner</div>
   <div class="head-r"><span class="sync" id="sync" role="status"></span><button class="sync nbtn" id="notionBtn" hidden title="Sync with Notion now">Notion</button></div>
@@ -361,7 +369,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
       <p class="status" id="variety" hidden></p>
     </div>
 
-    <div class="goals-open"><button class="txt" id="goalsBtn" aria-haspopup="dialog">Goals &amp; schedule</button></div>
+    <div class="goals-open"><button class="txt with-ic" id="goalsBtn" aria-haspopup="dialog"><svg class="ic" aria-hidden="true"><use href="#i-adjust"/></svg>Goals &amp; schedule</button></div>
    </div>
    <div class="plan-main">
     <div id="slots"></div>
@@ -394,7 +402,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
     </div>
     <div class="list" id="listBody"></div>
     <div class="foot">
-      <button class="pdf" id="shopPdf" hidden>Download PDF</button>
+      <button class="pdf with-ic" id="shopPdf" hidden><svg class="ic" aria-hidden="true"><use href="#i-down"/></svg>Download PDF</button>
       <button class="txt" id="clearChecks">Clear checks</button>
       <button class="txt" id="toPantry">Add checked to pantry</button>
       <span class="msg" id="shopMsg" role="status"></span>
@@ -407,7 +415,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
       <aside class="pan-side" aria-label="Find food">
         <h2 class="pan-title">Pantry</h2>
         <p class="pan-kicker">Fridge, freezer &amp; pantry</p>
-        <label class="pan-search"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="9" cy="9" r="6"/><path d="m14 14 4 4"/></svg>
+        <label class="pan-search"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg>
           <input type="search" id="pSearch" placeholder="Search your food" aria-label="Search your food"></label>
         <div class="pan-count"><span id="pCount" role="status"></span><button class="txt" id="pReset">Reset</button></div>
         <details class="pan-fdet" id="pFdet"><summary>Filters</summary><div id="pFilters"></div></details>
@@ -415,10 +423,10 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
       <div class="pan-stage">
         <div class="pan-tools">
           <div class="pan-seg" role="group" aria-label="View">
-            <button data-pl="sphere" aria-pressed="true">Sphere</button><button data-pl="shelves" aria-pressed="false">Shelves</button><button data-pl="list" aria-pressed="false">List</button>
+            <button data-pl="sphere" aria-pressed="true" class="with-ic"><svg class="ic" aria-hidden="true"><use href="#i-sphere"/></svg>Sphere</button><button data-pl="shelves" aria-pressed="false" class="with-ic"><svg class="ic" aria-hidden="true"><use href="#i-shelves"/></svg>Shelves</button><button data-pl="list" aria-pressed="false" class="with-ic"><svg class="ic" aria-hidden="true"><use href="#i-list"/></svg>List</button>
           </div>
-          <button class="pan-btn" id="pMax" aria-pressed="false" aria-label="Full screen" title="Full screen"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg></button>
-          <button class="pan-btn primary" id="pAdd">+ Add</button>
+          <button class="pan-btn" id="pMax" aria-pressed="false" aria-label="Full screen" title="Full screen"><svg class="ic" aria-hidden="true"><use href="#i-grow"/></svg></button>
+          <button class="pan-btn primary with-ic" id="pAdd"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>Add</button>
         </div>
         <div class="pan-canvas" id="pCanvas"><div class="pan-tip" id="pTip" hidden></div><p class="pan-empty" id="pEmpty" hidden></p></div>
         <div class="pan-list" id="pList" hidden></div>
@@ -455,10 +463,10 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 <div class="sheet-bg" id="sheet" hidden><div class="sheet" id="sheetBox" role="dialog" aria-modal="true" aria-labelledby="shTitle"></div></div>
 
 <nav class="tabbar" aria-label="Sections">
-  <button data-tab="plan" aria-current="page">Plan</button>
-  <button data-tab="cal">Calendar</button>
-  <button data-tab="shop">Shop</button>
-  <button data-tab="pantry">Pantry</button>
+  <button data-tab="plan" aria-current="page"><svg class="ic" aria-hidden="true"><use href="#i-plan"/></svg><span>Plan</span></button>
+  <button data-tab="cal"><svg class="ic" aria-hidden="true"><use href="#i-cal"/></svg><span>Calendar</span></button>
+  <button data-tab="shop"><svg class="ic" aria-hidden="true"><use href="#i-shop"/></svg><span>Shop</span></button>
+  <button data-tab="pantry"><svg class="ic" aria-hidden="true"><use href="#i-pantry"/></svg><span>Pantry</span></button>
 </nav>
 
 <script src="config.js"></script>
@@ -586,8 +594,8 @@ const fmt=n=>Math.round(n).toLocaleString("en-US");
 const reduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const $=id=>document.getElementById(id);
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
-const LOCKED='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" fill="currentColor"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>';
-const OPEN='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 0 1 5.8-1"/></svg>';
+const LOCKED='<svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg>';
+const OPEN='<svg class="ic" aria-hidden="true"><use href="#i-unlock"/></svg>';
 
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const NOTION={server:"Notion",planView:"view://3e71fe5d-3fa4-8136-aea7-000c56e9c45c",mealsView:"view://3e71fe5d-3fa4-81df-8be4-000ceb822b9e",planDS:"f4b01177-7e91-4185-b510-94e551e0d877"};
@@ -853,7 +861,7 @@ function renderNext(){
   const el=$("nextMeal"),n=nextMeal();
   if(!n){el.hidden=true;return}
   const{d,m,diff,from,to,now,prev}=n,pct=Math.max(0,Math.min(100,(now-from)/Math.max(1,to-from)*100));
-  el.innerHTML=`<span class="top"><span>${diff===0?"Now":"Next meal"}</span><span></span></span><span class="big"><b></b> <span></span></span><span class="sm"></span>
+  el.innerHTML=`<span class="top"><span class="with-ic"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg>${diff===0?"Now":"Next meal"}</span><span></span></span><span class="big"><b></b> <span></span></span><span class="sm"></span>
     <span class="prog" aria-hidden="true"><i style="width:${pct}%"></i></span><span class="ends"><span></span><span></span></span>`;
   el.querySelector(".top span+span").textContent=fmtTime(m.time)+(isToday(d)?"":" tomorrow");
   el.querySelector(".big b").textContent=m.slot;
@@ -1001,7 +1009,7 @@ function renderWeek(body){
   s.innerHTML=`<span>Average <b>${fmt(sk/D)}</b> kcal a day</span><span><b>${fmt(sp/D)} g</b> protein a day</span>`;
   body.appendChild(s);
   const f=document.createElement("div");f.className="foot";
-  const btn=document.createElement("button");btn.className="pdf";btn.textContent="Download week PDF";btn.hidden=!canPdf();
+  const btn=document.createElement("button");btn.className="pdf with-ic";btn.innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-down"/></svg>Download week PDF';btn.hidden=!canPdf();
   const msg=document.createElement("span");msg.className="msg";msg.setAttribute("role","status");
   btn.onclick=()=>savePdf(btn,msg,weekPdf,`meal-plan-${state.startDate}.pdf`);
   f.append(btn,msg);body.appendChild(f);
@@ -1134,7 +1142,7 @@ function renderSheet(){
       ${overridden?`<button class="txt" id="shReset">Reset to ${fmtTime(state.times[i])}</button>`:""}
       <span class="msg" id="shMsg" role="status"></span></div>
     ${o.skip?"":`<h3>Ingredients</h3><ul class="ing">${ing}</ul><h3>Steps</h3><ol class="steps">${steps}</ol>`}
-    <div class="sh-foot"><button class="btn" id="shChange">Change meal</button><button class="txt" id="shLock">${locked?"Unlock":"Lock"} this meal</button>${o.url?`<a class="txt" href="${esc(o.url)}" target="_blank" rel="noopener">Open in Notion</a>`:""}</div>`;
+    <div class="sh-foot"><button class="btn" id="shChange">Change meal</button><button class="txt" id="shLock">${locked?"Unlock":"Lock"} this meal</button>${o.url?`<a class="txt" href="${esc(o.url)}" target="_blank" rel="noopener">Open in Notion <svg class="ic" aria-hidden="true"><use href="#i-ext"/></svg></a>`:""}</div>`;
   $("shClose").onclick=closeDetail;
   $("shTime").onchange=e=>{const v=e.target.value;if(/^\d{2}:\d{2}/.test(v)){setTime(d,i,v.slice(0,5));refreshBehind();renderSheetKeep("shTime")}};
   $("shAll").onclick=()=>{const v=timeOf(d,i);state.times[i]=v;state.days.forEach(dy=>{if(dy.times)dy.times[i]=null});save();renderSettings();refreshBehind();renderSheetKeep("shAll");$("shMsg").textContent=`${SLOTS[i].name} is now ${fmtTime(v)} every day.`};
@@ -1166,7 +1174,9 @@ function renderAll(smooth=true){
 }
 
 /* ---------- Notion backend (through your Cloudflare Worker) ---------- */
-function nSet(t,title){const b=$("notionBtn");b.hidden=false;b.textContent=t;b.title=title||"Sync with Notion now"}
+function nSet(t,title){const b=$("notionBtn");b.hidden=false;b.title=title||"Sync with Notion now";
+  const k=/syncing/.test(t)?"sync":/synced/.test(t)?"ok":/wrong|isn't|can't|failed|missing|share|didn't/i.test(t)?"warn":"";
+  b.innerHTML=(k?`<svg class="ic${k==="sync"?" spin":""}" aria-hidden="true"><use href="#i-${k}"/></svg> `:"")+esc(t)}
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 async function api(path,body){
   let res;
@@ -1545,7 +1555,7 @@ document.querySelectorAll("[data-pl]").forEach(b=>b.onclick=()=>{
 });
 $("pSearch").addEventListener("input",e=>{pf.q=e.target.value;renderPantry()});
 $("pReset").onclick=()=>{pf.q="";$("pSearch").value="";pf.loc.clear();pf.cat.clear();pf.st.clear();renderPantry()};
-$("pMax").onclick=()=>{const on=$("pan").classList.toggle("max");$("pMax").setAttribute("aria-pressed",on);$("pMax").setAttribute("aria-label",on?"Exit full screen":"Full screen");if(P3)requestAnimationFrame(()=>P3.resize())};
+$("pMax").onclick=()=>{const on=$("pan").classList.toggle("max");$("pMax").setAttribute("aria-pressed",on);$("pMax").setAttribute("aria-label",on?"Exit full screen":"Full screen");$("pMax").innerHTML=on?'<svg class="ic" aria-hidden="true"><use href="#i-shrink"/></svg>':'<svg class="ic" aria-hidden="true"><use href="#i-grow"/></svg>';if(P3)requestAnimationFrame(()=>P3.resize())};
 // Filters are always open on wide screens and fold away on phones.
 {const mq=window.matchMedia("(min-width:900px)"),f=()=>{$("pFdet").open=mq.matches};f();mq.addEventListener?mq.addEventListener("change",f):mq.addListener(f)}
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!e.defaultPrevented&&$("pan").classList.contains("max")&&$("sheet").hidden)$("pMax").click()});
@@ -1580,7 +1590,7 @@ function openPantryItem(it){
     </div>
     <p class="msg" id="pfNutMsg" role="status"></p>
     <details class="pf-ocr" id="pfOcr" hidden><summary>Text read from the label</summary><pre id="pfOcrText"></pre></details>
-    <div class="sh-foot"><button class="btn" id="pfSave">${isNew?"Add":"Save"}</button>${isNew?"":`<button class="txt" id="pfDel">Remove from pantry</button>`}${v.url?`<a class="txt" href="${esc(v.url)}" target="_blank" rel="noopener">Open in Notion</a>`:""}<span class="msg" id="pfMsg" role="status"></span></div>`;
+    <div class="sh-foot"><button class="btn" id="pfSave">${isNew?"Add":"Save"}</button>${isNew?"":`<button class="txt" id="pfDel">Remove from pantry</button>`}${v.url?`<a class="txt" href="${esc(v.url)}" target="_blank" rel="noopener">Open in Notion <svg class="ic" aria-hidden="true"><use href="#i-ext"/></svg></a>`:""}<span class="msg" id="pfMsg" role="status"></span></div>`;
   $("sheet").hidden=false;document.body.style.overflow="hidden";
   $("shClose").onclick=closeDetail;
   const q=$("pfQty");$("pfMinus").onclick=()=>{q.value=Math.max(0,(+q.value||0)-1)};$("pfPlus").onclick=()=>{q.value=(+q.value||0)+1};
