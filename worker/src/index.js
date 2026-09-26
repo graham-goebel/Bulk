@@ -470,23 +470,28 @@ function nameFromLink(target) {
     .replace(/\b(fl|oz)\b/gi, " ").replace(/\b\d+\b/g, " ").replace(/\s+/g, " ").trim().slice(0, 100);
 }
 // Open Food Facts: an open grocery database with front-of-pack photos and per-serving nutrition.
-// Tries the full name first, then drops words from the end, US products first.
+// Its main search matches brand and name best; it rate-limits (about 10 searches a minute), so a few
+// shorter names are tried there and, if it's unavailable, its newer search service answers instead.
+const OFF_UA = { "User-Agent": "GainPlanner/1.0 (github.com/graham-goebel/Bulk)", Accept: "application/json" };
+const OFF_FIELDS = "product_name,brands,image_front_url,serving_size,nutriments";
 async function searchFoodFacts(name) {
-  const words = name.split(" ");
-  const tries = [];
-  for (let n = words.length; n >= Math.min(2, words.length); n--) tries.push([words.slice(0, n).join(" "), true]);
-  tries.push([name, false]);
-  for (const [q, us] of tries.slice(0, 5)) {
-    const url = "https://world.openfoodfacts.org/cgi/search.pl?search_simple=1&json=1&page_size=6&search_terms=" + encodeURIComponent(q) +
-      (us ? "&tagtype_0=countries&tag_contains_0=contains&tag_0=united-states" : "") + "&fields=product_name,brands,image_front_url,serving_size,nutriments";
+  const words = name.split(" "), tries = [...new Set([name, words.slice(0, -1).join(" "), words.slice(0, 3).join(" ")])].filter((q) => q.split(" ").length >= 2 || q === name);
+  for (const q of tries) {
     let data = null;
     try {
-      const res = await fetch(url, { headers: { "User-Agent": "GainPlanner/1.0 (github.com/graham-goebel/Bulk)", Accept: "application/json" }, signal: AbortSignal.timeout(8000) });
-      if (res.ok) data = await res.json();
+      const res = await fetch("https://world.openfoodfacts.org/cgi/search.pl?search_simple=1&json=1&page_size=6&tagtype_0=countries&tag_contains_0=contains&tag_0=united-states&fields=" +
+        OFF_FIELDS + "&search_terms=" + encodeURIComponent(q), { headers: OFF_UA, signal: AbortSignal.timeout(8000) });
+      if (res.ok && /json/.test(res.headers.get("content-type") || "")) data = await res.json();
     } catch {}
-    const found = ((data && data.products) || []).filter((p) => p.image_front_url);
+    if (!data) break; // unavailable or rate-limited: use the other search
+    const found = (data.products || []).filter((p) => p.image_front_url);
     if (found.length) return found;
   }
+  try {
+    const res = await fetch("https://search.openfoodfacts.org/search?page_size=6&fields=" + OFF_FIELDS + "&q=" +
+      encodeURIComponent(`${name} countries_tags:"en:united-states"`), { headers: OFF_UA, signal: AbortSignal.timeout(8000) });
+    if (res.ok) { const data = await res.json(); return (data.hits || []).filter((p) => p.image_front_url); }
+  } catch {}
   return [];
 }
 async function productFromFoodFacts(target, why) {
