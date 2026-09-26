@@ -75,6 +75,10 @@ Each item also has **Nutrition per serving** (serving size, servings per contain
 
 Each row in Meal Plan has a **Time** column with the wall-clock time the meal is planned for, such as `07:30`. The app syncs that, so a phone and a laptop set to different time zones show the same times. **When** is kept up to date for Notion's calendar view but can look shifted if your devices are in different zones. To change a meal's time from Notion, edit **Time**.
 
+## Marking meals eaten
+
+Only meals you mark as eaten count toward the day's progress. Tap **Mark eaten** on a meal in the Plan tab, on the next-meal card, or in a meal's detail sheet. Marking a meal also locks it so rebalancing won't swap it. Meals whose time has passed without being marked show as striped "not marked yet" on the calorie bar. The mark is stored in the **Eaten** column of Meal Plan, so it syncs across devices and you can tick it in Notion too.
+
 ## What syncs and what stays on the device
 
 Stored in Notion and shared across your devices:

@@ -209,6 +209,7 @@ async function listPlan(env, from) {
         when: pr["When"] && pr["When"].date ? pr["When"].date.start : null,
         time: text(pr["Time"]).trim(),
         locked: !!(pr["Locked"] && pr["Locked"].checkbox),
+        eaten: !!(pr["Eaten"] && pr["Eaten"].checkbox),
       };
     })
     .filter((r) => r.key);
@@ -222,6 +223,7 @@ function toProperties(item) {
     Calories: { number: item.calories },
     "Protein (g)": { number: item.protein },
     Locked: { checkbox: item.locked },
+    Eaten: { checkbox: item.eaten },
     Key: { rich_text: [{ text: { content: item.key } }] },
     Time: { rich_text: item.time ? [{ text: { content: item.time } }] : [] },
   };
@@ -237,6 +239,7 @@ function cleanItem(raw, needId) {
     calories: Number.isFinite(+raw.calories) ? +raw.calories : 0,
     protein: Number.isFinite(+raw.protein) ? +raw.protein : 0,
     locked: !!raw.locked,
+    eaten: !!raw.eaten,
     time: /^\d{2}:\d{2}$/.test(String(raw.time || "")) ? String(raw.time) : "",
   };
   if (!/^\d{4}-\d{2}-\d{2} \d$/.test(item.key) || !item.meal || !SLOTS.includes(item.slot)) return null;
