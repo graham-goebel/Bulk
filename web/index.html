@@ -60,8 +60,9 @@ main{max-width:960px;margin:0 auto;padding-bottom:calc(96px + env(safe-area-inse
 .line{position:relative;height:2px;background:var(--line);margin:14px 0 0}
 .line .fill{position:absolute;inset:0 auto 0 0;background:var(--ink);transition:width .3s ease}
 .line .tick{position:absolute;top:-4px;height:10px;width:1px;background:var(--ink);left:83.333%}
-.sub{display:flex;justify-content:space-between;gap:12px;margin-top:10px;color:var(--muted);font-size:.85rem}
+.sub{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;margin-top:10px;color:var(--muted);font-size:.85rem}
 .sub b{font-weight:500;color:var(--ink)}
+.sub>span{white-space:nowrap}
 .status{margin:6px 0 0;font-size:.85rem;color:var(--muted);min-height:1.3em}
 
 details.goals{padding:0 24px;border-bottom:1px solid var(--line)}
@@ -98,7 +99,8 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .slot.locked .card:not(.sel){opacity:.35}
 .card h3{margin:0;font-size:1.05rem;font-weight:500;letter-spacing:-0.01em}
 .card .d{margin:4px 0 14px;color:var(--muted);font-size:.85rem;min-height:2.5em}
-.card .m{display:flex;gap:16px;font-size:.85rem;color:var(--muted)}
+.card .m{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.85rem;color:var(--muted)}
+.card .m span{white-space:nowrap}
 .card .m b{font-weight:500;color:var(--ink)}
 .card.skip{border-style:dashed}
 .dots{display:flex;justify-content:center;padding-top:6px}
@@ -175,20 +177,51 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .ag .m b{color:var(--ink);font-weight:500}
 .ag.skipped .n{color:var(--muted);font-weight:400}
 
-.week{display:grid;grid-template-columns:1fr;gap:0 14px;padding:4px 24px 0}
-.wday{border-top:1px solid var(--line);padding:14px 0 10px}
-.wday.sel{border-top-color:var(--ink)}
-.wh{display:flex;justify-content:space-between;align-items:baseline;width:100%;padding:0 0 6px}
-.wh b{font-weight:500}
-.wh span{font-size:.8rem;color:var(--muted)}
-.wm{display:grid;grid-template-columns:72px 1fr;gap:8px;width:100%;padding:5px 0}
-.wm .t{font-size:.78rem;color:var(--muted);padding-top:1px}
-.wm .n{font-size:.88rem}
-.wm:hover .n{text-decoration:underline;text-underline-offset:3px}
-@media (min-width:820px){
-  .week{grid-template-columns:repeat(7,minmax(0,1fr))}
-  .wh{flex-direction:column;gap:2px}
-  .wm{grid-template-columns:1fr;gap:0;padding:7px 0}
+/* week hour grid */
+.wgrid{overflow-x:auto;margin:10px 0 0;padding:0 24px;scrollbar-width:thin}
+.wg{display:grid;grid-template-columns:44px repeat(7,minmax(108px,1fr));min-width:800px}
+.wg-h{position:sticky;top:0;z-index:4;background:var(--bg);display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:8px 8px 10px;border-bottom:1px solid var(--line);font-size:.78rem;color:var(--muted);text-align:left}
+.wg-h b{font-size:.95rem;font-weight:500;color:var(--ink)}
+.wg-h.today b{text-decoration:underline;text-underline-offset:4px}
+.wg-h.sel{border-bottom:1.5px solid var(--ink)}
+.wg-ax{position:relative}
+.wg-ax span{position:absolute;left:0;font-size:.68rem;color:var(--muted);transform:translateY(-50%)}
+.wg-col{position:relative;border-left:1px solid var(--line);background-image:repeating-linear-gradient(to bottom,var(--line) 0 1px,transparent 1px 60px)}
+.wg-col.today{background-color:var(--soft)}
+.wb{position:absolute;left:4px;right:4px;border:1px solid var(--ink);border-radius:8px;background:var(--bg);padding:4px 7px;overflow:hidden;text-align:left;z-index:1;line-height:1.25}
+.wb .t{display:block;font-size:.68rem;color:var(--muted)}
+.wb .n{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:.8rem;font-weight:500}
+.wb.half{right:auto;width:calc(50% - 6px)}.wb.half.r{left:auto;right:4px}
+.wb.locked{border-width:1.5px}
+.wb:hover{box-shadow:0 2px 10px rgba(0,0,0,.1)}
+.wg-now{position:absolute;left:0;right:0;border-top:1.5px solid var(--ink);z-index:2}
+.wg-hint{padding:0 24px;margin:6px 0 0;font-size:.8rem;color:var(--muted)}
+/* next meal */
+.next{display:block;width:100%;margin:10px 0 0;padding:14px 24px 0;text-align:left}
+.next .lbl{font-size:.78rem;color:var(--muted)}
+.next .big{display:block;font-size:1.35rem;letter-spacing:-0.02em;margin:2px 0 1px}
+.next .big b{font-weight:500}
+.next .sm{font-size:.85rem;color:var(--muted)}
+.next:hover .sm{text-decoration:underline;text-underline-offset:3px}
+/* wider screens */
+@media (min-width:640px){
+  .narrow{max-width:640px}
+  .card{flex-basis:72%}.track::before,.track::after{flex-basis:calc(14% - 10px)}
+}
+@media (min-width:900px){
+  .app-head,main{max-width:1180px}
+  .strip.narrow{max-width:none;padding:10px 24px 6px}
+  #view-plan.narrow{max-width:none;display:grid;grid-template-columns:minmax(300px,360px) minmax(0,1fr);gap:0 36px;align-items:start}
+  .plan-side{position:sticky;top:8px;max-height:calc(100vh - 80px);overflow-y:auto;scrollbar-width:thin}
+  .gauge{position:static}
+  .plan-main .slot:first-child{padding-top:14px}
+  .card{flex-basis:46%}.track::before,.track::after{flex-basis:calc(27% - 10px)}
+  #view-cal .narrow{max-width:780px}
+  #view-shop.narrow{max-width:980px}
+  .list{columns:2;column-gap:48px}.grp{break-inside:avoid}
+}
+@media (min-width:900px) and (max-width:1199px){
+  .card{flex-basis:64%}.track::before,.track::after{flex-basis:calc(18% - 10px)}
 }
 .wsum{display:flex;gap:22px;flex-wrap:wrap;padding:18px 24px 0;font-size:.87rem;color:var(--muted)}
 .wsum b{color:var(--ink);font-weight:500}
@@ -229,6 +262,8 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 
   <!-- PLAN -->
   <section id="view-plan" class="narrow" aria-label="Plan">
+   <div class="plan-side">
+    <button class="next" id="nextMeal" hidden></button>
     <div class="gauge" aria-live="polite">
       <div class="dlabel" id="dLabel"></div>
       <div class="total"><span class="k" id="kTotal">0</span><span class="of" id="kOf">/ 3,000 kcal</span></div>
@@ -259,7 +294,8 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
         <div class="row" id="passRow"><label for="passcode">Notion passcode</label><span class="pass"><input type="password" id="passcode" autocomplete="current-password" placeholder="Passcode"><button class="txt" id="savePass">Save</button></span></div>
       </div>
     </details>
-
+   </div>
+   <div class="plan-main">
     <div id="slots"></div>
 
     <div class="actions">
@@ -268,6 +304,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
       <button class="txt" id="unlockDay">Unlock day</button>
     </div>
     <p class="note">Swipe to choose. Lock a meal to hold it; unlocked meals rebalance to hit your goals.</p>
+   </div>
   </section>
 
   <!-- CALENDAR -->
@@ -624,6 +661,7 @@ function updatePlan(except=-1,smooth=true){
   else m=`${fmt(d)} kcal over. Unlock a meal or swipe to something lighter.`;
   if(p<state.protein-5)m+=` Protein ${fmt(state.protein-p)} g under.`;
   $("status").textContent=m;
+  renderNext();
   const dn=dayNutrition(ui.day),v=$("variety");
   if(!dn.mask&&!dn.has){v.hidden=true}else{
     const miss=GROUPS.filter(g=>!dn.groups.includes(g)).map(g=>g.toLowerCase());
@@ -658,6 +696,33 @@ $("copyAll").onclick=()=>{
   setTimeout(()=>{b.textContent="Copy this day to the whole week"},2000);
 };
 
+/* ---------- next meal ---------- */
+function nextMeal(){
+  const now=new Date(),today=iso(now),nm=now.getHours()*60+now.getMinutes();
+  let d=-1;for(let x=0;x<D;x++)if(iso(dayDate(x))===today)d=x;
+  if(d<0)return null;
+  const list=x=>mealsOf(x).filter(m=>!m.o.skip);
+  const cur=list(d).filter(m=>mins(m.time)<=nm&&nm-mins(m.time)<30).pop();
+  if(cur)return{d,m:cur,diff:0};
+  const up=list(d).find(m=>mins(m.time)>nm);
+  if(up)return{d,m:up,diff:mins(up.time)-nm};
+  if(d+1<D){const t=list(d+1)[0];if(t)return{d:d+1,m:t,diff:24*60-nm+mins(t.time)}}
+  return null;
+}
+function inText(min){if(min<1)return "now";const h=Math.floor(min/60),m=min%60;return "in "+(h?`${h} h`+(m?` ${m} min`:""):`${m} min`)}
+function renderNext(){
+  const el=$("nextMeal"),n=nextMeal();
+  if(!n){el.hidden=true;return}
+  const{d,m,diff}=n;
+  el.innerHTML=`<span class="lbl">${diff===0?"Now":"Next meal"}</span><span class="big"><b></b> <span></span></span><span class="sm"></span>`;
+  el.querySelector(".big b").textContent=m.slot;
+  el.querySelector(".big span").textContent=diff===0?"is now":inText(diff);
+  el.querySelector(".sm").textContent=`${m.o.n}, ${fmtTime(m.time)}${isToday(d)?"":" tomorrow"}`;
+  el.setAttribute("aria-label",`${diff===0?"Now":"Next meal"}: ${m.slot} ${diff===0?"is now":inText(diff)}, ${m.o.n} at ${fmtTime(m.time)}. Open recipe.`);
+  el.onclick=()=>openDetail(d,m.i);el.hidden=false;
+}
+setInterval(()=>{if(ui.tab==="plan"&&document.visibilityState==="visible")renderNext()},30000);
+
 /* ---------- calendar ---------- */
 function gotoPlan(d,slot){
   ui.day=d;switchTab("plan");
@@ -665,6 +730,7 @@ function gotoPlan(d,slot){
 }
 function renderCal(){
   document.querySelectorAll("[data-cv]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.cv===ui.cal));
+  document.querySelector("#view-cal .seg").classList.toggle("narrow",ui.cal!=="week");
   $("strip").hidden=!(ui.tab==="plan"||(ui.tab==="cal"&&ui.cal!=="week"));
   const body=$("calBody");body.innerHTML="";
   if(ui.cal==="hour")renderHour(body);else if(ui.cal==="day")renderDay(body);else renderWeek(body);
@@ -749,28 +815,45 @@ function renderDay(body){
     body.appendChild(w)}
 }
 function renderWeek(body){
-  const g=document.createElement("div");g.className="week";
-  let sk=0,sp=0;
+  const start=6,end=24,ph=60,BH=56;let sk=0,sp=0;
+  const wrap=document.createElement("div");wrap.className="wgrid";
+  const g=document.createElement("div");g.className="wg";g.setAttribute("role","group");g.setAttribute("aria-label","Week by hour");
+  const H=(end-start)*ph,topOf=mm=>((mm-start*60)/60*ph)+"px";
+  g.appendChild(document.createElement("span"));
   for(let d=0;d<D;d++){
     const t=totals(d);sk+=t.k;sp+=t.p;
-    const col=document.createElement("div");col.className="wday"+(d===ui.day?" sel":"");
-    const h=document.createElement("button");h.className="wh";
-    h.innerHTML=`<b>${shortDate(d)}${isToday(d)?" (today)":""}</b><span>${fmt(t.k)} kcal</span>`;
+    const h=document.createElement("button");h.className="wg-h"+(isToday(d)?" today":"")+(d===ui.day?" sel":"");
+    h.innerHTML=`<b>${wk(d)} ${dayDate(d).getDate()}</b><span>${fmt(t.k)} kcal</span><span>${fmt(t.p)} g protein</span>`;
     h.setAttribute("aria-label",`${longDate(d)}, ${fmt(t.k)} kcal. Open day view.`);
     h.onclick=()=>{ui.day=d;ui.cal="day";saveUi();renderAll(false)};
-    col.appendChild(h);
-    mealsOf(d).forEach(m=>{
-      if(m.o.skip)return;
-      const b=document.createElement("button");b.className="wm";
+    g.appendChild(h);
+  }
+  const ax=document.createElement("div");ax.className="wg-ax";ax.style.height=H+"px";
+  for(let hr=start+1;hr<end;hr++){const l=document.createElement("span");l.style.top=topOf(hr*60);l.textContent=`${(hr%12)||12} ${hr<12?"AM":"PM"}`;ax.appendChild(l)}
+  g.appendChild(ax);
+  const nowD=new Date(),nowM=nowD.getHours()*60+nowD.getMinutes();
+  for(let d=0;d<D;d++){
+    const col=document.createElement("div");col.className="wg-col"+(isToday(d)?" today":"");col.style.height=H+"px";
+    const items=mealsOf(d).filter(m=>!m.o.skip).map(m=>({...m,mm:clamp(mins(m.time),start*60,end*60-45)}));
+    items.forEach((it,k)=>{const pv=items[k-1];it.lane=pv&&it.mm-pv.mm<60?1-pv.lane:0;it.half=(pv&&it.mm-pv.mm<60)||(items[k+1]&&items[k+1].mm-it.mm<60)});
+    items.forEach(m=>{
+      const b=document.createElement("button");b.className="wb"+(m.half?" half"+(m.lane?" r":""):"")+(m.locked?" locked":"");
+      b.style.top=topOf(m.mm);b.style.height=BH+"px";
       b.innerHTML=`<span class="t"></span><span class="n"></span>`;
-      b.querySelector(".t").textContent=fmtTime(m.time);b.querySelector(".n").textContent=m.o.n;
+      b.querySelector(".t").textContent=fmtTime(m.time)+(m.locked?" · locked":"");b.querySelector(".n").textContent=m.o.n;
+      b.title=`${m.slot}: ${m.o.n}, ${fmt(m.o.k)} kcal`;
+      b.setAttribute("aria-label",`${shortDate(d)}, ${fmtTime(m.time)} ${m.slot}: ${m.o.n}. Open recipe.`);
       b.onclick=()=>openDetail(d,m.i);col.appendChild(b);
     });
+    if(isToday(d)&&nowM>=start*60&&nowM<end*60){const l=document.createElement("div");l.className="wg-now";l.style.top=topOf(nowM);l.setAttribute("aria-hidden","true");col.appendChild(l)}
     g.appendChild(col);
   }
+  wrap.appendChild(g);
   const top=document.createElement("div");top.className="cal-title";
   top.innerHTML=`<h2>${dayDate(0).toLocaleDateString("en-US",{month:"short",day:"numeric"})} to ${dayDate(6).toLocaleDateString("en-US",{month:"short",day:"numeric"})}</h2>`;
-  body.appendChild(top);body.appendChild(g);
+  const hint=document.createElement("p");hint.className="wg-hint";hint.textContent="Tap a meal for the recipe, or a day for its details. Drag meals to new times in the Hour view.";
+  body.append(top,hint,wrap);
+  requestAnimationFrame(()=>{const sc=wrap.querySelector(".wg-h.today")||wrap.querySelector(".wg-h.sel");if(sc&&wrap.scrollWidth>wrap.clientWidth)wrap.scrollLeft=Math.max(0,sc.offsetLeft-60)});
   const s=document.createElement("div");s.className="wsum";
   s.innerHTML=`<span>Average <b>${fmt(sk/D)}</b> kcal a day</span><span><b>${fmt(sp/D)} g</b> protein a day</span>`;
   body.appendChild(s);
