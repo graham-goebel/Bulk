@@ -83,11 +83,17 @@ If you skip a meal, choose **I skipped it** from its **⋯** menu or in its shee
 
 ## Day status
 
-Below the rings on the Dashboard, a bar shows the whole day from the first meal to the last, with a dot for each meal, a mark for the current time, and a one-line status: on track, behind by some calories, goal met, or short at the end of the day. A meal counts toward "behind" only once it's an hour past its start time, so you aren't flagged the moment a meal begins. The next-meal card says a meal "is now" for five minutes after it starts, then how long ago it started.
+Below the rings on the Dashboard, a card shows the whole day from the first meal to the last, with a dot for each meal, a mark for the current time, and a status: on track, behind by some calories, goal met, or short at the end of the day. A meal counts toward "behind" only once it's an hour past its start time, so you aren't flagged the moment a meal begins.
+
+The next-meal card says a meal "is now" for five minutes after it starts, then how long ago it started. Its color shows urgency: green while the next meal is more than 15 minutes away, yellow when it's close or started within the last hour, and red once it's more than an hour overdue.
+
+## 1, 3 or 7 days
+
+The calendar button next to settings cycles every tab between 1 day, 3 days and the whole week; the number on it shows which. 3 days starts at the selected day. The Calendar and Shopping list switches follow the same setting. On Plan, 3 days and the week show each day as a list (tap a day's heading to go back to that one day). On the Dashboard, the rings add up the days against your goal for all of them, the tiles show daily averages, and the status card turns into a column per day, eaten over planned, with the goal as a dashed line.
 
 ## Meal reminders
 
-Tap the bell on the next-meal card, or **Remind me** in a meal's sheet, and choose when to be alerted (at meal time, 10 or 30 minutes before). You can include the rest of the day's meals too. On the Calendar tab, the bell next to Day/3 days/Week does the same for every upcoming meal in view (the day, or the whole week). The app opens a calendar invite with the alert already set; tap **Add** (or **Add All**) and your phone's Calendar handles the reminder, even when the app is closed. The invite is built by the Worker's `/ics` endpoint, which needs no passcode because it only turns the meal name, time and calories it's given into a calendar file.
+Tap the bell on the next-meal card, or **Remind me** in a meal's sheet, and choose when to be alerted (at meal time, 10 or 30 minutes before). You can include the rest of the day's meals too. On the Calendar tab, the bell next to Day/3 days/Week does the same for every upcoming meal in view (the day, the 3 days, or the whole week). The app opens a calendar invite with the alert already set; tap **Add** (or **Add All**) and your phone's Calendar handles the reminder, even when the app is closed. The invite is built by the Worker's `/ics` endpoint, which needs no passcode because it only turns the meal name, time and calories it's given into a calendar file.
 
 ## Shake to shuffle
 

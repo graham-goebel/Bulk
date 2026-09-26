@@ -37,15 +37,16 @@ button:focus-visible,summary:focus-visible,input:focus-visible{outline:1.5px sol
 .narrow{max-width:520px;margin:0 auto}
 
 .app-head{max-width:960px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;padding:22px 24px 6px}
+.h-txt{min-width:0}
 .h-kick{margin:0;font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-.h-title{margin:2px 0 0;font-size:2rem;font-weight:500;letter-spacing:-0.04em;line-height:1.1}
+.h-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:2px 0 0;font-size:2rem;font-weight:500;letter-spacing:-0.04em;line-height:1.1}
 .sync-btn .ic{color:var(--muted)}.sync-btn[data-s="ok"] .ic{color:var(--ink)}.sync-btn[data-s="warn"] .ic{color:#b23a2a}.sync-btn[data-s="sync"] .ic{animation:spin 1s linear infinite}
 .brand{font-size:1.05rem;font-weight:500;letter-spacing:-0.01em}
 .sync{font-size:.78rem;color:var(--muted)}
 .pass{display:flex;align-items:center;gap:12px}
 .pass input{width:9.5em}
 .vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;padding:0;margin:-1px}
-.head-r{display:flex;align-items:center;gap:8px}
+.head-r{display:flex;align-items:center;gap:2px;flex:none}
 .nbtn{text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line);min-height:24px}
 a.txt{color:inherit}
 main{max-width:960px;margin:0 auto;padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
@@ -89,7 +90,8 @@ main{max-width:960px;margin:0 auto;padding-bottom:calc(100px + env(safe-area-ins
 .icon-btn{width:42px;height:42px;border-radius:50%;background:var(--soft);display:grid;place-items:center;color:var(--ink)}
 .icon-btn .ic{width:19px;height:19px}
 .icon-btn:focus-visible{border-radius:50%}
-.app-head .icon-btn{background:none}
+.app-head .icon-btn{background:none;width:40px}
+.span-btn .ic{width:22px;height:22px}.span-btn text{font-family:inherit}
 .icon-btn.sm{width:34px;height:34px}.icon-btn.sm .ic{width:16px;height:16px}
 .hero{position:relative;isolation:isolate;margin:6px 24px 0;color:var(--ink)}
 .hero .fx-pt{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
@@ -101,17 +103,31 @@ main{max-width:960px;margin:0 auto;padding-bottom:calc(100px + env(safe-area-ins
 .hero.fx-on .dial svg{visibility:hidden}
 .dial .val{position:relative;font-size:22px;font-weight:500;letter-spacing:-0.03em;line-height:1.1}
 .dial .unit{position:relative;max-width:74%;text-align:center;line-height:1.25;font-size:10.5px;color:var(--muted);letter-spacing:0;margin-top:3px}
-.dayline{margin:4px 24px 0;padding:14px 16px 12px;border-radius:20px;background:var(--soft)}
-.dl-top{display:flex;flex-direction:column;gap:2px;margin-bottom:14px}
-.dl-st{display:flex;align-items:center;gap:6px;font-size:.95rem;font-weight:500}.dl-st .ic{width:16px;height:16px;color:var(--muted)}.dl-st.warn .ic{color:#b23a2a}
-.dl-sub{font-size:.8rem;color:var(--muted);}
-.dl-bar{position:relative;height:8px;margin:0 6px;border-radius:4px;background:rgba(0,0,0,.07)}
-.dl-el{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:rgba(0,0,0,.14)}
-.dl-bar .mk{position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--card);box-shadow:inset 0 0 0 2px #1baf7a}
-.dl-bar .mk.on{background:#1baf7a;box-shadow:0 0 0 2px var(--soft)}
-.dl-bar .mk.due{box-shadow:inset 0 0 0 2px var(--ink)}
-.dl-bar .mk.miss{width:8px;height:8px;margin:-4px 0 0 -4px;background:rgba(0,0,0,.2);box-shadow:none}
-.dl-now{position:absolute;top:-6px;bottom:-6px;width:2px;margin-left:-1px;border-radius:1px;background:var(--ink)}
+.dayline{margin:14px 24px 0;padding:18px 18px 16px;border-radius:24px;background:var(--soft)}
+.dl-top{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.dl-badge{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.06);color:var(--muted)}
+.dl-badge .ic{width:20px;height:20px}
+.dl-badge.ok{background:#1baf7a;color:#fff}.dl-badge.warn{background:#d6452f;color:#fff}
+.dl-tx{display:flex;flex-direction:column;min-width:0}
+.dl-st{font-size:1.3rem;font-weight:500;letter-spacing:-0.025em;line-height:1.2}
+.dl-sub{margin-top:2px;font-size:.82rem;color:var(--muted)}
+.dl-bar{position:relative;height:10px;margin:0 8px;border-radius:5px;background:rgba(0,0,0,.07)}
+.dl-el{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:rgba(0,0,0,.13)}
+.dl-bar .mk{position:absolute;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:var(--card);box-shadow:inset 0 0 0 2.5px #1baf7a,0 0 0 3px var(--soft)}
+.dl-bar .mk.on{background:#1baf7a}
+.dl-bar .mk.due{box-shadow:inset 0 0 0 2.5px var(--ink),0 0 0 3px var(--soft)}
+.dl-bar .mk.miss{width:10px;height:10px;margin:-5px 0 0 -5px;background:rgba(0,0,0,.22);box-shadow:0 0 0 3px var(--soft)}
+.dl-now{position:absolute;top:-8px;bottom:-8px;width:2px;margin-left:-1px;border-radius:1px;background:var(--ink)}
+.rc-row{--lb:29px;position:relative;display:flex;gap:6px;height:118px}
+.rc-goal{position:absolute;left:0;right:0;border-top:1.5px dashed rgba(0,0,0,.28);pointer-events:none;z-index:1}
+.rc{flex:1;display:flex;flex-direction:column;align-items:center;min-width:0;border-radius:12px}
+.rc-bar{position:relative;flex:1;width:100%;max-width:34px;border-radius:9px;background:rgba(0,0,0,.05);overflow:hidden}
+.rc-bar i{position:absolute;left:0;right:0;bottom:0;border-radius:9px}
+.rc-bar .pl{background:rgba(235,104,52,.24)}.rc-bar .ek{background:#eb6834}
+.rc-l{height:14px;margin-top:6px;font-size:.72rem;line-height:14px;color:var(--muted)}.rc.today .rc-l{color:var(--ink);font-weight:600}
+.rc-dot{flex:none;width:5px;height:5px;margin-top:4px;border-radius:50%;background:transparent}
+.rc.ok .rc-dot{background:#1baf7a}.rc.warn .rc-dot{background:#d6452f}
+
 .dl-ax{display:flex;justify-content:space-between;margin-top:8px;font-size:.72rem;color:var(--muted)}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 24px 22px}
 .tile{display:block;width:100%;text-align:left;background:var(--soft);border-radius:20px;padding:14px 16px 15px;min-width:0}
@@ -260,6 +276,8 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .now::before{content:"";position:absolute;left:-4px;top:-4.5px;width:7px;height:7px;border-radius:50%;background:var(--ink)}
 
 .agenda{padding:4px 24px 0}
+.ag-day{display:flex;justify-content:space-between;align-items:baseline;gap:12px;width:100%;margin-top:22px;padding-bottom:8px;border-bottom:1.5px solid var(--ink);text-align:left}
+.ag-day .n{font-size:1.05rem;font-weight:500;letter-spacing:-0.01em}.ag-day .m{font-size:.8rem;color:var(--muted)}
 .ag{display:grid;grid-template-columns:82px 1fr;gap:12px;padding:16px 0;border-bottom:1px solid var(--line);width:100%}
 .ag .tm{font-size:.85rem;color:var(--ink);padding-top:2px}
 .ag .sl{display:block;font-size:.72rem;color:var(--muted);margin-top:2px;line-height:1.3}
@@ -291,12 +309,20 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .wg-now{position:absolute;left:0;right:0;border-top:1.5px solid var(--ink);z-index:2}
 .wg-hint{padding:0 24px;margin:6px 0 0;font-size:.8rem;color:var(--muted)}
 /* next meal */
-.next{position:relative;display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;width:calc(100% - 48px);margin:14px 24px 0;padding:15px 14px 15px 18px;text-align:left;
-  border-radius:22px;background:var(--ink);color:var(--bg)}
+/* White frosted glass over a field of the urgency color: green while there's time, yellow when a meal
+   is close or has just started, red once it's an hour overdue. */
+.next{--a1:#1baf7a;--a2:#8fe0bf;--a0:#d3f3e5;position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;width:calc(100% - 48px);margin:14px 24px 0;padding:16px 14px 16px 18px;text-align:left;
+  border-radius:24px;color:var(--ink);box-shadow:0 10px 30px -12px var(--a1),0 1px 2px rgba(0,0,0,.05)}
+.next.u-soon{--a1:#f1b21c;--a2:#ffd970;--a0:#fff0c2}
+.next.u-late{--a1:#e2492f;--a2:#ff9c85;--a0:#ffdcd3}
+.next::before{content:"";position:absolute;inset:0;z-index:-2;background:
+  radial-gradient(70% 110% at 0% 0%,var(--a1) 0,transparent 70%),radial-gradient(60% 120% at 100% 100%,var(--a2) 0,transparent 70%),radial-gradient(40% 80% at 78% 10%,var(--a1) 0,transparent 70%),var(--a0);transition:background .4s}
+.next::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;background:linear-gradient(180deg,rgba(255,255,255,.62),rgba(255,255,255,.42));
+  -webkit-backdrop-filter:blur(22px) saturate(1.5);backdrop-filter:blur(22px) saturate(1.5);box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 0 0 1px rgba(255,255,255,.55)}
 
 .next .main{display:block;min-width:0;text-align:left;color:inherit}
-.next .nm-more{align-self:start;width:40px;height:40px;margin:-4px -2px 0 0;color:#fff;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.3)}
-.next .nm-more:hover,.next .nm-more[aria-expanded="true"]{background:rgba(255,255,255,.14);color:#fff}
+.next .nm-more{align-self:start;width:40px;height:40px;margin:-4px -2px 0 0;color:var(--ink);background:rgba(255,255,255,.55);box-shadow:inset 0 0 0 1px rgba(255,255,255,.8)}
+.next .nm-more:hover,.next .nm-more[aria-expanded="true"]{background:rgba(255,255,255,.85);color:var(--ink)}
 .rem-opts{display:grid;gap:8px;margin-top:18px}
 .rem-opt{display:flex;justify-content:space-between;align-items:center;width:100%;border:1px solid var(--line);border-radius:14px;padding:13px 16px;font-size:.95rem}
 .rem-opt:hover{border-color:var(--ink)}
@@ -304,12 +330,12 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .rem-all{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:.9rem}
 .rem-all input{width:18px;height:18px;accent-color:var(--ink)}
 
-.next .top{display:flex;align-items:center;gap:6px;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;opacity:.65}
+.next .top{display:flex;align-items:center;gap:6px;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(0,0,0,.6)}
 .next .big{display:block;font-size:1.25rem;font-weight:300;letter-spacing:-0.02em;line-height:1.2;margin:5px 0 2px}
 .next .big b{font-weight:500}
-.next .sm{display:block;font-size:.8rem;opacity:.65;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.next .prog{display:block;position:relative;height:3px;border-radius:2px;background:rgba(255,255,255,.18);margin-top:11px;overflow:hidden}
-.next .prog i{position:absolute;inset:0 auto 0 0;background:var(--bg);border-radius:2px;transition:width .4s ease}
+.next .sm{display:block;font-size:.8rem;color:rgba(0,0,0,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.next .prog{display:block;position:relative;height:4px;border-radius:2px;background:rgba(0,0,0,.08);margin-top:12px;overflow:hidden}
+.next .prog i{position:absolute;inset:0 auto 0 0;background:var(--ink);border-radius:2px;transition:width .4s ease}
 /* wider screens */
 @media (min-width:640px){
   .narrow{max-width:640px}
@@ -492,6 +518,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   <div class="h-txt"><p class="h-kick" id="hKick"></p><h1 class="h-title" id="hTitle">Today</h1></div>
   <div class="head-r">
     <button class="icon-btn sync-btn" id="notionBtn" hidden aria-label="Notion" title="Notion"><svg class="ic" aria-hidden="true"><use href="#i-cloud"/></svg></button>
+    <button class="icon-btn span-btn" id="spanBtn" aria-label="Days shown" title="Days shown"></button>
     <button class="icon-btn" id="goalsBtn" aria-haspopup="dialog" aria-label="Goals and settings" title="Goals and settings"><svg class="ic" aria-hidden="true"><use href="#i-cog"/></svg></button>
   </div>
 </header>
@@ -507,7 +534,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
     <div id="slots"></div>
     <div id="planList" hidden></div>
 
-    <div class="actions">
+    <div class="actions" id="planActs">
       <button class="txt" id="shuffle">Shuffle unlocked meals</button>
       <button class="txt" id="copyAll">Copy this day to the whole week</button>
       <button class="txt" id="unlockDay">Unlock day</button>
@@ -537,8 +564,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   <!-- SHOP -->
   <section id="view-shop" class="narrow" aria-label="Shopping list" hidden>
     <div class="seg seg-row" role="group" aria-label="List covers">
-      <button data-sc="week" aria-pressed="true">Whole week</button>
-      <button data-sc="day" aria-pressed="false" id="scDay">Selected day</button>
+      <button data-sc="day" aria-pressed="false">Day</button><button data-sc="three" aria-pressed="false">3 days</button><button data-sc="week" aria-pressed="true">Week</button>
     </div>
     <div class="list" id="listBody"></div>
     <div class="foot">
@@ -820,9 +846,15 @@ if(!state){
     if(o&&Array.isArray(o.picks)&&o.picks.length===N){state.target=clamp(+o.target||3000,1800,4000);state.protein=clamp(+o.protein||110,60,200);
       state.days[0]={picks:o.picks.map((v,i)=>clamp(v|0,0,SLOTS[i].opts.length-1)),locked:SLOTS.map((_,i)=>!!(o.locked&&o.locked[i])),times:Array(N).fill(null),done:Array(N).fill(false),missed:Array(N).fill(false)}}}}catch(e){}
 }
-let ui={tab:"plan",day:0,cal:"hour",scope:"week",pv:"cards"};
+let ui={tab:"plan",day:0,cal:"hour",scope:"week",pv:"cards",span:1};
 const TABS=["plan","dash","cal","shop","pantry"];
-try{const u=JSON.parse(localStorage.getItem(UIKEY)||"null");if(u){ui.tab=TABS.includes(u.tab)?u.tab:"plan";ui.pl=["sphere","shelves","list"].includes(u.pl)?u.pl:"sphere";ui.day=clamp(u.day|0,0,D-1);ui.cal=["hour","three","week"].includes(u.cal)?u.cal:"hour";ui.pv=u.pv==="list"?"list":"cards";ui.scope=u.scope==="day"?"day":"week"}}catch(e){}
+try{const u=JSON.parse(localStorage.getItem(UIKEY)||"null");if(u){ui.tab=TABS.includes(u.tab)?u.tab:"plan";ui.pl=["sphere","shelves","list"].includes(u.pl)?u.pl:"sphere";ui.day=clamp(u.day|0,0,D-1);ui.cal=["hour","three","week"].includes(u.cal)?u.cal:"hour";ui.pv=u.pv==="list"?"list":"cards";ui.scope=u.scope==="day"?"day":"week";ui.span=[1,3,7].includes(u.span)?u.span:ui.cal==="week"?7:ui.cal==="three"?3:1}}catch(e){}
+// One setting for how many days every tab shows (the header button cycles it): the calendar view, the
+// shopping list scope, the plan list and the dashboard all follow it. 3 days is a window that starts at the selected day.
+function setSpan(n){ui.span=n;ui.cal=n===1?"hour":n===3?"three":"week";ui.scope=n===1?"day":n===3?"three":"week"}
+function spanRange(){if(ui.span===7)return[0,D-1];if(ui.span===3){const a=Math.min(ui.day,D-3);return[a,a+2]}return[ui.day,ui.day]}
+function spanDays(){const[a,b]=spanRange();return Array.from({length:b-a+1},(_,k)=>a+k)}
+setSpan(ui.span);
 function saveUi(){try{localStorage.setItem(UIKEY,JSON.stringify(ui))}catch(e){}}
 function syncNames(){state.days.forEach(dy=>{dy.names=dy.picks.map((p,i)=>(SLOTS[i].opts[p]||{}).n||null)})}
 function saveLocal(){syncNames();try{localStorage.setItem(KEY2,JSON.stringify(state))}catch(e){}}
@@ -897,16 +929,16 @@ function placeStripBar(instant){
   hi.dataset.on="1";if(hi.classList.contains("now")){void hi.offsetWidth;hi.classList.remove("now")}
 }
 function renderStrip(){
-  // Week views and the whole-week shopping list select every day; 3 days selects a window of three.
+  // The week selects every day; 3 days selects a window of three.
   const el=$("strip");el.querySelectorAll("button").forEach(b=>b.remove());
-  const rg=ui.tab==="cal"&&ui.cal==="week"||ui.tab==="shop"&&ui.scope==="week"?[0,D-1]:ui.tab==="cal"&&ui.cal==="three"?[Math.min(ui.day,D-3),Math.min(ui.day,D-3)+2]:null;
+  const rg=ui.span>1?spanRange():null;
   for(let d=0;d<D;d++){
     const b=document.createElement("button");
     b.innerHTML=`<span>${wk(d)}</span><b>${dayDate(d).getDate()}</b>`;
     const inR=rg&&d>=rg[0]&&d<=rg[1];b.setAttribute("aria-label",longDate(d));b.setAttribute("aria-current",rg?!!inR:d===ui.day);
     if(rg?inR:d===ui.day)b.classList.add("in");
     if(isToday(d))b.classList.add("today");
-    b.onclick=()=>{ui.day=d;if(ui.tab==="cal"&&ui.cal==="week")ui.cal="hour";if(ui.tab==="shop")ui.scope="day";saveUi();renderAll(false)};
+    b.onclick=()=>{ui.day=d;if(ui.span===7)setSpan(1);saveUi();renderAll(false)};
     el.appendChild(b);
   }
   placeStripBar(false);
@@ -995,8 +1027,11 @@ function updatePlan(except=-1,smooth=true){
   document.querySelectorAll(".preset").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.v===state.target));
   renderMeter();renderNext();renderHead();
   document.querySelectorAll("[data-pv]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.pv===ui.pv));
-  $("slots").hidden=ui.pv==="list";$("planList").hidden=ui.pv!=="list";
-  if(ui.pv==="list"){$("planList").innerHTML="";renderDay($("planList"))}
+  // 3 days and the week show each day as a list; cards are for choosing one day's meals
+  const multi=ui.span>1,list=multi||ui.pv==="list";
+  $("planSeg").hidden=multi;$("planActs").hidden=multi;
+  $("slots").hidden=list;$("planList").hidden=!list;
+  if(list){$("planList").innerHTML="";if(multi)spanDays().forEach(d=>renderDay($("planList"),d,true));else renderDay($("planList"))}
 }
 document.querySelectorAll("[data-pv]").forEach(b=>b.onclick=()=>{ui.pv=b.dataset.pv;saveUi();updatePlan(-1,false)});
 function renderSettings(){
@@ -1037,63 +1072,94 @@ function ringSvg(planned,eaten,val,unit,col){
   return `<div class="dial"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="${r}" fill="none" stroke="rgba(0,0,0,.06)" stroke-width="6"/>${arc(planned,.3)}${arc(eaten,1)}</svg>
     <span class="val">${val}</span><span class="unit">${unit}</span></div>`;
 }
-// The whole day at a glance: each meal on a timeline (eaten, skipped, due, to come), the part of the day
-// that's gone by, and whether the calories eaten keep pace with the meals that were due by now.
-function renderDayline(d,ms,ek,t){
-  const el=$("dayline");if(!ms.length){el.hidden=true;return}
-  const now=new Date(),nm=now.getHours()*60+now.getMinutes(),today=isToday(d),past=iso(dayDate(d))<iso(now),future=!today&&!past;
-  const times=ms.map(m=>mins(m.time)),first=Math.min(...times),last=Math.max(...times),t0=first-30,t1=last+30,pos=v=>clamp((v-t0)/(t1-t0),0,1)*100;
+// What's been eaten on a day, and whether it keeps pace with the meals that were due by now.
+function dayStat(d){
+  const ms=mealsOf(d).filter(m=>!m.o.skip),now=new Date(),nm=now.getHours()*60+now.getMinutes(),today=isToday(d),past=iso(dayDate(d))<iso(now),future=!today&&!past;
+  const t=totals(d),done=ms.filter(m=>m.done),nMiss=ms.filter(m=>m.missed).length,ek=done.reduce((a,m)=>a+m.o.k,0),ep=done.reduce((a,m)=>a+m.o.p,0);
   // a meal is "due" on the timeline once it starts, but only counts against the day an hour later
   const due=m=>!m.missed&&(past||today&&mins(m.time)<=nm),owed=m=>!m.missed&&(past||today&&mins(m.time)+60<=nm);
-  const expected=ms.filter(owed).reduce((a,m)=>a+m.o.k,0)+ms.filter(m=>m.done&&!owed(m)).reduce((a,m)=>a+m.o.k,0),gap=expected-ek;
-  let kind="info",text,sub="";
-  if(future){text=`${ms.length} meals planned`;sub=`first at ${fmtTime(ms[0].time)}`}
-  else if(today&&!ms.some(due)&&!ek){text="Day hasn't started";sub=`first meal at ${fmtTime(ms[0].time)}`}
-  else if(gap<=100){kind="ok";text=past||today&&nm>last?(ek>=state.target-100?"Goal met":"Day done"):"On track";sub=`${fmt(ek)} of ${fmt(past?t.k:expected)} kcal${past?"":" so far"}`}
+  const expected=ms.filter(owed).reduce((a,m)=>a+m.o.k,0)+done.filter(m=>!owed(m)).reduce((a,m)=>a+m.o.k,0);
+  const last=ms.length?Math.max(...ms.map(m=>mins(m.time))):0,over=past||today&&nm>last;
+  let kind="info",text,sub="",gap=Math.max(0,expected-ek);
+  if(!ms.length){text="No meals planned";gap=0}
+  else if(future){text=`${ms.length} meals planned`;sub=`${fmt(t.k)} kcal, first at ${fmtTime(ms[0].time)}`}
+  else if(today&&!ms.some(due)&&!ek){text="Day hasn't started";sub=`First meal at ${fmtTime(ms[0].time)}`}
+  else if(gap<=100){kind="ok";text=over?(ek>=state.target-100?"Goal met":"Day done"):"On track";sub=`${fmt(ek)} of ${fmt(over?t.k:expected)} kcal ${over?"eaten":"due so far"}`}
   else{kind="warn";text=past?`${fmt(gap)} kcal short`:`Behind by ${fmt(gap)} kcal`;sub=`${fmt(ek)} of ${fmt(expected)} kcal due by now`}
+  return{d,ms,t,done,nMiss,ek,ep,today,past,future,nm,due,gap,kind,text,sub};
+}
+const DL_ICON={ok:"ok",warn:"warn",info:"clock"};
+function dlHead(kind,text,sub){return `<div class="dl-top"><span class="dl-badge ${kind}"><svg class="ic" aria-hidden="true"><use href="#i-${DL_ICON[kind]}"/></svg></span><span class="dl-tx"><span class="dl-st">${text}</span><span class="dl-sub">${sub}</span></span></div>`}
+// One day: each meal on a timeline (eaten, skipped, due, to come) and the part of the day that's gone by.
+function renderDayline(s){
+  const el=$("dayline"),{ms,today,past,nm,due}=s;if(!ms.length){el.hidden=true;return}
+  const times=ms.map(m=>mins(m.time)),t0=Math.min(...times)-30,t1=Math.max(...times)+30,pos=v=>clamp((v-t0)/(t1-t0),0,1)*100;
   const nowP=today?pos(nm):past?100:0;
   const marks=ms.map(m=>{const st=m.done?"on":m.missed?"miss":due(m)?"due":"";return `<i class="mk ${st}" style="left:${pos(mins(m.time)).toFixed(1)}%" title="${esc(m.slot)} ${fmtTime(m.time)}${m.done?", eaten":m.missed?", skipped":due(m)?", not marked":""}"></i>`}).join("");
-  el.innerHTML=`<div class="dl-top"><span class="dl-st ${kind}"><svg class="ic" aria-hidden="true"><use href="#i-${kind==="ok"?"ok":kind==="warn"?"warn":"clock"}"/></svg>${text}</span><span class="dl-sub">${sub}</span></div>
-    <div class="dl-bar" aria-hidden="true"><span class="dl-el" style="width:${nowP.toFixed(1)}%"></span>${marks}${today&&nm>=t0&&nm<=t1?`<span class="dl-now" style="left:${nowP.toFixed(1)}%"></span>`:""}</div>
+  el.className="dayline "+s.kind;
+  el.innerHTML=dlHead(s.kind,s.text,s.sub)+`
+    <div class="dl-bar" aria-hidden="true"><span class="dl-el" style="width:${nowP.toFixed(1)}%"></span>${today&&nm>=t0&&nm<=t1?`<span class="dl-now" style="left:${nowP.toFixed(1)}%"></span>`:""}${marks}</div>
     <div class="dl-ax" aria-hidden="true"><span>${fmtTime(ms[0].time)}</span><span>${fmtTime(ms[ms.length-1].time)}</span></div>`;
+  el.setAttribute("aria-label",`${s.text}. ${s.sub}.`);el.hidden=false;
+}
+// 3 days or the week: a column per day, eaten over planned against the goal line, and the gap across the days so far.
+function renderRangeline(st){
+  const el=$("dayline"),run=st.filter(s=>s.kind!=="info"),gap=run.reduce((a,s)=>a+s.gap,0),okN=run.filter(s=>s.kind==="ok").length;
+  const eaten=st.reduce((a,s)=>a+s.ek,0),planned=st.reduce((a,s)=>a+s.t.k,0),n=st.length;
+  let kind="info",text,sub;
+  if(!run.length){text=`${fmt(Math.round(planned/n/10)*10)} kcal a day planned`;sub=`${n} days from ${wk(st[0].d,"long")}`}
+  else{kind=gap<=100*run.length?"ok":"warn";text=kind==="ok"?"On track":`Behind by ${fmt(gap)} kcal`;sub=`${okN} of ${run.length} day${run.length>1?"s":""} on track · ${fmt(eaten)} kcal eaten`}
+  const scale=Math.max(state.target,...st.map(s=>s.t.k))*1.08,pc=v=>(Math.min(1,v)*100).toFixed(1)+"%";
+  const cols=st.map(s=>`<button class="rc ${s.kind}${s.today?" today":""}" data-d="${s.d}" aria-label="${esc(longDate(s.d))}: ${esc(s.text)}"><span class="rc-bar"><i class="pl" style="height:${pc(s.t.k/scale)}"></i><i class="ek" style="height:${pc(s.ek/scale)}"></i></span><span class="rc-l">${wk(s.d)}</span><span class="rc-dot"></span></button>`).join("");
+  el.className="dayline range "+kind;
+  el.innerHTML=dlHead(kind,text,sub)+`<div class="rc-row"><span class="rc-goal" style="bottom:calc(var(--lb) + (100% - var(--lb)) * ${Math.min(1,state.target/scale).toFixed(3)})" aria-hidden="true"></span>${cols}</div>`;
+  el.querySelectorAll(".rc").forEach(b=>b.onclick=()=>{ui.day=+b.dataset.d;setSpan(1);saveUi();renderAll(false)});
   el.setAttribute("aria-label",`${text}. ${sub}.`);el.hidden=false;
 }
+function rangeNutrition(days){
+  const sum={},cnt={};NUTR.forEach(([k])=>sum[k]=0);let mask=0,has=false;
+  days.forEach(d=>{const dn=dayNutrition(d);mask|=dn.mask;has=has||dn.has;NUTR.forEach(([k])=>sum[k]+=dn.sum[k]/days.length);dn.groups.forEach(g=>cnt[g]=(cnt[g]||0)+1)});
+  return{sum,mask,has,cnt,groups:GROUPS.filter((_,j)=>mask&(1<<j))};
+}
+function rangeTotals(days){const t={k:0,p:0,c:0,f:0};days.forEach(d=>{const x=totals(d);for(const k in t)t[k]+=x[k]/days.length});return t}
 function renderMeter(){
-  const d=ui.day,ms=mealsOf(d).filter(m=>!m.o.skip),today=isToday(d),past=iso(dayDate(d))<iso(new Date());
-  const t=totals(d),done=ms.filter(m=>m.done),nMiss=ms.filter(m=>m.missed).length,ek=done.reduce((a,m)=>a+m.o.k,0),ep=done.reduce((a,m)=>a+m.o.p,0);
-  const showEaten=today||past||done.length>0;
+  const days=spanDays(),n=days.length,multi=n>1,st=days.map(dayStat),sum=f=>st.reduce((a,s)=>a+f(s),0);
+  const tk=sum(s=>s.t.k),tp=sum(s=>s.t.p),ek=sum(s=>s.ek),ep=sum(s=>s.ep),nMeals=sum(s=>s.ms.length),nDone=sum(s=>s.done.length),nMiss=sum(s=>s.nMiss);
+  const gk=state.target*n,gp=state.protein*n,showEaten=st.some(s=>!s.future)||nDone>0;
   const ring=(planned,eaten,val,unit,c)=>`<div class="ring">${ringSvg(planned,eaten,val,unit,c.hex)}</div>`;
+  const mealsP=nMeals?(nMeals-nMiss)/nMeals:1,mealsE=nMeals?nDone/nMeals:0;
   $("rings").innerHTML=
-    ring(t.k/state.target,showEaten?ek/state.target:0,fmt(showEaten?ek:t.k),`${fmt(state.target)} kcal`,RING.k)+
-    ring(t.p/state.protein,showEaten?ep/state.protein:0,fmt(showEaten?ep:t.p),`${state.protein} g protein`,RING.p)+
-    ring(ms.length?(ms.length-nMiss)/ms.length:1,ms.length?done.length/ms.length:0,showEaten?`${done.length}/${ms.length}`:String(ms.length),showEaten?(nMiss?`meals, ${nMiss} skipped`:"meals eaten"):"meals planned",RING.m);
-  meterData=[{p:t.k/state.target,e:showEaten?ek/state.target:0,rgb:RING.k.rgb},{p:t.p/state.protein,e:showEaten?ep/state.protein:0,rgb:RING.p.rgb},{p:ms.length?(ms.length-nMiss)/ms.length:1,e:showEaten&&ms.length?done.length/ms.length:0,rgb:RING.m.rgb}];
+    ring(tk/gk,showEaten?ek/gk:0,fmt(showEaten?ek:tk),`${fmt(gk)} kcal`,RING.k)+
+    ring(tp/gp,showEaten?ep/gp:0,fmt(showEaten?ep:tp),`${fmt(gp)} g protein`,RING.p)+
+    ring(mealsP,showEaten?mealsE:0,showEaten?`${nDone}/${nMeals}`:String(nMeals),showEaten?(nMiss?`meals, ${nMiss} skipped`:"meals eaten"):"meals planned",RING.m);
+  meterData=[{p:tk/gk,e:showEaten?ek/gk:0,rgb:RING.k.rgb},{p:tp/gp,e:showEaten?ep/gp:0,rgb:RING.p.rgb},{p:mealsP,e:showEaten?mealsE:0,rgb:RING.m.rgb}];
   if(dashFx)dashFx.update(meterData);
-  $("rings").setAttribute("aria-label",`${fmt(ek)} of ${fmt(state.target)} kcal eaten, ${fmt(ep)} of ${state.protein} g protein, ${done.length} of ${ms.length} meals`);
-  renderDayline(d,ms,ek,t);
-  // tiles: a small abstract picture of each number
-  const diff=t.k-state.target,dn=dayNutrition(d);
+  $("rings").setAttribute("aria-label",`${fmt(ek)} of ${fmt(gk)} kcal eaten, ${fmt(ep)} of ${fmt(gp)} g protein, ${nDone} of ${nMeals} meals${multi?` over ${n} days`:""}`);
+  multi?renderRangeline(st):renderDayline(st[0]);
+  // tiles: a small abstract picture of each number; over several days they show the daily average
+  const t=rangeTotals(days),diff=t.k-state.target,dn=rangeNutrition(days),avg=multi?" a day":"";
   const low=dn.has?NUTR.filter(([k,,,dv])=>dn.sum[k]<dv).map(([k,l,,dv])=>`${l} ${Math.round(dn.sum[k]/dv*100)}%`):[];
   const miss=GROUPS.filter(g=>!dn.groups.includes(g));
-  const pc=v=>Math.max(0,Math.min(100,v*100)).toFixed(1)+"%",mk=t.p*4+t.c*4+t.f*9||1,scale=Math.max(state.target,t.k)||1;
-  // Planned: each meal a segment sized by its calories, solid once eaten; the tick is the goal
-  const segs=ms.filter(m=>!m.missed).map(m=>`<i class="${m.done?"on":""}" style="flex:${m.o.k}" title="${esc(m.slot)}: ${fmt(m.o.k)} kcal"></i>`).join("");
+  const pc=v=>Math.max(0,Math.min(100,v*100)).toFixed(1)+"%",mk=t.p*4+t.c*4+t.f*9||1,scale=Math.max(gk,tk)||1;
+  // Planned: each meal (or each day) a segment sized by its calories, solid once eaten; the tick is the goal
+  const segs=multi?st.map(s=>`<i class="${s.past?"on":""}" style="flex:${s.t.k||1}" title="${wk(s.d)}: ${fmt(s.t.k)} kcal"></i>`).join("")
+    :st[0].ms.filter(m=>!m.missed).map(m=>`<i class="${m.done?"on":""}" style="flex:${m.o.k}" title="${esc(m.slot)}: ${fmt(m.o.k)} kcal"></i>`).join("");
   // Macros: circles sized by each macro's share of the calories (area, not radius)
   const bub=(cls,g,kc,lab)=>{const z=(12+30*Math.sqrt(kc/mk)).toFixed(0);return `<span class="bub"><span class="bb"><i class="${cls}" style="width:${z}px;height:${z}px"></i></span><span>${lab}</span><b>${fmt(g)} g</b></span>`};
   // Nutrients: a capsule per nutrient, filled up to its share of the daily value
   const caps=dn.has?`<span class="caps" aria-hidden="true">${NUTR.map(([k,l,,dv])=>{const r=dn.sum[k]/dv;return `<i class="${r<1?"low":""}" title="${l} ${Math.round(r*100)}%"><b style="height:${pc(Math.max(.08,Math.min(1,r)))}"></b></i>`}).join("")}</span>`:"";
   $("tiles").innerHTML=`
     <button class="tile" data-modal="planned"><span class="th"><span class="t">Planned</span><span class="v">${fmt(t.k)}</span></span>
-      <span class="segs" aria-hidden="true"><span class="fill" style="width:${pc(t.k/scale)}">${segs}</span><i class="goal" style="left:${pc(state.target/scale)}"></i></span>
-      <span class="c">kcal, ${Math.abs(diff)<=100?"on target":diff>0?`${fmt(diff)} over goal`:`${fmt(-diff)} short`}</span></button>
-    <button class="tile" data-modal="macros"><span class="th"><span class="t">Macros</span></span>
+      <span class="segs" aria-hidden="true"><span class="fill" style="width:${pc(tk/scale)}">${segs}</span><i class="goal" style="left:${pc(gk/scale)}"></i></span>
+      <span class="c">kcal${avg}, ${Math.abs(diff)<=100?"on target":diff>0?`${fmt(diff)} over goal`:`${fmt(-diff)} short`}</span></button>
+    <button class="tile" data-modal="macros"><span class="th"><span class="t">Macros${multi?" a day":""}</span></span>
       <span class="bubs">${bub("mp",t.p,t.p*4,"Protein")}${bub("mc",t.c,t.c*4,"Carbs")}${bub("mf",t.f,t.f*9,"Fat")}</span></button>
     ${dn.mask?`<button class="tile" data-modal="variety"><span class="th"><span class="t">Variety</span><span class="v">${dn.groups.length}<small>/${GROUPS.length}</small></span></span>
       <span class="grid9" aria-hidden="true">${GROUPS.map(g=>`<i class="${dn.groups.includes(g)?"on":""}" title="${g}"></i>`).join("")}</span>
       <span class="c">${miss.length?`No ${miss.slice(0,2).join(", ").toLowerCase()}`:"Every food group"}</span></button>`:""}
     ${dn.has?`<button class="tile" data-modal="nutrients"><span class="th"><span class="t">Nutrients</span><span class="v">${NUTR.length-low.length}<small>/${NUTR.length}</small></span></span>
       ${caps}
-      <span class="c">${low.length?`Low: ${low.slice(0,2).join(", ")}`:"All daily values met"}</span></button>`:""}`;
+      <span class="c">${low.length?`Low: ${low.slice(0,2).join(", ")}`:`All daily values met${multi?" on average":""}`}</span></button>`:""}`;
   $("tiles").querySelectorAll("[data-modal]").forEach(b=>b.onclick=()=>TILE_MODALS[b.dataset.modal]());
 }
 const TILE_MODALS={planned:openPlannedDetail,macros:openMacrosDetail,variety:openVarietyDetail,nutrients:openNutrientsDetail};
@@ -1115,23 +1181,25 @@ document.addEventListener("keydown",e=>{
   if(e.key==="Tab"){const f=[...$("infoBox").querySelectorAll("button,input,a[href]")];if(!f.length)return;const a=f[0],z=f[f.length-1];
     if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
 });
+function spanSub(){return ui.span>1?scopeLabel():longDate(ui.day)}
 function openPlannedDetail(){
-  const d=ui.day,ms=mealsOf(d).filter(m=>!m.o.skip),t=totals(d),diff=t.k-state.target;
-  const rows=ms.map(m=>`<li><span>${esc(m.slot)}: ${esc(m.o.n)}</span><span class="q">${fmt(m.o.k)} kcal</span></li>`).join("");
-  tileModal("Planned calories",longDate(d),`<p class="sh-d">${fmt(t.k)} kcal planned, ${Math.abs(diff)<=100?"on target":diff>0?`${fmt(diff)} over your ${fmt(state.target)} kcal goal`:`${fmt(-diff)} short of your ${fmt(state.target)} kcal goal`}.</p><ul class="ing">${rows}</ul>`);
+  const days=spanDays(),t=rangeTotals(days),diff=t.k-state.target,multi=days.length>1;
+  const rows=multi?days.map(d=>`<li><span>${esc(longDate(d))}</span><span class="q">${fmt(totals(d).k)} kcal</span></li>`).join("")
+    :mealsOf(ui.day).filter(m=>!m.o.skip).map(m=>`<li><span>${esc(m.slot)}: ${esc(m.o.n)}</span><span class="q">${fmt(m.o.k)} kcal</span></li>`).join("");
+  tileModal("Planned calories",spanSub(),`<p class="sh-d">${fmt(t.k)} kcal ${multi?"a day on average":"planned"}, ${Math.abs(diff)<=100?"on target":diff>0?`${fmt(diff)} over your ${fmt(state.target)} kcal goal`:`${fmt(-diff)} short of your ${fmt(state.target)} kcal goal`}.</p><ul class="ing">${rows}</ul>`);
 }
 function openMacrosDetail(){
-  const d=ui.day,t=totals(d);
-  tileModal("Macros",longDate(d),`<div class="sh-m"><span><b>${fmt(t.p)} g</b> protein</span><span><b>${fmt(t.c)} g</b> carbs</span><span><b>${fmt(t.f)} g</b> fat</span></div><p class="fine">The protein goal is ${state.protein} g a day. There's no set target for carbs or fat; meals are balanced to hit calories and protein.</p>`);
+  const days=spanDays(),t=rangeTotals(days);
+  tileModal(days.length>1?"Macros a day":"Macros",spanSub(),`<div class="sh-m"><span><b>${fmt(t.p)} g</b> protein</span><span><b>${fmt(t.c)} g</b> carbs</span><span><b>${fmt(t.f)} g</b> fat</span></div><p class="fine">${days.length>1?`Daily average across ${days.length} days. `:""}The protein goal is ${state.protein} g a day. There's no set target for carbs or fat; meals are balanced to hit calories and protein.</p>`);
 }
 function openVarietyDetail(){
-  const d=ui.day,dn=dayNutrition(d);
-  const rows=GROUPS.map(g=>`<li><span>${esc(g)}</span><span class="q">${dn.groups.includes(g)?"✓":"—"}</span></li>`).join("");
-  tileModal("Food group variety",longDate(d),`<p class="sh-d">${dn.groups.length} of ${GROUPS.length} food groups today.</p><ul class="ing">${rows}</ul>`);
+  const days=spanDays(),n=days.length,dn=rangeNutrition(days);
+  const rows=GROUPS.map(g=>`<li><span>${esc(g)}</span><span class="q">${n>1?`${dn.cnt[g]||0} of ${n} days`:dn.groups.includes(g)?"✓":"—"}</span></li>`).join("");
+  tileModal("Food group variety",spanSub(),`<p class="sh-d">${dn.groups.length} of ${GROUPS.length} food groups ${n>1?`across ${n} days`:"today"}.</p><ul class="ing">${rows}</ul>`);
 }
 function openNutrientsDetail(){
-  const d=ui.day,dn=dayNutrition(d);
-  tileModal("Nutrients",longDate(d),dn.has?`<ul class="nut">${nutRows(dn.sum,100)}</ul><p class="fine">Percent of daily value across today's meals. Faded bars are under 100%.</p>`:`<p class="sh-d">No meals with nutrition data today.</p>`);
+  const days=spanDays(),dn=rangeNutrition(days),n=days.length;
+  tileModal("Nutrients",spanSub(),dn.has?`<ul class="nut">${nutRows(dn.sum,100)}</ul><p class="fine">${n>1?`Average percent of daily value per day across ${n} days`:"Percent of daily value across today's meals"}. Faded bars are under 100%.</p>`:`<p class="sh-d">No meals with nutrition data.</p>`);
 }
 
 /* ---------- reminders in the phone's own Calendar ---------- */
@@ -1160,9 +1228,8 @@ function openReminderAll(){
   const now=new Date(),nm=now.getHours()*60+now.getMinutes();
   const today=iso(now),upcoming=x=>{const di=iso(dayDate(x._d));return !x.o.skip&&!settled(x)&&di>=today&&(di>today||mins(x.time)>nm)};
   let list=[];
-  if(ui.cal==="week"){for(let d=0;d<D;d++)mealsOf(d).forEach(m=>{m._d=d;if(upcoming(m))list.push({d,i:m.i})})}
-  else{const d=ui.day;mealsOf(d).forEach(m=>{m._d=d;if(upcoming(m))list.push({d,i:m.i})})}
-  const scopeTxt=ui.cal==="week"?"this week":isToday(ui.day)?"today":wk(ui.day,"long");
+  spanDays().forEach(d=>mealsOf(d).forEach(m=>{m._d=d;if(upcoming(m))list.push({d,i:m.i})}));
+  const scopeTxt=ui.span===7?"this week":ui.span===3?"in these 3 days":isToday(ui.day)?"today":wk(ui.day,"long");
   $("sheetBox").innerHTML=`
     ${sheetHead("Calendar","Remind me")}
     <p class="sh-d">${list.length} upcoming meal${list.length===1?"":"s"} ${scopeTxt}.</p>
@@ -1223,6 +1290,8 @@ function renderNext(){
   el.querySelector(".main").onclick=()=>openDetail(d,m.i);
   const mb=el.querySelector(".nm-more");mb.setAttribute("aria-label",`${m.slot} actions`);
   mb.onclick=()=>openMenu(mb,`${m.slot} actions`,[["ok","Mark eaten",()=>setDone(d,m.i,true)],["skip","I skipped it",()=>setMissed(d,m.i,true)],["bell","Remind me",()=>openReminder(d,m.i),diff<=0]]);
+  // urgency: green while there's time, yellow within 15 minutes or during the first hour, red after that
+  const u=diff>15?"ok":diff>0||late<=60?"soon":"late";el.classList.remove("u-ok","u-soon","u-late");el.classList.add("u-"+u);
   el.classList.add("has-mark");el.hidden=false;
 }
 setInterval(()=>{if((ui.tab==="plan"||ui.tab==="dash")&&document.visibilityState==="visible"){renderNext();renderMeter()}},30000);
@@ -1301,19 +1370,22 @@ function renderHour(body){
 }
 function focusBlk(i,doFocus){const b=document.querySelector(`.blk[data-slot="${i}"]`);if(b&&doFocus)b.focus()}
 // The day as a list (Plan > List): time and meal type on the left, the meal and its macros on the right.
-function renderDay(body){
+function renderDay(body,d=ui.day,head=false){
   const list=document.createElement("div");list.className="agenda narrow";
-  mealsOf(ui.day).forEach(m=>{
+  if(head){const t=totals(d),h=document.createElement("button");h.className="ag-day"+(isToday(d)?" today":"");
+    h.innerHTML=`<span class="n"></span><span class="m">${fmt(t.k)} kcal · ${fmt(t.p)} g protein</span>`;h.querySelector(".n").textContent=isToday(d)?`Today, ${shortDate(d)}`:longDate(d);
+    h.setAttribute("aria-label",`Show only ${longDate(d)}`);h.onclick=()=>{ui.day=d;setSpan(1);saveUi();renderAll(false)};list.appendChild(h)}
+  mealsOf(d).forEach(m=>{
     const b=document.createElement("button");b.className="ag"+(m.o.skip?" skipped":"");
     b.innerHTML=`<span class="tm"><span></span><span class="sl"></span></span><span><span class="n"></span><span class="d"></span>${m.o.skip?"":`<span class="m"><b>${fmt(m.o.k)}</b> kcal &nbsp; <b>${fmt(m.o.p)} g</b> protein &nbsp; ${fmt(m.o.c)} g carbs &nbsp; ${fmt(m.o.f)} g fat</span>`}</span>`;
     b.querySelector(".tm span").textContent=fmtTime(m.time);
     b.querySelector(".sl").textContent=m.slot;b.classList.toggle("missed",m.missed);b.classList.toggle("eaten",m.done);
     b.querySelector(".n").textContent=m.o.skip?"Skipped":m.o.n;
     b.querySelector(".d").textContent=m.o.skip?"":m.o.d;
-    b.onclick=()=>openDetail(ui.day,m.i);list.appendChild(b);
+    b.onclick=()=>openDetail(d,m.i);list.appendChild(b);
   });
-  body.appendChild(list);
-  const dn=dayNutrition(ui.day);
+  body.appendChild(list);if(head)return;
+  const dn=dayNutrition(d);
   if(dn.has||dn.mask){const w=document.createElement("div");w.className="daynut narrow sheet-like";
     w.innerHTML=`<h3 class="dn-h">Nutrition for the day</h3><p class="grps">${dn.groups.length} of ${GROUPS.length} food groups: ${dn.groups.map(esc).join(" · ")||"none"}</p>${dn.has?`<ul class="nut">${nutRows(dn.sum,100)}</ul><p class="fine">Percent of daily value across all of the day's meals. Faded bars are under 100%.</p>`:""}`;
     body.appendChild(w)}
@@ -1330,7 +1402,7 @@ function renderWeek(body,n=D){
     const h=document.createElement("button");h.className="wg-h"+(isToday(d)?" today":"")+(d===ui.day?" sel":"");
     h.innerHTML=`<b>${wk(d)} ${dayDate(d).getDate()}</b><span>${fmt(t.k)} kcal</span>${few?"":`<span>${fmt(t.p)} g protein</span>`}`;
     h.setAttribute("aria-label",`${longDate(d)}, ${fmt(t.k)} kcal. Open day view.`);
-    h.onclick=()=>{ui.day=d;ui.cal="hour";saveUi();renderAll(false)};
+    h.onclick=()=>{ui.day=d;setSpan(1);saveUi();renderAll(false)};
     g.appendChild(h);
   }
   const ax=document.createElement("div");ax.className="wg-ax";ax.style.height=H+"px";
@@ -1369,7 +1441,7 @@ function renderWeek(body,n=D){
   btn.onclick=()=>savePdf(btn,msg,weekPdf,`meal-plan-${state.startDate}.pdf`);
   f.append(btn,msg);body.appendChild(f);
 }
-document.querySelectorAll("[data-cv]").forEach(b=>b.onclick=()=>{ui.cal=b.dataset.cv;saveUi();renderAll(false)});
+document.querySelectorAll("[data-cv]").forEach(b=>b.onclick=()=>{setSpan({hour:1,three:3,week:7}[b.dataset.cv]);saveUi();renderAll(false)});
 
 /* ---------- shopping ---------- */
 function frac(q){const w=Math.floor(q),r=Math.round((q-w)*4)/4,whole=r===1?w+1:w,f=r===1?0:r;const fs=f===0.25?"1/4":f===0.5?"1/2":f===0.75?"3/4":"";return whole&&fs?`${whole} ${fs}`:whole?`${whole}`:(fs||"1/4")}
@@ -1380,7 +1452,7 @@ function qtyText(q,u){
   const r=Math.ceil(q*4-1e-9)/4;if(u==="cup")return `${frac(r)} cup${r>1?"s":""}`;return `${frac(r)} ${u}`;
 }
 function buildList(){
-  const map=new Map(),other=new Map();const ds=ui.scope==="week"?[...Array(D).keys()]:[ui.day];
+  const map=new Map(),other=new Map();const ds=spanDays();
   ds.forEach(d=>SLOTS.forEach((s,i)=>{const o=s.opts[state.days[d].picks[i]];if(o.skip)return;
     if(ING[o.n])ING[o.n].forEach(([n,q,u,sec,gf])=>{const key=n+"|"+u;const e=map.get(key)||{n,u,sec,gf:!!gf,q:0};e.q+=q;map.set(key,e)});
     else (o.ing||[]).forEach(l=>other.set(l,(other.get(l)||0)+1));}));
@@ -1388,10 +1460,9 @@ function buildList(){
   if(other.size)groups.push({label:"From your Notion meals",items:[...other].map(([l,c])=>({n:l.replace(/\s*\(certified GF\)/i,""),gf:/certified GF/i.test(l),text:c>1?`×${c}`:""}))});
   return groups;
 }
-function scopeLabel(){return ui.scope==="week"?`${shortDate(0)} to ${shortDate(6)}`:longDate(ui.day)}
+function scopeLabel(){const[a,b]=spanRange();return a===b?longDate(a):`${shortDate(a)} to ${shortDate(b)}`}
 function renderShop(){
   document.querySelectorAll("[data-sc]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.sc===ui.scope));
-  $("scDay").textContent=shortDate(ui.day);
   const body=$("listBody");body.innerHTML="";const checked=new Set(state.checked);
   buildList().forEach(g=>{
     const sec=document.createElement("section");sec.className="grp";
@@ -1408,9 +1479,9 @@ function renderShop(){
     body.appendChild(sec);
   });
 }
-document.querySelectorAll("[data-sc]").forEach(b=>b.onclick=()=>{ui.scope=b.dataset.sc;saveUi();renderAll(false)});
+document.querySelectorAll("[data-sc]").forEach(b=>b.onclick=()=>{setSpan({day:1,three:3,week:7}[b.dataset.sc]);saveUi();renderAll(false)});
 $("clearChecks").onclick=()=>{state.checked=[];save();renderShop()};
-$("shopPdf").onclick=()=>savePdf($("shopPdf"),$("shopMsg"),shopPdf,ui.scope==="week"?`shopping-list-week-${state.startDate}.pdf`:`shopping-list-${iso(dayDate(ui.day))}.pdf`);
+$("shopPdf").onclick=()=>savePdf($("shopPdf"),$("shopMsg"),shopPdf,ui.span===7?`shopping-list-week-${state.startDate}.pdf`:`shopping-list-${iso(dayDate(spanRange()[0]))}${ui.span===3?"-3-days":""}.pdf`);
 
 /* ---------- PDFs ---------- */
 function shopPdf(){
@@ -1534,12 +1605,20 @@ function switchTab(t){if(t==="dash"&&wideMQ.matches)t="plan";ui.tab=t;saveUi();r
 function placeDash(){const mount=$(wideMQ.matches?"dashMountPlan":"dashMountTab");if($("dashWrap").parentElement!==mount)mount.appendChild($("dashWrap"))}
 {const onWide=()=>{if(ui.tab==="dash"&&wideMQ.matches)switchTab("plan");else{placeDash()}};wideMQ.addEventListener?wideMQ.addEventListener("change",onWide):wideMQ.addListener(onWide)}
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{if(ui.tab!==b.dataset.tab){switchTab(b.dataset.tab);window.scrollTo(0,0)}});
+function spanKick(){const[a,b]=spanRange(),f=d=>dayDate(d).toLocaleDateString("en-US",{month:"short",day:"numeric"});return `${f(a)} – ${f(b)}`}
+function renderSpanBtn(){
+  const b=$("spanBtn"),n=ui.span,next=n===1?3:n===3?7:1;b.hidden=ui.tab==="pantry";
+  b.innerHTML=`<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.75" y="5.25" width="16.5" height="15" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 3.5v3.2M16 3.5v3.2M3.75 9.75h16.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><text x="12" y="18.3" text-anchor="middle" font-size="8.4" font-weight="600" fill="currentColor">${n}</text></svg>`;
+  b.setAttribute("aria-label",`Showing ${n===1?"1 day":n+" days"}. Show ${next===1?"1 day":next+" days"}`);b.title=b.getAttribute("aria-label");
+}
+$("spanBtn").onclick=()=>{setSpan(ui.span===1?3:ui.span===3?7:1);saveUi();renderAll(false)};
 function renderHead(){
-  let k="",t="";
-  if(ui.tab==="plan"||ui.tab==="dash"){const d=ui.day,dd=dayDate(d),today=isToday(d),tmr=iso(dd)===iso(new Date(Date.now()+864e5)),yst=iso(dd)===iso(new Date(Date.now()-864e5));
+  let k="",t="";renderSpanBtn();
+  if((ui.tab==="plan"||ui.tab==="dash")&&ui.span>1){k=spanKick();t=ui.tab==="dash"?"Dashboard":ui.span===7?"This week":"3 days"}
+  else if(ui.tab==="plan"||ui.tab==="dash"){const d=ui.day,dd=dayDate(d),today=isToday(d),tmr=iso(dd)===iso(new Date(Date.now()+864e5)),yst=iso(dd)===iso(new Date(Date.now()-864e5));
     k=dd.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"});t=ui.tab==="dash"?"Dashboard":today?"Today":tmr?"Tomorrow":yst?"Yesterday":wk(d,"long")}
   else if(ui.tab==="cal"){k=`${dayDate(0).toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${dayDate(D-1).toLocaleDateString("en-US",{month:"short",day:"numeric"})}`;t="Calendar"}
-  else if(ui.tab==="shop"){k=ui.scope==="day"?shortDate(ui.day):"Whole week";t="Shopping list"}
+  else if(ui.tab==="shop"){k=ui.span===1?shortDate(ui.day):ui.span===3?spanKick():"Whole week";t="Shopping list"}
   else{k="Fridge, freezer & pantry";t="Pantry"}
   $("hKick").textContent=k;$("hTitle").textContent=t;
 }
