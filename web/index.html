@@ -54,7 +54,6 @@ main{max-width:960px;margin:0 auto;padding-bottom:calc(100px + env(safe-area-ins
 .strip button[aria-current="true"] b{color:var(--bg)}
 .strip button.today::after{content:"";position:absolute;bottom:3px;width:3px;height:3px;border-radius:50%;background:currentColor}
 
-.gauge{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:14px 24px 16px}
 .dlabel{font-size:.82rem;color:var(--muted);margin-bottom:4px}
 .total{display:flex;align-items:baseline;gap:8px}
 .total .k{font-size:3rem;font-weight:300;letter-spacing:-0.04em;line-height:1}
@@ -77,8 +76,30 @@ main{max-width:960px;margin:0 auto;padding-bottom:calc(100px + env(safe-area-ins
 .sub>span{white-space:nowrap}
 .status{margin:6px 0 0;font-size:.85rem;color:var(--muted);min-height:1.3em}
 
-.goals-open{padding:0 24px 16px;border-bottom:1px solid var(--line)}
-.goals-open .txt{color:var(--muted)}
+/* dashboard */
+.dash-head{display:flex;justify-content:space-between;align-items:flex-end;padding:18px 24px 4px}
+.dash-date{margin:0;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.dash-title{margin:2px 0 0;font-size:1.9rem;font-weight:500;letter-spacing:-0.035em;line-height:1.1}
+.icon-btn{width:42px;height:42px;border-radius:50%;background:var(--soft);display:grid;place-items:center;color:var(--ink)}
+.icon-btn .ic{width:19px;height:19px}
+.rings{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:18px 20px 6px}
+.ring{display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0}
+.ring svg{width:100%;max-width:112px;aspect-ratio:1;display:block}
+.ring .val{font-size:22px;font-weight:500;letter-spacing:-0.03em;fill:var(--ink)}
+.ring .unit{font-size:9.5px;fill:var(--muted);letter-spacing:.04em}
+.ring .lab{margin-top:8px;font-size:.84rem;font-weight:500}
+.ring .cap{font-size:.74rem;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 24px 22px}
+.tile{display:block;width:100%;text-align:left;background:var(--soft);border-radius:20px;padding:14px 16px 15px;min-width:0}
+button.tile:hover{outline:1px solid var(--line)}
+.tile .t{display:block;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.tile .v{display:block;font-size:1.55rem;font-weight:400;letter-spacing:-0.03em;margin:6px 0 1px;line-height:1.1}
+.tile .v small{font-size:.8rem;color:var(--muted);letter-spacing:0;margin-left:3px}
+.tile .c{display:block;font-size:.8rem;color:var(--muted);line-height:1.35;overflow:hidden;text-overflow:ellipsis}
+.tile .mac{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:5px 8px;margin-top:9px;font-size:.78rem;color:var(--muted)}
+.tile .mac b{color:var(--ink);font-weight:500}
+.tile .bar{height:4px;border-radius:2px;background:var(--line);overflow:hidden}.tile .bar i{display:block;height:100%;background:var(--ink)}
+.plan-main{border-top:1px solid var(--line)}
 .g-title{font-size:1.35rem!important}
 .goal-body{display:grid;gap:14px;padding:14px 0 6px}
 .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -216,21 +237,21 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .wg-now{position:absolute;left:0;right:0;border-top:1.5px solid var(--ink);z-index:2}
 .wg-hint{padding:0 24px;margin:6px 0 0;font-size:.8rem;color:var(--muted)}
 /* next meal */
-.next{position:relative;display:block;width:calc(100% - 48px);margin:12px 24px 0;padding:16px 18px 14px;text-align:left;
-  border:1px solid var(--line);border-radius:18px;background:var(--soft);transition:border-color .2s}
-.next:hover{border-color:var(--ink)}
-.next .main{display:block;width:100%;text-align:left}
-.next .mark{display:inline-flex;margin-top:12px;align-items:center;gap:6px;border:1px solid var(--ink);border-radius:999px;padding:6px 12px;font-size:.82rem;background:var(--bg)}
-.next .mark:hover{background:var(--ink);color:var(--bg)}
-.next .mark .ic{width:15px;height:15px}
+.next{position:relative;display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;width:calc(100% - 48px);margin:8px 24px 0;padding:15px 14px 15px 18px;text-align:left;
+  border-radius:22px;background:var(--ink);color:var(--bg)}
 
-.next .top{display:flex;justify-content:space-between;gap:10px;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.next .big{display:block;font-size:1.6rem;font-weight:300;letter-spacing:-0.03em;line-height:1.15;margin:8px 0 2px}
+.next .main{display:block;min-width:0;text-align:left;color:inherit}
+.next .mark{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.66rem;opacity:.85;color:inherit}
+.next .mark span.c{width:46px;height:46px;border-radius:50%;border:1.5px solid rgba(255,255,255,.55);display:grid;place-items:center}
+.next .mark:hover span.c{background:var(--bg);color:var(--ink)}
+.next .mark .ic{width:20px;height:20px}
+
+.next .top{display:flex;align-items:center;gap:6px;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;opacity:.65}
+.next .big{display:block;font-size:1.25rem;font-weight:300;letter-spacing:-0.02em;line-height:1.2;margin:5px 0 2px}
 .next .big b{font-weight:500}
-.next .sm{display:block;font-size:.87rem;color:var(--muted)}
-.next .prog{display:block;position:relative;height:4px;border-radius:2px;background:var(--line);margin-top:14px;overflow:hidden}
-.next .prog i{position:absolute;inset:0 auto 0 0;background:var(--ink);border-radius:2px;transition:width .4s ease}
-.next .ends{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-top:5px}
+.next .sm{display:block;font-size:.8rem;opacity:.65;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.next .prog{display:block;position:relative;height:3px;border-radius:2px;background:rgba(255,255,255,.18);margin-top:11px;overflow:hidden}
+.next .prog i{position:absolute;inset:0 auto 0 0;background:var(--bg);border-radius:2px;transition:width .4s ease}
 /* wider screens */
 @media (min-width:640px){
   .narrow{max-width:640px}
@@ -241,7 +262,6 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   .strip.narrow{max-width:none;padding:10px 24px 6px}
   #view-plan.narrow{max-width:none;display:grid;grid-template-columns:minmax(300px,360px) minmax(0,1fr);gap:0 36px;align-items:start}
   .plan-side{position:sticky;top:8px;max-height:calc(100vh - 80px);overflow-y:auto;scrollbar-width:thin}
-  .gauge{position:static}
   .plan-main .slot:first-child{padding-top:14px}
   .card{flex-basis:46%}.track::before,.track::after{flex-basis:calc(27% - 10px)}
   #view-cal .narrow{max-width:780px}
@@ -372,18 +392,11 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   <!-- PLAN -->
   <section id="view-plan" class="narrow" aria-label="Plan">
    <div class="plan-side">
+    <div class="dash-head"><div><p class="dash-date" id="dLabel"></p><h2 class="dash-title" id="dTitle">Today</h2></div>
+      <button class="icon-btn" id="goalsBtn" aria-haspopup="dialog" aria-label="Goals &amp; schedule" title="Goals &amp; schedule"><svg class="ic" aria-hidden="true"><use href="#i-adjust"/></svg></button></div>
+    <div class="rings" id="rings" aria-live="polite"></div>
     <div class="next" id="nextMeal" hidden></div>
-    <div class="gauge" aria-live="polite">
-      <div class="dlabel" id="dLabel"></div>
-      <div class="total"><span class="k" id="kTotal">0</span><span class="of" id="kOf">/ 3,000 kcal</span></div>
-      <div class="meter" id="meter" role="img"></div>
-      <div class="m-leg" id="mLeg"></div>
-      <div class="sub"><span>Protein <b id="pTotal">0 g</b> / <span id="pOf">110 g</span></span><span>Carbs <b id="cTotal">0</b></span><span>Fat <b id="fTotal">0</b></span></div>
-      <p class="status" id="status"></p>
-      <p class="status" id="variety" hidden></p>
-    </div>
-
-    <div class="goals-open"><button class="txt with-ic" id="goalsBtn" aria-haspopup="dialog"><svg class="ic" aria-hidden="true"><use href="#i-adjust"/></svg>Goals &amp; schedule</button></div>
+    <div class="tiles" id="tiles"></div>
    </div>
    <div class="plan-main">
     <div id="slots"></div>
@@ -801,27 +814,9 @@ function updatePlan(except=-1,smooth=true){
     x.dots.forEach((d,oi)=>d.setAttribute("aria-current",oi===day.picks[i]));
     if(i!==except)scrollToPick(i,smooth);
   });
-  const{k,p,c,f}=totals(ui.day);
-  $("dLabel").textContent=longDate(ui.day)+(isToday(ui.day)?" (today)":"");
-  $("kTotal").textContent=fmt(k);$("kOf").textContent=`/ ${fmt(state.target)} kcal`;
-  renderMeter();
-  $("pTotal").textContent=`${fmt(p)} g`;$("pOf").textContent=`${state.protein} g`;
-  $("cTotal").textContent=`${fmt(c)} g`;$("fTotal").textContent=`${fmt(f)} g`;
   $("kGoal").textContent=fmt(state.target);$("pGoal").textContent=`${state.protein} g`;
   document.querySelectorAll(".preset").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.v===state.target));
-  const d=k-state.target;let m;
-  if(Math.abs(d)<=100)m="On target.";
-  else if(d<0)m=`${fmt(-d)} kcal short. Unlock a meal or swipe to something bigger.`;
-  else m=`${fmt(d)} kcal over. Unlock a meal or swipe to something lighter.`;
-  if(p<state.protein-5)m+=` Protein ${fmt(state.protein-p)} g under.`;
-  $("status").textContent=m;
-  renderNext();
-  const dn=dayNutrition(ui.day),v=$("variety");
-  if(!dn.mask&&!dn.has){v.hidden=true}else{
-    const miss=GROUPS.filter(g=>!dn.groups.includes(g)).map(g=>g.toLowerCase());
-    const low=dn.has?NUTR.filter(([k,,,dv])=>dn.sum[k]<dv).map(([k,l,,dv])=>`${l} ${Math.round(dn.sum[k]/dv*100)}%`):[];
-    v.textContent=`Variety: ${dn.groups.length} of ${GROUPS.length} food groups${miss.length?` (no ${miss.join(", ")})`:""}.`+(low.length?` Under daily value: ${low.join(", ")}.`:dn.has?" Every tracked nutrient reaches its daily value.":"");
-    v.hidden=false}
+  renderMeter();renderNext();
 }
 function renderSettings(){
   const el=$("times");el.innerHTML="";
@@ -851,20 +846,40 @@ $("copyAll").onclick=()=>{
 };
 
 /* ---------- calorie meter: eaten vs planned against the goal ---------- */
+function ringSvg(planned,eaten,val,unit){
+  // two arcs: the day's plan in grey, what's been eaten in ink
+  const r=42,C=2*Math.PI*r,arc=(f,col,w)=>f>0?`<circle cx="50" cy="50" r="${r}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" stroke-dasharray="${Math.max(0.001,Math.min(1,f)*C)} ${C}" transform="rotate(-90 50 50)"/>`:"";
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="${r}" fill="none" stroke="var(--line)" stroke-width="8"/>${arc(planned,"#cfcfcb",8)}${arc(eaten,"var(--ink)",8)}
+    <text x="50" y="50" text-anchor="middle" class="val">${val}</text><text x="50" y="65" text-anchor="middle" class="unit">${unit}</text></svg>`;
+}
 function renderMeter(){
-  const d=ui.day,ms=mealsOf(d).filter(m=>!m.o.skip),tot=ms.reduce((a,m)=>a+m.o.k,0),scale=Math.max(state.target*1.15,tot*1.02);
-  const now=new Date(),nm=now.getHours()*60+now.getMinutes(),today=isToday(d),past=iso(dayDate(d))<iso(now);
-  // eaten only when marked; a meal whose time has passed without being marked is "due"
-  const st=m=>m.done?"done":past||(today&&mins(m.time)<=nm)?"due":"todo";
-  const box=$("meter");box.innerHTML="";
-  ms.forEach((m,j)=>{const s=document.createElement("span");s.className="ms is-"+st(m)+(j===ms.length-1?" last":"");s.style.width=(m.o.k/scale*100)+"%";
-    s.title=`${m.slot} ${fmtTime(m.time)}: ${m.o.n}, ${fmt(m.o.k)} kcal`;box.appendChild(s)});
-  const t=document.createElement("span");t.className="tgt";t.style.left=`calc(${state.target/scale*100}% - 1px)`;t.dataset.l=`Goal ${fmt(state.target)}`;box.appendChild(t);
-  const done=ms.filter(m=>m.done),due=ms.filter(m=>st(m)==="due"),ek=done.reduce((a,m)=>a+m.o.k,0),ep=done.reduce((a,m)=>a+m.o.p,0);
-  box.setAttribute("aria-label",`${fmt(ek)} of ${fmt(tot)} planned kcal eaten, goal ${fmt(state.target)}`);
-  $("mLeg").innerHTML=(today||past||done.length?`<span><span class="sw done"></span>Eaten <b>${fmt(ek)}</b> kcal · <b>${done.length}</b> of ${ms.length} meals · <b>${fmt(ep)} g</b> protein</span>`:"")
-    +(due.length?`<span><span class="sw due"></span>${due.length} not marked yet</span>`:"")
-    +(today?`<span><span class="sw"></span>${fmt(Math.max(0,state.target-ek))} kcal to go</span>`:!past&&!done.length?`<span><span class="sw"></span>${ms.length} meals planned</span>`:"");
+  const d=ui.day,ms=mealsOf(d).filter(m=>!m.o.skip),today=isToday(d),past=iso(dayDate(d))<iso(new Date());
+  const t=totals(d),done=ms.filter(m=>m.done),ek=done.reduce((a,m)=>a+m.o.k,0),ep=done.reduce((a,m)=>a+m.o.p,0);
+  const showEaten=today||past||done.length>0;
+  $("dLabel").textContent=dayDate(d).toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"});
+  $("dTitle").textContent=today?"Today":past?"Looking back":"Coming up";
+  const ring=(label,cap,planned,eaten,val,unit)=>`<div class="ring">${ringSvg(planned,eaten,val,unit)}<span class="lab">${label}</span><span class="cap">${cap}</span></div>`;
+  $("rings").innerHTML=
+    ring("Calories",`of ${fmt(state.target)}`,t.k/state.target,showEaten?ek/state.target:0,fmt(showEaten?ek:t.k),showEaten?"EATEN":"PLANNED")+
+    ring("Protein",`of ${state.protein} g`,t.p/state.protein,showEaten?ep/state.protein:0,`${fmt(showEaten?ep:t.p)}`,showEaten?"G EATEN":"G PLANNED")+
+    ring("Meals",showEaten?`${ms.length-done.length} to go`:"planned",1,ms.length?done.length/ms.length:0,showEaten?`${done.length}/${ms.length}`:String(ms.length),showEaten?"DONE":"MEALS");
+  $("rings").setAttribute("aria-label",`${fmt(ek)} of ${fmt(state.target)} kcal eaten, ${fmt(ep)} of ${state.protein} g protein, ${done.length} of ${ms.length} meals`);
+  // tiles
+  const diff=t.k-state.target,dn=dayNutrition(d);
+  const low=dn.has?NUTR.filter(([k,,,dv])=>dn.sum[k]<dv).map(([k,l,,dv])=>`${l} ${Math.round(dn.sum[k]/dv*100)}%`):[];
+  const miss=GROUPS.filter(g=>!dn.groups.includes(g));
+  const mx=Math.max(t.p,t.c,t.f,1),mac=(l,g)=>`<span>${l}</span><span class="bar"><i style="width:${g/mx*100}%"></i></span><span><b>${fmt(g)}</b> g</span>`;
+  $("tiles").innerHTML=`
+    <button class="tile" data-go="meals"><span class="t">Planned</span><span class="v">${fmt(t.k)}<small>kcal</small></span>
+      <span class="c">${Math.abs(diff)<=100?"On target":diff>0?`${fmt(diff)} over goal`:`${fmt(-diff)} short of goal`}</span></button>
+    <div class="tile"><span class="t">Macros</span><span class="mac">${mac("P",t.p)}${mac("C",t.c)}${mac("F",t.f)}</span></div>
+    ${dn.mask?`<button class="tile" data-go="day"><span class="t">Variety</span><span class="v">${dn.groups.length}<small>of ${GROUPS.length} groups</small></span>
+      <span class="c">${miss.length?`No ${miss.slice(0,2).join(", ").toLowerCase()}`:"Every food group"}</span></button>`:""}
+    ${dn.has?`<button class="tile" data-go="day"><span class="t">Nutrients</span><span class="v">${NUTR.length-low.length}<small>of ${NUTR.length} met</small></span>
+      <span class="c">${low.length?`Low: ${low.slice(0,2).join(", ")}`:"All daily values met"}</span></button>`:""}`;
+  $("tiles").querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{
+    if(b.dataset.go==="day"){ui.cal="day";switchTab("cal");window.scrollTo(0,0)}
+    else $("slots").scrollIntoView({behavior:reduceMotion?"auto":"smooth",block:"start"})});
 }
 
 /* ---------- next meal ---------- */
@@ -886,16 +901,14 @@ function renderNext(){
   const el=$("nextMeal"),n=nextMeal();
   if(!n){el.hidden=true;return}
   const{d,m,diff,from,to,now,prev,late}=n,pct=Math.max(0,Math.min(100,(now-from)/Math.max(1,to-from)*100));
-  const lbl=diff>0?"Next meal":late<30?"Now":"Not marked yet",state_=diff>0?inText(diff):late<30?"is now":`was at ${fmtTime(m.time)}`;
-  el.innerHTML=`<button class="main"><span class="top"><span class="with-ic"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg>${lbl}</span><span></span></span><span class="big"><b></b> <span></span></span><span class="sm"></span>
-    <span class="prog" aria-hidden="true"><i style="width:${pct}%"></i></span><span class="ends"><span></span><span></span></span></button>
-    <button class="mark"><svg class="ic" aria-hidden="true"><use href="#i-ok"/></svg>Mark eaten</button>`;
-  el.querySelector(".top span+span").textContent=fmtTime(m.time)+(isToday(d)?"":" tomorrow");
+  const lbl=diff>0?"Next meal":late<30?"Now":"Not marked yet",state_=diff>0?inText(diff):late<30?"is now":"was due";
+  el.innerHTML=`<button class="main"><span class="top"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><span>${lbl}</span><span>·</span><span></span></span><span class="big"><b></b> <span></span></span><span class="sm"></span>
+    <span class="prog" aria-hidden="true"><i style="width:${pct}%"></i></span></button>
+    <button class="mark"><span class="c"><svg class="ic" aria-hidden="true"><use href="#i-ok"/></svg></span>Eaten</button>`;
+  el.querySelector(".top span:last-child").textContent=fmtTime(m.time)+(isToday(d)?"":" tomorrow");
   el.querySelector(".big b").textContent=m.slot;
   el.querySelector(".big span").textContent=state_;
   el.querySelector(".sm").textContent=`${m.o.n} · ${fmt(m.o.k)} kcal · ${fmt(m.o.p)} g protein`;
-  const ends=el.querySelectorAll(".ends span");
-  ends[0].textContent=diff===0?`${late<30?"Started":"Planned for"} ${fmtTime(m.time)}`:prev?`${prev.slot} ${fmtTime(prev.time)}`:"";ends[1].textContent=diff===0?"":m.slot;
   el.querySelector(".main").setAttribute("aria-label",`${lbl}: ${m.slot} ${state_}, ${m.o.n} at ${fmtTime(m.time)}. Open recipe.`);
   el.querySelector(".main").onclick=()=>openDetail(d,m.i);
   const mk=el.querySelector(".mark");mk.setAttribute("aria-label",`Mark ${m.slot} as eaten`);mk.onclick=()=>setDone(d,m.i,true);
