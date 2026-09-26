@@ -55,6 +55,9 @@ main{max-width:960px;margin:0 auto;padding-bottom:calc(112px + env(safe-area-ins
 .strip b{font-size:1.02rem;font-weight:400;color:var(--ink)}
 .strip button[aria-current="true"]{background:var(--ink);color:var(--bg)}
 .strip button[aria-current="true"] b{color:var(--bg)}
+.strip{position:relative}.strip button{z-index:1}
+.strip.all::before{content:"";position:absolute;inset:10px 20px 6px;border-radius:12px;background:var(--ink)}
+.strip.all button{color:rgba(255,255,255,.6)}.strip.all b{color:#fff}
 .strip button.today::after{content:"";position:absolute;bottom:3px;width:3px;height:3px;border-radius:50%;background:currentColor}
 
 .dlabel{font-size:.82rem;color:var(--muted);margin-bottom:4px}
@@ -152,6 +155,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .card{flex:0 0 84%;scroll-snap-align:center;background:#F8F8F8;border-radius:14px;padding:18px;cursor:pointer;transition:opacity .2s}
 .card:not(.sel){opacity:.5}
 .slot.locked .card:not(.sel){opacity:.3}
+.slot.locked .track{overflow-x:hidden;touch-action:pan-y}
 .card{position:relative}.card .lk{display:none;position:absolute;top:20px;right:18px;width:15px;height:15px;color:var(--muted)}
 .card.is-locked .lk{display:block}.card.is-locked h3{padding-right:26px}
 .card h3{margin:0;font-size:1.05rem;font-weight:500;letter-spacing:-0.01em}
@@ -235,9 +239,10 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .now::before{content:"";position:absolute;left:-4px;top:-4.5px;width:7px;height:7px;border-radius:50%;background:var(--ink)}
 
 .agenda{padding:4px 24px 0}
-.ag{display:grid;grid-template-columns:74px 1fr;gap:12px;padding:16px 0;border-bottom:1px solid var(--line);width:100%}
-.ag .tm{font-size:.85rem;color:var(--muted);padding-top:2px}
-.ag .sl{font-size:.78rem;color:var(--muted)}
+.ag{display:grid;grid-template-columns:82px 1fr;gap:12px;padding:16px 0;border-bottom:1px solid var(--line);width:100%}
+.ag .tm{font-size:.85rem;color:var(--ink);padding-top:2px}
+.ag .sl{display:block;font-size:.72rem;color:var(--muted);margin-top:2px;line-height:1.3}
+.ag.eaten .n::before{content:"✓ "}.ag.eaten .n,.ag.missed .n{color:var(--muted)}.ag.missed .n{text-decoration:line-through;text-decoration-thickness:1px}
 .ag .n{font-size:1rem;font-weight:500;display:block;margin:1px 0 3px}
 .ag .d{font-size:.84rem;color:var(--muted);display:block}
 .ag .m{font-size:.82rem;color:var(--muted);display:block;margin-top:6px}
@@ -268,12 +273,8 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   border-radius:22px;background:var(--ink);color:var(--bg)}
 
 .next .main{display:block;min-width:0;text-align:left;color:inherit}
-.next .mark{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.66rem;opacity:.85;color:inherit}
-.next .mark span.c{width:46px;height:46px;border-radius:50%;border:1.5px solid rgba(255,255,255,.55);display:grid;place-items:center}
-.next .mark:hover span.c{background:var(--bg);color:var(--ink)}
-.next .mark .ic{width:20px;height:20px}
-.next .acts{display:flex;gap:10px}
-.next .mark.bell span.c,.next .mark.skip span.c{border-color:rgba(255,255,255,.3)}
+.next .nm-more{align-self:start;width:40px;height:40px;margin:-4px -2px 0 0;color:#fff;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.3)}
+.next .nm-more:hover,.next .nm-more[aria-expanded="true"]{background:rgba(255,255,255,.14);color:#fff}
 .rem-opts{display:grid;gap:8px;margin-top:18px}
 .rem-opt{display:flex;justify-content:space-between;align-items:center;width:100%;border:1px solid var(--line);border-radius:14px;padding:13px 16px;font-size:.95rem}
 .rem-opt:hover{border-color:var(--ink)}
@@ -295,6 +296,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 @media (min-width:900px){
   .app-head,main{max-width:1180px}
   .strip.narrow{max-width:none;padding:10px 24px 6px}
+  .strip.all::before{left:24px;right:24px}
   #view-plan.narrow{max-width:none;display:grid;grid-template-columns:minmax(300px,360px) minmax(0,1fr);gap:0 36px;align-items:start}
   .plan-side{position:sticky;top:8px;max-height:calc(100vh - 80px);overflow-y:auto;scrollbar-width:thin}
   .plan-main .slot:first-child{padding-top:14px}
@@ -852,13 +854,13 @@ if(fresh){if(state.days[0].locked.some(Boolean)){for(let d=0;d<D;d++)rebalanceDa
 
 /* ---------- day strip ---------- */
 function renderStrip(){
-  const el=$("strip");el.innerHTML="";
+  const el=$("strip"),all=ui.tab==="cal"&&ui.cal==="week";el.innerHTML="";el.classList.toggle("all",all);
   for(let d=0;d<D;d++){
     const b=document.createElement("button");
     b.innerHTML=`<span>${wk(d)}</span><b>${dayDate(d).getDate()}</b>`;
-    b.setAttribute("aria-label",longDate(d));b.setAttribute("aria-current",d===ui.day);
+    b.setAttribute("aria-label",longDate(d)+(all?". Open day view":""));b.setAttribute("aria-current",!all&&d===ui.day);
     if(isToday(d))b.classList.add("today");
-    b.onclick=()=>{ui.day=d;saveUi();renderAll(false)};
+    b.onclick=()=>{ui.day=d;if(all)ui.cal="day";saveUi();renderAll(false)};
     el.appendChild(b);
   }
 }
@@ -875,7 +877,7 @@ SLOTS.forEach((s,i)=>{
   s.opts.forEach((o,oi)=>{
     const c=document.createElement("article");c.className="card"+(o.skip?" skip":"");
     c.innerHTML=`<svg class="ic lk" aria-hidden="true"><use href="#i-lock"/></svg><h3>${esc(o.n)}</h3><p class="d">${esc(o.d)}</p>`+(o.skip?"":`<div class="m"><span><b>${fmt(o.k)}</b> kcal</span><span><b>${fmt(o.p)} g</b> protein</span>${o.dv!=null?`<span><b>${o.dv}</b>/10 diversity</span>`:""}</div>`);
-    c.addEventListener("click",()=>{if(state.days[ui.day].picks[i]!==oi)choose(i,oi);else if(!o.skip)openDetail(ui.day,i)});
+    c.addEventListener("click",()=>{if(state.days[ui.day].picks[i]!==oi){if(!state.days[ui.day].locked[i])choose(i,oi)}else if(!o.skip)openDetail(ui.day,i)});
     track.appendChild(c);
   });
   sec.append(track);$("slots").appendChild(sec);
@@ -883,7 +885,7 @@ SLOTS.forEach((s,i)=>{
   track._user=false;let t=null;const mark=()=>{track._user=true};
   track.addEventListener("touchstart",mark,{passive:true});track.addEventListener("pointerdown",mark);track.addEventListener("wheel",mark,{passive:true});
   track.addEventListener("scroll",()=>{clearTimeout(t);t=setTimeout(()=>{if(!track._user)return;track._user=false;const idx=nearest(track);if(idx!==state.days[ui.day].picks[i])choose(i,idx,false)},120)},{passive:true});
-  track.addEventListener("keydown",e=>{if(e.key==="ArrowRight"||e.key==="ArrowLeft"){e.preventDefault();const cur=state.days[ui.day].picks[i];const n=clamp(cur+(e.key==="ArrowRight"?1:-1),0,s.opts.length-1);if(n!==cur)choose(i,n)}});
+  track.addEventListener("keydown",e=>{if((e.key==="ArrowRight"||e.key==="ArrowLeft")&&!state.days[ui.day].locked[i]){e.preventDefault();const cur=state.days[ui.day].picks[i];const n=clamp(cur+(e.key==="ArrowRight"?1:-1),0,s.opts.length-1);if(n!==cur)choose(i,n)}});
   T.push({sec,track,more,label:sec.querySelector("h2 span"),cards:[...track.querySelectorAll(".card")]});
 });
 }
@@ -1118,19 +1120,18 @@ function renderNext(){
   const el=$("nextMeal"),n=nextMeal();
   if(!n){el.hidden=true;return}
   const{d,m,diff,from,to,now,prev,late}=n,pct=Math.max(0,Math.min(100,(now-from)/Math.max(1,to-from)*100));
-  const lbl=diff>0?"Next meal":late<30?"Now":"Not marked yet",state_=diff>0?inText(diff):late<30?"is now":"was due";
-  el.innerHTML=`<button class="main"><span class="top"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><span>${lbl}</span><span>·</span><span></span></span><span class="big"><b></b> <span></span></span><span class="sm"></span>
+  const lbl=diff>0?"Next meal":late<30?"Now":"",state_=diff>0?inText(diff):late<30?"is now":"was due";
+  el.innerHTML=`<button class="main"><span class="top"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg>${lbl?`<span>${lbl}</span><span>·</span>`:""}<span></span></span><span class="big"><b></b> <span></span></span><span class="sm"></span>
     <span class="prog" aria-hidden="true"><i style="width:${pct}%"></i></span></button>
-    <div class="acts">${diff>0?`<button class="mark bell"><span class="c"><svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg></span>Remind</button>`:`<button class="mark skip"><span class="c"><svg class="ic" aria-hidden="true"><use href="#i-skip"/></svg></span>Skipped</button>`}<button class="mark done"><span class="c"><svg class="ic" aria-hidden="true"><use href="#i-ok"/></svg></span>Eaten</button></div>`;
+    <button class="more nm-more" aria-haspopup="menu" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="#i-dots"/></svg></button>`;
   el.querySelector(".top span:last-child").textContent=fmtTime(m.time)+(isToday(d)?"":" tomorrow");
   el.querySelector(".big b").textContent=m.slot;
   el.querySelector(".big span").textContent=state_;
   el.querySelector(".sm").textContent=`${m.o.n} · ${fmt(m.o.k)} kcal · ${fmt(m.o.p)} g protein`;
-  el.querySelector(".main").setAttribute("aria-label",`${lbl}: ${m.slot} ${state_}, ${m.o.n} at ${fmtTime(m.time)}. Open recipe.`);
+  el.querySelector(".main").setAttribute("aria-label",`${lbl?lbl+": ":""}${m.slot} ${state_}, ${m.o.n} at ${fmtTime(m.time)}. Open recipe.`);
   el.querySelector(".main").onclick=()=>openDetail(d,m.i);
-  const mk=el.querySelector(".mark.done");mk.setAttribute("aria-label",`Mark ${m.slot} as eaten`);mk.onclick=()=>setDone(d,m.i,true);
-  const bl=el.querySelector(".bell");if(bl){bl.setAttribute("aria-label",`Set a reminder for ${m.slot}`);bl.onclick=()=>openReminder(d,m.i)}
-  const sk=el.querySelector(".mark.skip");if(sk){sk.setAttribute("aria-label",`I skipped ${m.slot}`);sk.onclick=()=>setMissed(d,m.i,true)}
+  const mb=el.querySelector(".nm-more");mb.setAttribute("aria-label",`${m.slot} actions`);
+  mb.onclick=()=>openMenu(mb,`${m.slot} actions`,[["ok","Mark eaten",()=>setDone(d,m.i,true)],["skip","I skipped it",()=>setMissed(d,m.i,true)],["bell","Remind me",()=>openReminder(d,m.i),diff<=0]]);
   el.classList.add("has-mark");el.hidden=false;
 }
 setInterval(()=>{if((ui.tab==="plan"||ui.tab==="dash")&&document.visibilityState==="visible"){renderNext();renderMeter()}},30000);
@@ -1143,7 +1144,7 @@ function gotoPlan(d,slot){
 function renderCal(){
   document.querySelectorAll("[data-cv]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.cv===ui.cal));
   document.getElementById("calSegRow").classList.toggle("narrow",ui.cal!=="week");
-  $("strip").hidden=!(ui.tab==="plan"||(ui.tab==="cal"&&ui.cal!=="week"));
+  $("strip").hidden=false;renderStrip();
   const body=$("calBody");body.innerHTML="";
   if(ui.cal==="hour")renderHour(body);else if(ui.cal==="day")renderDay(body);else renderWeek(body);
 }
@@ -1213,9 +1214,9 @@ function renderDay(body){
   const list=document.createElement("div");list.className="agenda narrow";
   mealsOf(ui.day).forEach(m=>{
     const b=document.createElement("button");b.className="ag"+(m.o.skip?" skipped":"");
-    b.innerHTML=`<span class="tm"></span><span><span class="sl"></span><span class="n"></span><span class="d"></span>${m.o.skip?"":`<span class="m"><b>${fmt(m.o.k)}</b> kcal &nbsp; <b>${fmt(m.o.p)} g</b> protein &nbsp; ${fmt(m.o.c)} g carbs &nbsp; ${fmt(m.o.f)} g fat</span>`}</span>`;
-    b.querySelector(".tm").textContent=fmtTime(m.time);
-    b.querySelector(".sl").textContent=m.slot+(m.done?", eaten":m.missed?", skipped":m.locked?", locked":"");b.classList.toggle("missed",m.missed);
+    b.innerHTML=`<span class="tm"><span></span><span class="sl"></span></span><span><span class="n"></span><span class="d"></span>${m.o.skip?"":`<span class="m"><b>${fmt(m.o.k)}</b> kcal &nbsp; <b>${fmt(m.o.p)} g</b> protein &nbsp; ${fmt(m.o.c)} g carbs &nbsp; ${fmt(m.o.f)} g fat</span>`}</span>`;
+    b.querySelector(".tm span").textContent=fmtTime(m.time);
+    b.querySelector(".sl").textContent=m.slot;b.classList.toggle("missed",m.missed);b.classList.toggle("eaten",m.done);
     b.querySelector(".n").textContent=m.o.skip?"Skipped":m.o.n;
     b.querySelector(".d").textContent=m.o.skip?"":m.o.d;
     b.onclick=()=>openDetail(ui.day,m.i);list.appendChild(b);
@@ -1407,12 +1408,12 @@ function renderSheet(){
     ${sheetHead(`${SLOTS[i].name}, ${shortDate(d)}${isDone(d,i)?", eaten":isMissed(d,i)?", skipped":locked?", locked":""}`,o.skip?"Skipped":esc(o.n),{more:"shMore"})}
     <p class="sh-d">${esc(o.d)}</p>
     ${o.skip?"":`<div class="sh-m"><span><b>${fmt(o.k)}</b> kcal</span><span><b>${fmt(o.p)} g</b> protein</span><span><b>${fmt(o.c)} g</b> carbs</span><span><b>${fmt(o.f)} g</b> fat</span></div>`}
-    ${mealNutrition(o)}
     <div class="sh-time"><label for="shTime">Time</label><input type="time" id="shTime" step="300" value="${t}">
       <button class="txt" id="shAll">Use this time every day</button>
       ${overridden?`<button class="txt" id="shReset">Reset to ${fmtTime(state.times[i])}</button>`:""}
       <span class="msg" id="shMsg" role="status"></span></div>
-    ${o.skip?"":`<h3>Ingredients</h3><ul class="ing">${ing}</ul><h3>Steps</h3><ol class="steps">${steps}</ol>`}`;
+    ${o.skip?"":`<h3>Ingredients</h3><ul class="ing">${ing}</ul><h3>Steps</h3><ol class="steps">${steps}</ol>`}
+    ${mealNutrition(o)}`;
   $("shClose").onclick=closeDetail;
   const E=isDone(d,i),M=isMissed(d,i),more=$("shMore");
   more.onclick=()=>openMenu(more,"Meal actions",[
