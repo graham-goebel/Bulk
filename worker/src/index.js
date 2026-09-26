@@ -1,0 +1,269 @@
+// Gain Planner API
+// A small Cloudflare Worker that sits between the web app and Notion.
+// It keeps your Notion token secret and checks a passcode on every request.
+//
+// Endpoints (all need the X-Passcode header):
+//   GET  /meals              -> { meals: [...] }        the meal library
+//   GET  /plan?from=YYYY-MM-DD -> { rows: [...] }       planned meals from that date on
+//   POST /plan/batch         -> { ok: [keys], failed: [{key, message}] }
+//        body: { creates: [item], updates: [item + id] }  (max 20 items per call)
+//   GET  /health             -> { ok: true }
+//
+// Optional history cleanup: when KEEP_WEEKS is set above 0, a daily cron moves
+// Meal Plan rows older than that many weeks to Notion's trash (restorable for 30 days).
+
+const NOTION_VERSION = "2025-09-03";
+const NOTION_API = "https://api.notion.com/v1";
+const SLOTS = ["Breakfast", "Morning snack", "Lunch", "Afternoon snack", "Dinner", "Before bed"];
+const MAX_ITEMS = 20;
+const CLEANUP_PER_RUN = 40; // stays under the free plan's 50 subrequests per invocation
+
+const dataSourceCache = new Map(); // database id -> data source id
+
+export default {
+  async fetch(request, env) {
+    const origin = request.headers.get("Origin") || "";
+    const allowed = (env.ALLOWED_ORIGINS || "").split(",").map((s) => s.trim().replace(/\/+$/, "")).filter(Boolean);
+    const originOk = !origin || allowed.includes(origin);
+    const cors = {
+      "Access-Control-Allow-Origin": originOk && origin ? origin : allowed[0] || "null",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, X-Passcode",
+      "Access-Control-Max-Age": "86400",
+      Vary: "Origin",
+    };
+    const json = (body, status = 200) =>
+      new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json", "Cache-Control": "no-store" } });
+
+    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+    if (!originOk) return json({ error: "origin_not_allowed", message: `Add ${origin} to ALLOWED_ORIGINS.` }, 403);
+    if (!env.NOTION_TOKEN || !env.APP_PASSCODE || !env.MEALS_DB || !env.PLAN_DB)
+      return json({ error: "server_not_configured", message: "Set NOTION_TOKEN, APP_PASSCODE, MEALS_DB and PLAN_DB." }, 500);
+    if (!(await sameSecret(request.headers.get("X-Passcode") || "", env.APP_PASSCODE)))
+      return json({ error: "bad_passcode", message: "Wrong passcode." }, 401);
+
+    const url = new URL(request.url);
+    try {
+      if (request.method === "GET" && url.pathname === "/health") return json({ ok: true });
+      if (request.method === "GET" && url.pathname === "/meals") return json({ meals: await listMeals(env) });
+      if (request.method === "GET" && url.pathname === "/plan") return json({ rows: await listPlan(env, url.searchParams.get("from")) });
+      if (request.method === "POST" && url.pathname === "/plan/batch") {
+        let body;
+        try { body = await request.json(); } catch { return json({ error: "bad_request", message: "Body must be JSON." }, 400); }
+        return json(await writePlan(env, body));
+      }
+      return json({ error: "not_found" }, 404);
+    } catch (e) {
+      const status = e.status || 0;
+      const code = status === 401 ? "notion_token" : status === 403 || status === 404 ? "notion_access" : "notion_error";
+      return json({ error: code, message: e.message || "Notion request failed." }, 502);
+    }
+  },
+
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(cleanupHistory(env).then((r) => console.log(`history cleanup: ${JSON.stringify(r)}`)));
+  },
+};
+
+// ---------- auth ----------
+async function sameSecret(a, b) {
+  const enc = new TextEncoder();
+  const [x, y] = await Promise.all([crypto.subtle.digest("SHA-256", enc.encode(a)), crypto.subtle.digest("SHA-256", enc.encode(b))]);
+  const u = new Uint8Array(x), v = new Uint8Array(y);
+  let diff = 0;
+  for (let i = 0; i < u.length; i++) diff |= u[i] ^ v[i];
+  return diff === 0;
+}
+
+// ---------- Notion ----------
+async function notion(env, path, method = "GET", body) {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const res = await fetch(NOTION_API + path, {
+      method,
+      headers: {
+        Authorization: `Bearer ${env.NOTION_TOKEN}`,
+        "Notion-Version": NOTION_VERSION,
+        "Content-Type": "application/json",
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    if (res.status === 429 || (res.status >= 500 && attempt < 1)) {
+      const wait = Number(res.headers.get("Retry-After")) || 1;
+      await new Promise((r) => setTimeout(r, Math.min(wait, 5) * 1000 + Math.random() * 300));
+      continue;
+    }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const err = new Error(data.message || `Notion returned ${res.status}`);
+      err.status = res.status;
+      throw err;
+    }
+    return data;
+  }
+  const err = new Error("Notion is rate limiting requests. Try again in a minute.");
+  err.status = 429;
+  throw err;
+}
+
+async function dataSourceId(env, databaseId) {
+  if (dataSourceCache.has(databaseId)) return dataSourceCache.get(databaseId);
+  const db = await notion(env, `/databases/${databaseId}`);
+  const id = db.data_sources && db.data_sources[0] && db.data_sources[0].id;
+  if (!id) { const e = new Error("That database has no data source."); e.status = 404; throw e; }
+  dataSourceCache.set(databaseId, id);
+  return id;
+}
+
+async function queryAll(env, dsId, query) {
+  const out = [];
+  let cursor;
+  for (let n = 0; n < 20; n++) {
+    const page = await notion(env, `/data_sources/${dsId}/query`, "POST", { page_size: 100, ...query, ...(cursor ? { start_cursor: cursor } : {}) });
+    out.push(...page.results);
+    if (!page.has_more) break;
+    cursor = page.next_cursor;
+  }
+  return out;
+}
+
+const text = (p) => (p && (p.title || p.rich_text) ? (p.title || p.rich_text).map((t) => t.plain_text).join("") : "");
+const num = (p) => (p && typeof p.number === "number" ? p.number : 0);
+const lines = (s) => s.split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
+
+async function listMeals(env) {
+  const ds = await dataSourceId(env, env.MEALS_DB);
+  const pages = await queryAll(env, ds, {});
+  return pages
+    .filter((p) => !p.in_trash && !p.archived)
+    .map((p) => {
+      const pr = p.properties || {};
+      return {
+        id: p.id,
+        url: p.url,
+        name: text(pr["Name"]).trim(),
+        slot: pr["Slot"] && pr["Slot"].select ? pr["Slot"].select.name : "",
+        calories: num(pr["Calories"]),
+        protein: num(pr["Protein (g)"]),
+        carbs: num(pr["Carbs (g)"]),
+        fat: num(pr["Fat (g)"]),
+        description: text(pr["Description"]),
+        ingredients: lines(text(pr["Ingredients"])),
+        steps: lines(text(pr["Steps"])),
+        hide: !!(pr["Hide from planner"] && pr["Hide from planner"].checkbox),
+      };
+    })
+    .filter((m) => m.name && SLOTS.includes(m.slot));
+}
+
+async function listPlan(env, from) {
+  const ds = await dataSourceId(env, env.PLAN_DB);
+  const query = { sorts: [{ property: "When", direction: "ascending" }] };
+  if (from && /^\d{4}-\d{2}-\d{2}$/.test(from)) query.filter = { property: "When", date: { on_or_after: from } };
+  const pages = await queryAll(env, ds, query);
+  return pages
+    .filter((p) => !p.in_trash && !p.archived)
+    .map((p) => {
+      const pr = p.properties || {};
+      return {
+        id: p.id,
+        url: p.url,
+        key: text(pr["Key"]).trim(),
+        meal: text(pr["Meal"]).trim(),
+        when: pr["When"] && pr["When"].date ? pr["When"].date.start : null,
+        locked: !!(pr["Locked"] && pr["Locked"].checkbox),
+      };
+    })
+    .filter((r) => r.key);
+}
+
+function toProperties(item) {
+  return {
+    Meal: { title: [{ text: { content: item.meal } }] },
+    When: { date: { start: item.when } },
+    Slot: { select: { name: item.slot } },
+    Calories: { number: item.calories },
+    "Protein (g)": { number: item.protein },
+    Locked: { checkbox: item.locked },
+    Key: { rich_text: [{ text: { content: item.key } }] },
+  };
+}
+
+function cleanItem(raw, needId) {
+  if (!raw || typeof raw !== "object") return null;
+  const item = {
+    key: String(raw.key || "").slice(0, 40),
+    meal: String(raw.meal || "").slice(0, 200),
+    when: String(raw.when || ""),
+    slot: String(raw.slot || ""),
+    calories: Number.isFinite(+raw.calories) ? +raw.calories : 0,
+    protein: Number.isFinite(+raw.protein) ? +raw.protein : 0,
+    locked: !!raw.locked,
+  };
+  if (!/^\d{4}-\d{2}-\d{2} \d$/.test(item.key) || !item.meal || !SLOTS.includes(item.slot)) return null;
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?([+-]\d{2}:\d{2}|Z)$/.test(item.when)) return null;
+  if (needId) {
+    item.id = String(raw.id || "").replace(/-/g, "");
+    if (!/^[0-9a-f]{32}$/i.test(item.id)) return null;
+  }
+  return item;
+}
+
+async function writePlan(env, body) {
+  const creates = Array.isArray(body.creates) ? body.creates : [];
+  const updates = Array.isArray(body.updates) ? body.updates : [];
+  if (creates.length + updates.length > MAX_ITEMS) {
+    return { ok: [], failed: [{ key: "", message: `Send at most ${MAX_ITEMS} changes per request.` }] };
+  }
+  const jobs = [
+    ...creates.map((c) => ({ kind: "create", item: cleanItem(c, false), key: c && c.key })),
+    ...updates.map((u) => ({ kind: "update", item: cleanItem(u, true), key: u && u.key })),
+  ];
+  const ok = [], failed = [];
+  let ds = null;
+  if (jobs.some((j) => j.kind === "create" && j.item)) ds = await dataSourceId(env, env.PLAN_DB);
+
+  // Two at a time keeps well under Notion's rate limit.
+  const queue = jobs.slice();
+  const worker = async () => {
+    while (queue.length) {
+      const job = queue.shift();
+      if (!job.item) { failed.push({ key: String(job.key || ""), message: "Invalid item." }); continue; }
+      try {
+        if (job.kind === "create") {
+          await notion(env, "/pages", "POST", { parent: { type: "data_source_id", data_source_id: ds }, properties: toProperties(job.item) });
+        } else {
+          await notion(env, `/pages/${job.item.id}`, "PATCH", { properties: toProperties(job.item) });
+        }
+        ok.push(job.item.key);
+      } catch (e) {
+        failed.push({ key: job.item.key, message: e.message || "Notion request failed." });
+      }
+    }
+  };
+  await Promise.all([worker(), worker()]);
+  return { ok, failed };
+}
+
+// ---------- history cleanup ----------
+async function cleanupHistory(env, now = new Date()) {
+  const weeks = Math.floor(Number(env.KEEP_WEEKS) || 0);
+  if (weeks <= 0 || !env.NOTION_TOKEN || !env.PLAN_DB) return { skipped: true };
+  const cutoff = new Date(now.getTime() - weeks * 7 * 86400000).toISOString().slice(0, 10);
+  const ds = await dataSourceId(env, env.PLAN_DB);
+  const page = await notion(env, `/data_sources/${ds}/query`, "POST", {
+    page_size: CLEANUP_PER_RUN,
+    filter: { property: "When", date: { before: cutoff } },
+    sorts: [{ property: "When", direction: "ascending" }],
+  });
+  const old = page.results.filter((p) => !p.in_trash && !p.archived);
+  let trashed = 0, failed = 0;
+  const queue = old.slice();
+  const worker = async () => {
+    while (queue.length) {
+      const p = queue.shift();
+      try { await notion(env, `/pages/${p.id}`, "PATCH", { in_trash: true }); trashed++; } catch { failed++; }
+    }
+  };
+  await Promise.all([worker(), worker()]);
+  return { cutoff, trashed, failed, more: !!page.has_more };
+}

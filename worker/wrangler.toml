@@ -1,0 +1,23 @@
+name = "gain-planner-api"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+
+[vars]
+# The web address of your GitHub Pages site, with no trailing slash.
+# Separate several with commas, e.g. "https://you.github.io,http://localhost:8000"
+ALLOWED_ORIGINS = "https://graham-goebel.github.io"
+
+# Your Notion databases (the IDs from their URLs).
+MEALS_DB = "8037b0ec3a5842afaacb70681002a969"
+PLAN_DB = "d5d13ad654534258acc83e873f104599"
+
+# History cleanup. Meal Plan rows older than this many weeks are moved to
+# Notion's trash once a day. "0" turns cleanup off and keeps every row.
+KEEP_WEEKS = "0"
+
+[triggers]
+crons = ["17 9 * * *"]
+
+# Secrets are NOT set here. Run these once instead:
+#   npx wrangler secret put NOTION_TOKEN
+#   npx wrangler secret put APP_PASSCODE

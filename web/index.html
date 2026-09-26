@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gain planner</title>
+<meta name="description" content="Gluten-free weight-gain meal planner">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F0F0F" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Gain planner">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#141414; --muted:#8A8A8A; --line:#E7E7E7; --bg:#FFFFFF; --soft:#F6F6F6;
+  color-scheme:light; box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--ink:#EDEDED;--muted:#7C7C7C;--line:#2A2A2A;--bg:#0F0F0F;--soft:#181818;color-scheme:dark}
+}
+:root[data-theme="dark"]{--ink:#EDEDED;--muted:#7C7C7C;--line:#2A2A2A;--bg:#0F0F0F;--soft:#181818;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:15px;line-height:1.45;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0;text-align:inherit}
+button:focus-visible,summary:focus-visible,input:focus-visible{outline:1.5px solid var(--ink);outline-offset:3px;border-radius:4px}
+[hidden]{display:none!important}
+.narrow{max-width:520px;margin:0 auto}
+
+.app-head{max-width:960px;margin:0 auto;display:flex;justify-content:space-between;align-items:baseline;padding:22px 24px 4px}
+.brand{font-size:1.05rem;font-weight:500;letter-spacing:-0.01em}
+.sync{font-size:.78rem;color:var(--muted)}
+.pass{display:flex;align-items:center;gap:12px}
+.pass input{width:9.5em}
+.head-r{display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right}
+.nbtn{text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line);min-height:24px}
+a.txt{color:inherit}
+main{max-width:960px;margin:0 auto;padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+
+.strip{display:flex;gap:4px;padding:10px 20px 6px}
+.strip button{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 0 8px;border-radius:12px;font-size:.72rem;color:var(--muted);position:relative}
+.strip b{font-size:1.02rem;font-weight:400;color:var(--ink)}
+.strip button[aria-current="true"]{background:var(--ink);color:var(--bg)}
+.strip button[aria-current="true"] b{color:var(--bg)}
+.strip button.today::after{content:"";position:absolute;bottom:3px;width:3px;height:3px;border-radius:50%;background:currentColor}
+
+.gauge{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:14px 24px 16px}
+.dlabel{font-size:.82rem;color:var(--muted);margin-bottom:4px}
+.total{display:flex;align-items:baseline;gap:8px}
+.total .k{font-size:3rem;font-weight:300;letter-spacing:-0.04em;line-height:1}
+.total .of{color:var(--muted)}
+.line{position:relative;height:2px;background:var(--line);margin:14px 0 0}
+.line .fill{position:absolute;inset:0 auto 0 0;background:var(--ink);transition:width .3s ease}
+.line .tick{position:absolute;top:-4px;height:10px;width:1px;background:var(--ink);left:83.333%}
+.sub{display:flex;justify-content:space-between;gap:12px;margin-top:10px;color:var(--muted);font-size:.85rem}
+.sub b{font-weight:500;color:var(--ink)}
+.status{margin:6px 0 0;font-size:.85rem;color:var(--muted);min-height:1.3em}
+
+details.goals{padding:0 24px;border-bottom:1px solid var(--line)}
+details.goals summary{list-style:none;cursor:pointer;padding:0 0 16px;color:var(--muted);font-size:.87rem}
+details.goals summary::-webkit-details-marker{display:none}
+details.goals summary span{text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line)}
+.goal-body{display:grid;gap:14px;padding:0 0 22px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.stepper{display:flex;align-items:center;gap:4px}
+.stepper output{min-width:6ch;text-align:center}
+.sq{width:36px;height:36px;border-radius:50%;font-size:1.1rem;color:var(--muted);text-align:center}
+.sq:hover{color:var(--ink)}
+.presets{display:flex;gap:18px;font-size:.87rem;flex-wrap:wrap}
+.preset{color:var(--muted)}
+.preset[aria-pressed="true"]{color:var(--ink);text-decoration:underline;text-underline-offset:4px}
+.hint{margin:0;font-size:.82rem;color:var(--muted)}
+.subhead{font-size:.82rem;color:var(--muted);margin:8px 0 -4px}
+.times{display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center;font-size:.9rem}
+input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:8px;padding:5px 8px;min-height:34px}
+
+.slot{padding:24px 0 0}
+.slot-head{display:flex;align-items:center;justify-content:space-between;padding:0 24px 10px}
+.slot-head h2{margin:0;font-size:.85rem;font-weight:400;color:var(--muted)}
+.slot-head h2 span{color:var(--ink);margin-left:6px}
+.lock{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--muted);min-height:36px;padding:0 2px}
+.lock svg{width:15px;height:15px}
+.lock[aria-pressed="true"]{color:var(--ink)}
+.track{position:relative;display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;outline:none;padding:1px 0}
+.track::-webkit-scrollbar{display:none}
+.track::before,.track::after{content:"";flex:0 0 calc(8% - 10px)}
+.track:focus-visible .card.sel{outline:1.5px solid var(--ink);outline-offset:3px}
+.card{flex:0 0 84%;scroll-snap-align:center;border:1px solid var(--line);border-radius:14px;padding:18px;cursor:pointer;transition:border-color .2s}
+.card.sel{border-color:var(--ink)}
+.slot.locked .card:not(.sel){opacity:.35}
+.card h3{margin:0;font-size:1.05rem;font-weight:500;letter-spacing:-0.01em}
+.card .d{margin:4px 0 14px;color:var(--muted);font-size:.85rem;min-height:2.5em}
+.card .m{display:flex;gap:16px;font-size:.85rem;color:var(--muted)}
+.card .m b{font-weight:500;color:var(--ink)}
+.card.skip{border-style:dashed}
+.dots{display:flex;justify-content:center;padding-top:6px}
+.dot{width:20px;height:20px;display:grid;place-items:center}
+.dot::after{content:"";width:4px;height:4px;border-radius:50%;background:var(--line)}
+.dot[aria-current="true"]::after{background:var(--ink)}
+.actions{display:flex;flex-wrap:wrap;gap:10px 22px;padding:30px 24px 0}
+.txt{font-size:.87rem;text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--line);min-height:32px}
+.txt:hover{text-decoration-color:var(--ink)}
+.note{padding:18px 24px 0;margin:0;font-size:.8rem;color:var(--muted)}
+
+.seg{display:flex;gap:22px;padding:14px 24px 4px}
+.seg button{color:var(--muted);font-size:.92rem;padding:6px 0;border-bottom:1.5px solid transparent}
+.seg button[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+.cal-title{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:14px 24px 6px}
+.cal-title h2{margin:0;font-size:1.35rem;font-weight:400;letter-spacing:-0.02em}
+.cal-title span{font-size:.85rem;color:var(--muted)}
+
+.hours{position:relative;margin:18px 24px 0}
+.hr{height:60px;border-top:1px solid var(--line);position:relative}
+.hr span{position:absolute;top:-9px;left:0;background:var(--bg);padding-right:8px;font-size:.72rem;color:var(--muted)}
+.blk{position:absolute;left:58px;right:0;height:50px;border:1px solid var(--ink);border-radius:10px;padding:0 12px;background:var(--bg);
+  display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;z-index:1}
+.blk .n{font-size:.92rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.blk .t{font-size:.72rem;color:var(--muted);display:block}
+.blk .kc{font-size:.8rem;color:var(--muted)}
+.blk{touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:grab;transition:box-shadow .15s,transform .15s}
+.blk.drag{cursor:grabbing;box-shadow:0 6px 20px rgba(0,0,0,.18);z-index:3;transform:scale(1.02)}
+.blk.half .kc{display:none}
+.hour-hint{padding:0 24px;margin:2px 0 0;font-size:.8rem;color:var(--muted)}
+.sheet-bg{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.38);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg);width:100%;max-width:560px;max-height:88%;overflow-y:auto;overscroll-behavior:contain;border-radius:18px 18px 0 0;
+  padding:22px 24px calc(24px + env(safe-area-inset-bottom,0px))}
+@media (min-width:700px){.sheet-bg{align-items:center}.sheet{border-radius:18px;max-height:84%}}
+.sh-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.sh-sl{font-size:.82rem;color:var(--muted);margin:0}
+.sheet h2{margin:4px 0 4px;font-size:1.6rem;font-weight:400;letter-spacing:-0.02em;line-height:1.15}
+.sh-d{margin:0;color:var(--muted);font-size:.9rem}
+.sh-m{display:flex;flex-wrap:wrap;gap:6px 18px;margin:16px 0 0;font-size:.87rem;color:var(--muted)}
+.sh-m b{color:var(--ink);font-weight:500}
+.sh-time{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin:20px 0 0;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.sh-time label{font-size:.87rem;color:var(--muted)}
+.sheet h3{margin:22px 0 6px;font-size:.85rem;font-weight:400;color:var(--muted)}
+.ing{list-style:none;margin:0;padding:0}
+.ing li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:.92rem}
+.ing .q{color:var(--muted)}
+.ing .gf{font-size:.72rem;color:var(--muted);margin-left:6px}
+.steps{margin:0;padding:0 0 0 1.2em}
+.steps li{padding:5px 0 5px 4px;font-size:.92rem}
+.steps li::marker{color:var(--muted)}
+.sh-foot{display:flex;flex-wrap:wrap;align-items:center;gap:12px 22px;margin-top:24px}
+.btn{border:1px solid var(--ink);border-radius:999px;padding:8px 16px;font-size:.87rem}
+.now{position:absolute;left:50px;right:0;height:0;border-top:1.5px solid var(--ink);z-index:2}
+.now::before{content:"";position:absolute;left:-4px;top:-4.5px;width:7px;height:7px;border-radius:50%;background:var(--ink)}
+
+.agenda{padding:4px 24px 0}
+.ag{display:grid;grid-template-columns:74px 1fr;gap:12px;padding:16px 0;border-bottom:1px solid var(--line);width:100%}
+.ag .tm{font-size:.85rem;color:var(--muted);padding-top:2px}
+.ag .sl{font-size:.78rem;color:var(--muted)}
+.ag .n{font-size:1rem;font-weight:500;display:block;margin:1px 0 3px}
+.ag .d{font-size:.84rem;color:var(--muted);display:block}
+.ag .m{font-size:.82rem;color:var(--muted);display:block;margin-top:6px}
+.ag .m b{color:var(--ink);font-weight:500}
+.ag.skipped .n{color:var(--muted);font-weight:400}
+
+.week{display:grid;grid-template-columns:1fr;gap:0 14px;padding:4px 24px 0}
+.wday{border-top:1px solid var(--line);padding:14px 0 10px}
+.wday.sel{border-top-color:var(--ink)}
+.wh{display:flex;justify-content:space-between;align-items:baseline;width:100%;padding:0 0 6px}
+.wh b{font-weight:500}
+.wh span{font-size:.8rem;color:var(--muted)}
+.wm{display:grid;grid-template-columns:72px 1fr;gap:8px;width:100%;padding:5px 0}
+.wm .t{font-size:.78rem;color:var(--muted);padding-top:1px}
+.wm .n{font-size:.88rem}
+.wm:hover .n{text-decoration:underline;text-underline-offset:3px}
+@media (min-width:820px){
+  .week{grid-template-columns:repeat(7,minmax(0,1fr))}
+  .wh{flex-direction:column;gap:2px}
+  .wm{grid-template-columns:1fr;gap:0;padding:7px 0}
+}
+.wsum{display:flex;gap:22px;flex-wrap:wrap;padding:18px 24px 0;font-size:.87rem;color:var(--muted)}
+.wsum b{color:var(--ink);font-weight:500}
+
+.shop-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:14px 24px 0}
+.shop-top h2{margin:0;font-size:1.35rem;font-weight:400;letter-spacing:-0.02em}
+.grp h3{margin:22px 0 6px;font-size:.85rem;font-weight:400;color:var(--muted)}
+.item{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.item input{appearance:none;-webkit-appearance:none;width:18px;height:18px;border:1px solid var(--muted);border-radius:5px;margin:0;flex:none;display:grid;place-items:center;cursor:pointer}
+.item input:checked{background:var(--ink);border-color:var(--ink)}
+.item input:checked::after{content:"";width:8px;height:4px;border:1.5px solid var(--bg);border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+.item .nm{flex:1}
+.item .gf{font-size:.72rem;color:var(--muted);margin-left:6px}
+.item .q{color:var(--muted);font-size:.9rem}
+.item.done .nm,.item.done .q{text-decoration:line-through;color:var(--muted)}
+.list{padding:0 24px}
+.pdf{background:var(--ink);color:var(--bg);border-radius:999px;padding:9px 18px;font-size:.88rem}
+.pdf:disabled{opacity:.5;cursor:default}
+.foot{display:flex;align-items:center;flex-wrap:wrap;gap:12px 20px;padding:24px 24px 0}
+.msg{font-size:.82rem;color:var(--muted)}
+
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--bg);border-top:1px solid var(--line);
+  display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabbar button{flex:1;max-width:180px;height:56px;font-size:.87rem;color:var(--muted);text-align:center;position:relative}
+.tabbar button[aria-current="page"]{color:var(--ink)}
+.tabbar button[aria-current="page"]::before{content:"";position:absolute;top:-1px;left:30%;right:30%;height:1.5px;background:var(--ink)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="app-head">
+  <div class="brand">Gain planner</div>
+  <div class="head-r"><span class="sync" id="sync" role="status"></span><button class="sync nbtn" id="notionBtn" hidden title="Sync with Notion now">Notion</button></div>
+</header>
+
+<main>
+  <nav class="strip narrow" id="strip" aria-label="Days of the week"></nav>
+
+  <!-- PLAN -->
+  <section id="view-plan" class="narrow" aria-label="Plan">
+    <div class="gauge" aria-live="polite">
+      <div class="dlabel" id="dLabel"></div>
+      <div class="total"><span class="k" id="kTotal">0</span><span class="of" id="kOf">/ 3,000 kcal</span></div>
+      <div class="line"><div class="fill" id="kFill"></div><div class="tick"></div></div>
+      <div class="sub"><span>Protein <b id="pTotal">0 g</b> / <span id="pOf">110 g</span></span><span>Carbs <b id="cTotal">0</b></span><span>Fat <b id="fTotal">0</b></span></div>
+      <p class="status" id="status"></p>
+    </div>
+
+    <details class="goals">
+      <summary><span>Goals &amp; schedule</span></summary>
+      <div class="goal-body">
+        <div class="row"><span>Calories per day</span>
+          <div class="stepper"><button class="sq" id="kDown" aria-label="Lower calorie goal by 100">−</button><output id="kGoal">3,000</output><button class="sq" id="kUp" aria-label="Raise calorie goal by 100">+</button></div></div>
+        <div class="presets" role="group" aria-label="Ramp-up steps">
+          <button class="preset" data-v="2200">Week 1: 2,200</button>
+          <button class="preset" data-v="2600">Week 2: 2,600</button>
+          <button class="preset" data-v="3000">Then: 3,000</button>
+        </div>
+        <p class="hint">Step up over a couple of weeks rather than jumping straight to the full amount.</p>
+        <div class="row"><span>Protein per day</span>
+          <div class="stepper"><button class="sq" id="pDown" aria-label="Lower protein goal by 5 grams">−</button><output id="pGoal">110 g</output><button class="sq" id="pUp" aria-label="Raise protein goal by 5 grams">+</button></div></div>
+        <p class="subhead">Default meal times</p>
+        <div class="times" id="times"></div>
+        <p class="hint">Dragging a meal on the calendar changes the time for that day only.</p>
+        <div class="row"><label for="startDate">Week starts</label><input type="date" id="startDate"></div>
+        <p class="hint">Meals and your weekly plan are stored in Notion. <a class="txt" href="https://app.notion.com/p/3e71fe5d3fa48144bd10fd03a50ec960" target="_blank" rel="noopener">Open Gain Planner in Notion</a></p>
+        <div class="row" id="passRow"><label for="passcode">Notion passcode</label><span class="pass"><input type="password" id="passcode" autocomplete="current-password" placeholder="Passcode"><button class="txt" id="savePass">Save</button></span></div>
+      </div>
+    </details>
+
+    <div id="slots"></div>
+
+    <div class="actions">
+      <button class="txt" id="shuffle">Shuffle unlocked meals</button>
+      <button class="txt" id="copyAll">Copy this day to the whole week</button>
+      <button class="txt" id="unlockDay">Unlock day</button>
+    </div>
+    <p class="note">Swipe to choose. Lock a meal to hold it; unlocked meals rebalance to hit your goals.</p>
+  </section>
+
+  <!-- CALENDAR -->
+  <section id="view-cal" aria-label="Calendar" hidden>
+    <div class="seg narrow" role="group" aria-label="Calendar view">
+      <button data-cv="hour" aria-pressed="true">Hour</button>
+      <button data-cv="day" aria-pressed="false">Day</button>
+      <button data-cv="week" aria-pressed="false">Week</button>
+    </div>
+    <div id="calBody"></div>
+  </section>
+
+  <!-- SHOP -->
+  <section id="view-shop" class="narrow" aria-label="Shopping list" hidden>
+    <div class="shop-top"><h2>Shopping list</h2></div>
+    <div class="seg" role="group" aria-label="List covers">
+      <button data-sc="week" aria-pressed="true">Whole week</button>
+      <button data-sc="day" aria-pressed="false" id="scDay">Selected day</button>
+    </div>
+    <div class="list" id="listBody"></div>
+    <div class="foot">
+      <button class="pdf" id="shopPdf" hidden>Download PDF</button>
+      <button class="txt" id="clearChecks">Clear checks</button>
+      <span class="msg" id="shopMsg" role="status"></span>
+    </div>
+    <p class="note">Quantities are rounded up for shopping. Items marked “check GF label” need a certified gluten-free version.</p>
+  </section>
+</main>
+
+<div class="sheet-bg" id="sheet" hidden><div class="sheet" id="sheetBox" role="dialog" aria-modal="true" aria-labelledby="shTitle"></div></div>
+
+<nav class="tabbar" aria-label="Sections">
+  <button data-tab="plan" aria-current="page">Plan</button>
+  <button data-tab="cal">Calendar</button>
+  <button data-tab="shop">Shop</button>
+</nav>
+
+<script src="config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const SKIP = {n:"Skip it", d:"The other meals cover the difference.", k:0,p:0,c:0,f:0, skip:true};
+const SLOTS = [
+  {name:"Breakfast", opts:[
+    {n:"Cheesy eggs & toast", d:"3 eggs scrambled with 1 oz cheddar, 2 slices GF toast with butter, a banana", k:710,p:29,c:62,f:38},
+    {n:"Peanut butter oatmeal", d:"1 cup certified GF oats cooked in whole milk, 2 tbsp peanut butter, honey, berries", k:820,p:29,c:106,f:33},
+    {n:"Breakfast burrito bowl", d:"3 eggs, black beans, rice, half an avocado, cheese, salsa", k:730,p:40,c:63,f:36},
+    {n:"Sweet potato hash", d:"Sweet potato, 4 oz ground turkey, 2 fried eggs, olive oil, half an avocado", k:665,p:37,c:34,f:44},
+    {n:"GF pancakes & sausage", d:"3 GF pancakes with butter and maple syrup, 2 turkey sausage links", k:745,p:20,c:88,f:33}
+  ]},
+  {name:"Morning snack", opts:[
+    {n:"Cottage cheese & pineapple", d:"1 cup 4% cottage cheese, ½ cup pineapple", k:260,p:25,c:18,f:10},
+    {n:"Eggs, cheese & crackers", d:"2 hard-boiled eggs, a cheese stick, a handful of GF crackers", k:350,p:21,c:22,f:21},
+    {n:"Trail mix", d:"½ cup mixed nuts, raisins and chocolate chips", k:350,p:10,c:33,f:22},
+    {n:"Rice cakes & peanut butter", d:"2 rice cakes, 2 tbsp peanut butter, half a banana", k:313,p:9,c:35,f:16},
+    {n:"Apple & almond butter", d:"1 apple, 2 tbsp almond butter", k:290,p:7,c:31,f:18},
+    SKIP
+  ]},
+  {name:"Lunch", opts:[
+    {n:"Chicken rice bowl", d:"6 oz chicken thigh, 1 cup rice, half an avocado, veggies, olive oil drizzle", k:825,p:46,c:57,f:45},
+    {n:"Turkey & cheese sandwich", d:"GF bread, 4 oz turkey, 1.5 oz cheese, mayo, potato chips, an apple", k:805,p:37,c:78,f:39},
+    {n:"Salmon quinoa plate", d:"5 oz salmon, 1 cup quinoa, oil-roasted vegetables, feta", k:737,p:45,c:50,f:42},
+    {n:"Beef & bean chili", d:"1½ cups chili, cheese, sour cream, corn tortilla chips", k:765,p:45,c:50,f:42},
+    {n:"GF pasta with meat sauce", d:"3 oz dry GF pasta, 4 oz ground beef, marinara, parmesan, olive oil", k:770,p:33,c:76,f:38}
+  ]},
+  {name:"Afternoon snack", opts:[
+    {n:"Weight-gain smoothie", d:"1½ cups whole milk, banana, 2 tbsp peanut butter, ½ cup GF oats, a scoop of protein powder", k:790,p:49,c:82,f:32},
+    {n:"Berry protein shake", d:"Protein powder, 1 cup whole milk, frozen berries, chia seeds", k:400,p:35,c:37,f:14},
+    {n:"Greek yogurt parfait", d:"1 cup full-fat Greek yogurt, ⅓ cup GF granola, honey", k:454,p:24,c:47,f:17},
+    {n:"Chocolate milk & almonds", d:"1½ cups whole chocolate milk, ¼ cup almonds", k:520,p:20,c:46,f:30},
+    {n:"Hummus plate", d:"½ cup hummus, carrots and cucumber, GF crackers, olives", k:430,p:11,c:49,f:22},
+    SKIP
+  ]},
+  {name:"Dinner", opts:[
+    {n:"Steak & roasted potatoes", d:"6 oz sirloin, olive-oil roasted potatoes, green beans", k:700,p:55,c:48,f:30},
+    {n:"Salmon, rice & broccoli", d:"6 oz salmon, 1 cup rice, broccoli with butter", k:705,p:44,c:52,f:33},
+    {n:"Chicken thigh tacos", d:"3 corn tortillas, 6 oz chicken thigh, avocado, cheese, salsa", k:745,p:53,c:42,f:42},
+    {n:"Pork & sweet potato", d:"6 oz pork tenderloin, buttered sweet potato, salad with olive oil dressing", k:690,p:48,c:41,f:35},
+    {n:"Shrimp coconut curry", d:"6 oz shrimp, coconut milk, vegetables, 1 cup rice", k:650,p:43,c:59,f:26}
+  ]},
+  {name:"Before bed", opts:[
+    {n:"Cottage cheese & honey", d:"1 cup 4% cottage cheese, a drizzle of honey", k:284,p:25,c:25,f:10},
+    {n:"Peanut butter banana toast", d:"1 slice GF toast, 2 tbsp peanut butter, a banana", k:385,p:10,c:51,f:18},
+    {n:"Chocolate yogurt pudding", d:"1 cup Greek yogurt stirred with cocoa and maple syrup", k:284,p:21,c:24,f:11},
+    {n:"Nuts & dark chocolate", d:"¼ cup mixed nuts, 1 oz dark chocolate", k:370,p:8,c:20,f:30},
+    {n:"Warm milk & GF cookies", d:"1 cup whole milk, 2 GF cookies", k:330,p:10,c:36,f:17},
+    SKIP
+  ]}
+];
+// [name, qty, unit, section, check-GF-label]
+const ING={
+"Cheesy eggs & toast":[["Eggs",3,"","D"],["Cheddar",1,"oz","D"],["GF bread",2,"slices","B"],["Butter",1,"tbsp","D"],["Bananas",1,"","P"]],
+"Peanut butter oatmeal":[["Oats",1,"cup","K",1],["Whole milk",1.5,"cup","D"],["Peanut butter",2,"tbsp","K"],["Honey",1,"tbsp","K"],["Berries",0.5,"cup","P"]],
+"Breakfast burrito bowl":[["Eggs",3,"","D"],["Black beans",0.75,"cup","K"],["Rice (dry)",0.17,"cup","K"],["Avocados",0.5,"","P"],["Cheddar",1,"oz","D"],["Salsa",2,"tbsp","K"]],
+"Sweet potato hash":[["Sweet potatoes",1,"","P"],["Ground turkey",4,"oz","M"],["Eggs",2,"","D"],["Olive oil",1,"tbsp","K"],["Avocados",0.5,"","P"]],
+"GF pancakes & sausage":[["Pancake mix",0.75,"cup","K",1],["Eggs",1,"","D"],["Whole milk",0.5,"cup","D"],["Butter",1,"tbsp","D"],["Maple syrup",2,"tbsp","K"],["Turkey sausage links",2,"","M",1]],
+"Cottage cheese & pineapple":[["Cottage cheese",1,"cup","D"],["Pineapple",0.5,"cup","P"]],
+"Eggs, cheese & crackers":[["Eggs",2,"","D"],["String cheese",1,"","D"],["Crackers",1,"oz","K",1]],
+"Trail mix":[["Trail mix",0.5,"cup","K",1]],
+"Rice cakes & peanut butter":[["Rice cakes",2,"","K"],["Peanut butter",2,"tbsp","K"],["Bananas",0.5,"","P"]],
+"Apple & almond butter":[["Apples",1,"","P"],["Almond butter",2,"tbsp","K"]],
+"Chicken rice bowl":[["Chicken thighs",6,"oz","M"],["Rice (dry)",0.33,"cup","K"],["Avocados",0.5,"","P"],["Mixed vegetables",1,"cup","P"],["Olive oil",1,"tbsp","K"]],
+"Turkey & cheese sandwich":[["GF bread",2,"slices","B"],["Deli turkey",4,"oz","M"],["Cheddar",1.5,"oz","D"],["Mayo",1,"tbsp","K"],["Potato chips",1,"oz","K"],["Apples",1,"","P"]],
+"Salmon quinoa plate":[["Salmon",5,"oz","M"],["Quinoa (dry)",0.33,"cup","K"],["Mixed vegetables",1,"cup","P"],["Olive oil",1,"tbsp","K"],["Feta",1,"oz","D"]],
+"Beef & bean chili":[["Ground beef",4,"oz","M"],["Kidney beans",0.5,"cup","K"],["Crushed tomatoes",0.5,"cup","K"],["Onions",0.25,"","P"],["Chili seasoning",1,"tbsp","K",1],["Cheddar",1,"oz","D"],["Sour cream",2,"tbsp","D"],["Corn tortilla chips",1,"oz","K"]],
+"GF pasta with meat sauce":[["GF pasta",3,"oz","K"],["Ground beef",4,"oz","M"],["Marinara",0.5,"cup","K"],["Parmesan",2,"tbsp","D"],["Olive oil",1,"tbsp","K"]],
+"Weight-gain smoothie":[["Whole milk",1.5,"cup","D"],["Bananas",1,"","P"],["Peanut butter",2,"tbsp","K"],["Oats",0.5,"cup","K",1],["Protein powder",1,"scoop","K",1]],
+"Berry protein shake":[["Protein powder",1,"scoop","K",1],["Whole milk",1,"cup","D"],["Frozen berries",1,"cup","F"],["Chia seeds",1,"tbsp","K"]],
+"Greek yogurt parfait":[["Greek yogurt",1,"cup","D"],["Granola",0.33,"cup","K",1],["Honey",1,"tbsp","K"]],
+"Chocolate milk & almonds":[["Chocolate milk",1.5,"cup","D"],["Almonds",0.25,"cup","K"]],
+"Hummus plate":[["Hummus",0.5,"cup","D"],["Carrots",1,"","P"],["Cucumbers",0.5,"","P"],["Crackers",1,"oz","K",1],["Olives",10,"","K"]],
+"Steak & roasted potatoes":[["Sirloin steak",6,"oz","M"],["Potatoes",8,"oz","P"],["Olive oil",1,"tbsp","K"],["Green beans",1,"cup","P"]],
+"Salmon, rice & broccoli":[["Salmon",6,"oz","M"],["Rice (dry)",0.33,"cup","K"],["Broccoli",1,"cup","P"],["Butter",1,"tbsp","D"]],
+"Chicken thigh tacos":[["Corn tortillas",3,"","B"],["Chicken thighs",6,"oz","M"],["Avocados",0.5,"","P"],["Cheddar",1,"oz","D"],["Salsa",2,"tbsp","K"]],
+"Pork & sweet potato":[["Pork tenderloin",6,"oz","M"],["Sweet potatoes",1,"","P"],["Butter",1,"tbsp","D"],["Salad greens",2,"cup","P"],["Olive oil",1,"tbsp","K"]],
+"Shrimp coconut curry":[["Shrimp",6,"oz","M"],["Coconut milk",0.5,"cup","K"],["Curry paste",1,"tbsp","K",1],["Mixed vegetables",1,"cup","P"],["Rice (dry)",0.33,"cup","K"]],
+"Cottage cheese & honey":[["Cottage cheese",1,"cup","D"],["Honey",1,"tbsp","K"]],
+"Peanut butter banana toast":[["GF bread",1,"slices","B"],["Peanut butter",2,"tbsp","K"],["Bananas",1,"","P"]],
+"Chocolate yogurt pudding":[["Greek yogurt",1,"cup","D"],["Cocoa powder",1,"tbsp","K"],["Maple syrup",1,"tbsp","K"]],
+"Nuts & dark chocolate":[["Mixed nuts",0.25,"cup","K"],["Dark chocolate",1,"oz","K",1]],
+"Warm milk & GF cookies":[["Whole milk",1,"cup","D"],["GF cookies",2,"","K"]]
+};
+const SECTIONS=[["P","Produce"],["M","Meat & fish"],["D","Dairy, eggs & deli"],["B","Bread & tortillas"],["F","Frozen"],["K","Pantry"]];
+
+const STEPS={
+"Cheesy eggs & toast":["Whisk the eggs with a pinch of salt.","Melt half the butter in a nonstick pan over medium-low heat. Add the eggs and stir gently until just set.","Fold in the cheddar off the heat.","Toast the bread, spread with the rest of the butter, and serve with the banana."],
+"Peanut butter oatmeal":["Bring the milk to a gentle simmer in a small pot.","Stir in the oats and cook about 5 minutes, stirring, until creamy.","Swirl in the peanut butter, then top with berries and honey."],
+"Breakfast burrito bowl":["Warm the black beans and rice.","Scramble the eggs in a lightly oiled pan until just set.","Layer rice, beans and eggs in a bowl.","Top with cheese, sliced avocado and salsa."],
+"Sweet potato hash":["Dice the sweet potato into small cubes.","Heat the olive oil in a skillet and cook the sweet potato 10 to 12 minutes, stirring, until tender and browned.","Push it to one side, add the turkey and cook until no longer pink. Season with salt, pepper and paprika.","Make two wells, crack in the eggs, cover and cook 3 to 4 minutes until the whites set.","Top with sliced avocado."],
+"GF pancakes & sausage":["Whisk the pancake mix with the egg and milk until just combined.","Cook the sausage links in a skillet over medium heat, turning, 8 to 10 minutes.","Pour quarter-cup portions of batter onto a buttered griddle and flip when bubbles form.","Serve with butter and maple syrup."],
+"Cottage cheese & pineapple":["Spoon the cottage cheese into a bowl.","Top with the pineapple."],
+"Eggs, cheese & crackers":["Boil the eggs for 10 minutes, cool in cold water and peel. Cook a batch for the week.","Serve with the cheese stick and crackers."],
+"Trail mix":["Portion half a cup into a small container.","Mix a large batch at the start of the week to save time."],
+"Rice cakes & peanut butter":["Spread the peanut butter over the rice cakes.","Top with sliced banana."],
+"Apple & almond butter":["Slice the apple.","Serve with the almond butter for dipping."],
+"Chicken rice bowl":["Season the chicken thighs with salt, pepper and garlic powder.","Cook in a hot oiled skillet 5 to 6 minutes per side, until 175°F inside.","Steam or sauté the vegetables.","Slice the chicken over the rice with the vegetables and avocado, then drizzle with olive oil."],
+"Turkey & cheese sandwich":["Toast the bread; gluten-free bread holds together better toasted.","Spread with mayo and layer the turkey and cheese.","Serve with the chips and an apple."],
+"Salmon quinoa plate":["Rinse the quinoa and simmer in two-thirds of a cup of water, covered, for 15 minutes.","Toss the vegetables in olive oil and roast at 425°F for 20 minutes.","Add the seasoned salmon to the pan for the last 10 to 12 minutes.","Serve over the quinoa with crumbled feta."],
+"Beef & bean chili":["Brown the beef with the diced onion.","Stir in the seasoning, crushed tomatoes and beans, then simmer 20 minutes.","Top with cheese and sour cream and serve with chips. A big pot covers several lunches."],
+"GF pasta with meat sauce":["Cook the pasta a minute less than the package says, since gluten-free pasta softens quickly.","Brown the beef in the olive oil, add the marinara and simmer 5 minutes.","Toss with the pasta and top with parmesan."],
+"Weight-gain smoothie":["Add the milk to the blender first, then the oats, banana, peanut butter and protein powder.","Blend 45 to 60 seconds until smooth."],
+"Berry protein shake":["Blend the milk, protein powder, berries and chia seeds until smooth."],
+"Greek yogurt parfait":["Layer the yogurt and granola in a glass or bowl.","Drizzle with honey."],
+"Chocolate milk & almonds":["Pour the chocolate milk.","Serve with the almonds."],
+"Hummus plate":["Cut the carrots and cucumber into sticks.","Serve with the hummus, crackers and olives."],
+"Steak & roasted potatoes":["Heat the oven to 425°F. Cut the potatoes into chunks, toss with oil and salt, and roast 30 to 35 minutes.","Pat the steak dry and season generously.","Sear in a very hot skillet 3 to 4 minutes per side for medium, then rest 5 minutes.","Steam or sauté the green beans."],
+"Salmon, rice & broccoli":["Cook the rice.","Season the salmon and bake at 400°F for 12 to 15 minutes.","Steam the broccoli and toss with butter and salt."],
+"Chicken thigh tacos":["Season the chicken with chili powder, cumin and salt.","Cook in a skillet 5 to 6 minutes per side, rest, then slice.","Warm the tortillas in a dry pan.","Fill with the chicken, avocado, cheese and salsa."],
+"Pork & sweet potato":["Heat the oven to 400°F. Prick the sweet potato and bake 45 to 50 minutes, or microwave 6 to 8 minutes.","Season the pork, sear on all sides, then roast 15 to 20 minutes to 145°F. Rest 5 minutes.","Slice and serve with the buttered sweet potato and dressed salad."],
+"Shrimp coconut curry":["Cook the rice.","Sauté the vegetables 3 to 4 minutes, then stir in the curry paste for 1 minute.","Add the coconut milk and bring to a simmer. Add the shrimp and cook 3 to 4 minutes until pink.","Serve over the rice."],
+"Cottage cheese & honey":["Spoon the cottage cheese into a bowl and drizzle with honey."],
+"Peanut butter banana toast":["Toast the bread.","Spread with peanut butter and top with sliced banana."],
+"Chocolate yogurt pudding":["Stir the cocoa and maple syrup into the yogurt until smooth.","Chill 10 minutes for a thicker texture, if you like."],
+"Nuts & dark chocolate":["Portion the nuts and chocolate into a small bowl."],
+"Warm milk & GF cookies":["Warm the milk in a small pot or the microwave.","Serve with the cookies."]
+};
+const N=SLOTS.length, D=7;
+const DEFAULT_TIMES=["07:30","10:00","12:30","15:30","18:30","21:30"];
+const KEY2="gf-gain-planner-v2", KEY1="gf-gain-planner-v1", UIKEY="gf-gain-planner-ui";
+const fmt=n=>Math.round(n).toLocaleString("en-US");
+const reduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const $=id=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const LOCKED='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" fill="currentColor"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>';
+const OPEN='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 0 1 5.8-1"/></svg>';
+
+const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const NOTION={server:"Notion",planView:"view://3e71fe5d-3fa4-8136-aea7-000c56e9c45c",mealsView:"view://3e71fe5d-3fa4-81df-8be4-000ceb822b9e",planDS:"f4b01177-7e91-4185-b510-94e551e0d877"};
+const LIBKEY="gf-gain-planner-lib";
+const SLOT_NAMES=SLOTS.map(s=>s.name);
+const HAS_SKIP=SLOTS.map(s=>s.opts.some(o=>o.skip));
+const BASE_ORDER=SLOTS.map(s=>s.opts.map(o=>o.n));
+let libSig="";
+const API_URL=String((window.GAIN_CONFIG||{}).workerUrl||"").replace(/\/+$/,"");
+const PASSKEY="gf-gain-planner-pass";
+function passcode(){try{return localStorage.getItem(PASSKEY)||""}catch(e){return ""}}
+const notionOn=()=>!!(API_URL&&passcode());
+const nState={busy:false,again:false,timer:null,last:0,syncing:false};
+function applyLib(lib){
+  SLOTS.forEach((s,i)=>{
+    const list=lib.filter(m=>m.slot===i&&!m.hide);if(!list.length)return;
+    list.sort((a,b)=>{const ia=BASE_ORDER[i].indexOf(a.n),ib=BASE_ORDER[i].indexOf(b.n);return (ia<0?999:ia)-(ib<0?999:ib)||a.n.localeCompare(b.n)});
+    const seen=new Set();
+    s.opts=list.filter(m=>{if(seen.has(m.n))return false;seen.add(m.n);return true}).map(m=>({n:m.n,d:m.d,k:m.k,p:m.p,c:m.c,f:m.f,ing:m.ing,steps:m.steps,url:m.url}));
+    if(HAS_SKIP[i])s.opts.push(SKIP);
+  });
+}
+try{const c=localStorage.getItem(LIBKEY);if(c){const lib=JSON.parse(c);if(Array.isArray(lib)){applyLib(lib);libSig=c}}}catch(e){}
+
+/* ---------- dates ---------- */
+function iso(t){return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`}
+function dayDate(d){const [y,m,dd]=state.startDate.split("-").map(Number);return new Date(y,m-1,dd+d)}
+function isToday(d){return iso(dayDate(d))===iso(new Date())}
+function wk(d,style="short"){return dayDate(d).toLocaleDateString("en-US",{weekday:style})}
+function longDate(d){return dayDate(d).toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}
+function shortDate(d){return dayDate(d).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"})}
+function mins(hm){const [h,m]=hm.split(":").map(Number);return h*60+m}
+function fmtTime(hm){let [h,m]=hm.split(":").map(Number);const ap=h>=12?"PM":"AM";h=h%12||12;return `${h}:${String(m).padStart(2,"0")} ${ap}`}
+
+/* ---------- state ---------- */
+function blank(){return{v:2,updatedAt:0,target:3000,protein:110,startDate:iso(new Date()),times:DEFAULT_TIMES.slice(),
+  days:Array.from({length:D},()=>({picks:Array(N).fill(0),locked:Array(N).fill(false),times:Array(N).fill(null)})),checked:[]}}
+function normalize(s){
+  const b=blank(); if(!s||typeof s!=="object")return null;
+  b.updatedAt=+s.updatedAt||0;
+  b.target=clamp(+s.target||3000,1800,4000); b.protein=clamp(+s.protein||110,60,200);
+  if(typeof s.startDate==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s.startDate))b.startDate=s.startDate;
+  if(Array.isArray(s.times)&&s.times.length===N&&s.times.every(t=>/^\d{2}:\d{2}$/.test(t)))b.times=s.times.slice();
+  if(!Array.isArray(s.days)||s.days.length!==D)return null;
+  b.days=s.days.map(dy=>({picks:SLOTS.map((sl,i)=>{const nm=dy&&Array.isArray(dy.names)?dy.names[i]:null;if(typeof nm==="string"){const k=sl.opts.findIndex(o=>o.n===nm);if(k>=0)return k}return clamp((dy&&dy.picks&&dy.picks[i])|0,0,sl.opts.length-1)}),locked:SLOTS.map((_,i)=>!!(dy&&dy.locked&&dy.locked[i])),
+    times:SLOTS.map((_,i)=>{const t=dy&&Array.isArray(dy.times)?dy.times[i]:null;return typeof t==="string"&&/^\d{2}:\d{2}$/.test(t)?t:null})}));
+  b.checked=Array.isArray(s.checked)?s.checked.filter(x=>typeof x==="string").slice(0,300):[];
+  b.nsnap={};if(s.nsnap&&typeof s.nsnap==="object")Object.keys(s.nsnap).slice(0,400).forEach(k=>{const v=s.nsnap[k];if(v&&typeof v.meal==="string"&&typeof v.when==="string")b.nsnap[k]={meal:v.meal,when:v.when,locked:!!v.locked}});
+  return b;
+}
+let state=null, fresh=false;
+try{const r=localStorage.getItem(KEY2);if(r)state=normalize(JSON.parse(r))}catch(e){}
+if(!state){
+  state=blank();fresh=true;
+  try{const r=localStorage.getItem(KEY1);if(r){const o=JSON.parse(r);
+    if(o&&Array.isArray(o.picks)&&o.picks.length===N){state.target=clamp(+o.target||3000,1800,4000);state.protein=clamp(+o.protein||110,60,200);
+      state.days[0]={picks:o.picks.map((v,i)=>clamp(v|0,0,SLOTS[i].opts.length-1)),locked:SLOTS.map((_,i)=>!!(o.locked&&o.locked[i])),times:Array(N).fill(null)}}}}catch(e){}
+}
+let ui={tab:"plan",day:0,cal:"hour",scope:"week"};
+try{const u=JSON.parse(localStorage.getItem(UIKEY)||"null");if(u){ui.tab=["plan","cal","shop"].includes(u.tab)?u.tab:"plan";ui.day=clamp(u.day|0,0,D-1);ui.cal=["hour","day","week"].includes(u.cal)?u.cal:"hour";ui.scope=u.scope==="day"?"day":"week"}}catch(e){}
+function saveUi(){try{localStorage.setItem(UIKEY,JSON.stringify(ui))}catch(e){}}
+function syncNames(){state.days.forEach(dy=>{dy.names=dy.picks.map((p,i)=>(SLOTS[i].opts[p]||{}).n||null)})}
+function saveLocal(){syncNames();try{localStorage.setItem(KEY2,JSON.stringify(state))}catch(e){}}
+function save(){state.updatedAt=Date.now();saveLocal();scheduleRemote();scheduleNotion()}
+
+/* ---------- balancing ---------- */
+function rebalanceDay(d,fixed=-1,shuffle=false){
+  const day=state.days[d],prev=state.days[d-1],next=state.days[d+1];
+  const free=[];let bk=0,bp=0;
+  SLOTS.forEach((s,i)=>{if(day.locked[i]||i===fixed){const o=s.opts[day.picks[i]];bk+=o.k;bp+=o.p}else free.push(i)});
+  if(!free.length)return;
+  const cost=free.map(si=>SLOTS[si].opts.map((o,oi)=>{
+    let c=o.skip?45:0;
+    if(!o.skip){if(prev&&prev.picks[si]===oi)c+=12;if(next&&next.picks[si]===oi)c+=12}
+    c+=shuffle?Math.random()*70:(oi!==day.picks[si]?10:0);
+    return c;
+  }));
+  let best=null,bestScore=Infinity;const ch=[];
+  (function rec(j,k,p,c){
+    if(j===free.length){const sc=Math.abs(k-state.target)+Math.max(0,state.protein-p)*10+c;if(sc<bestScore){bestScore=sc;best=ch.slice()}return}
+    const si=free[j];SLOTS[si].opts.forEach((o,oi)=>{ch[j]=oi;rec(j+1,k+o.k,p+o.p,c+cost[j][oi])});
+  })(0,bk,bp,0);
+  free.forEach((si,j)=>day.picks[si]=best[j]);
+}
+function rebalanceAll(){for(let d=0;d<D;d++)rebalanceDay(d)}
+function totals(d){let k=0,p=0,c=0,f=0;SLOTS.forEach((s,i)=>{const o=s.opts[state.days[d].picks[i]];k+=o.k;p+=o.p;c+=o.c;f+=o.f});return{k,p,c,f}}
+function timeOf(d,i){const t=state.days[d].times&&state.days[d].times[i];return t||state.times[i]}
+function toHM(m){return `${String(Math.floor(m/60)).padStart(2,"0")}:${String(m%60).padStart(2,"0")}`}
+function setTime(d,i,hm){const day=state.days[d];if(!day.times)day.times=Array(N).fill(null);day.times[i]=hm===state.times[i]?null:hm;save()}
+function mealsOf(d){return SLOTS.map((s,i)=>({i,slot:s.name,time:timeOf(d,i),o:s.opts[state.days[d].picks[i]],locked:state.days[d].locked[i]})).sort((a,b)=>mins(a.time)-mins(b.time))}
+if(fresh){if(state.days[0].locked.some(Boolean)){for(let d=0;d<D;d++)rebalanceDay(d)}else{for(let d=0;d<D;d++)rebalanceDay(d,-1,d>0)}saveLocal()}
+
+/* ---------- day strip ---------- */
+function renderStrip(){
+  const el=$("strip");el.innerHTML="";
+  for(let d=0;d<D;d++){
+    const b=document.createElement("button");
+    b.innerHTML=`<span>${wk(d)}</span><b>${dayDate(d).getDate()}</b>`;
+    b.setAttribute("aria-label",longDate(d));b.setAttribute("aria-current",d===ui.day);
+    if(isToday(d))b.classList.add("today");
+    b.onclick=()=>{ui.day=d;saveUi();renderAll(false)};
+    el.appendChild(b);
+  }
+}
+
+/* ---------- plan view ---------- */
+const T=[];
+function buildSlots(){
+$("slots").innerHTML="";T.length=0;
+SLOTS.forEach((s,i)=>{
+  const sec=document.createElement("section");sec.className="slot";sec.setAttribute("aria-label",s.name);
+  sec.innerHTML=`<div class="slot-head"><h2>${s.name}<span></span></h2><button class="lock" aria-pressed="false"></button></div>`;
+  const track=document.createElement("div");track.className="track";track.tabIndex=0;
+  track.setAttribute("aria-label",`${s.name} options. Left and right arrow keys choose.`);
+  s.opts.forEach((o,oi)=>{
+    const c=document.createElement("article");c.className="card"+(o.skip?" skip":"");
+    c.innerHTML=`<h3>${esc(o.n)}</h3><p class="d">${esc(o.d)}</p>`+(o.skip?"":`<div class="m"><span><b>${fmt(o.k)}</b> kcal</span><span><b>${fmt(o.p)} g</b> protein</span></div>`);
+    c.addEventListener("click",()=>{if(state.days[ui.day].picks[i]!==oi)choose(i,oi)});
+    track.appendChild(c);
+  });
+  const dots=document.createElement("div");dots.className="dots";
+  s.opts.forEach((o,oi)=>{const d=document.createElement("button");d.className="dot";d.setAttribute("aria-label",`${s.name}: ${o.n}`);d.onclick=()=>choose(i,oi);dots.appendChild(d)});
+  sec.append(track,dots);$("slots").appendChild(sec);
+  const lock=sec.querySelector(".lock");
+  lock.onclick=()=>{const day=state.days[ui.day];day.locked[i]=!day.locked[i];if(!day.locked[i])rebalanceDay(ui.day);updatePlan();save()};
+  track._user=false;let t=null;const mark=()=>{track._user=true};
+  track.addEventListener("touchstart",mark,{passive:true});track.addEventListener("pointerdown",mark);track.addEventListener("wheel",mark,{passive:true});
+  track.addEventListener("scroll",()=>{clearTimeout(t);t=setTimeout(()=>{if(!track._user)return;track._user=false;const idx=nearest(track);if(idx!==state.days[ui.day].picks[i])choose(i,idx,false)},120)},{passive:true});
+  track.addEventListener("keydown",e=>{if(e.key==="ArrowRight"||e.key==="ArrowLeft"){e.preventDefault();const cur=state.days[ui.day].picks[i];const n=clamp(cur+(e.key==="ArrowRight"?1:-1),0,s.opts.length-1);if(n!==cur)choose(i,n)}});
+  T.push({sec,track,lock,label:sec.querySelector("h2 span"),dots:[...dots.children],cards:[...track.querySelectorAll(".card")]});
+});
+}
+buildSlots();
+function nearest(track){const mid=track.scrollLeft+track.clientWidth/2;let b=0,bd=Infinity;[...track.querySelectorAll(".card")].forEach((c,idx)=>{const d=Math.abs(c.offsetLeft+c.offsetWidth/2-mid);if(d<bd){bd=d;b=idx}});return b}
+function scrollToPick(i,smooth){
+  if(ui.tab!=="plan")return;
+  const{track,cards}=T[i];const c=cards[state.days[ui.day].picks[i]];
+  const left=c.offsetLeft+c.offsetWidth/2-track.clientWidth/2;if(Math.abs(track.scrollLeft-left)<2)return;
+  track._user=false;track.scrollTo({left,behavior:(smooth&&!reduceMotion)?"smooth":"auto"});
+}
+function choose(i,idx,scroll=true){state.days[ui.day].picks[i]=idx;rebalanceDay(ui.day,i);updatePlan(scroll?-1:i);save()}
+function updatePlan(except=-1,smooth=true){
+  const day=state.days[ui.day];
+  SLOTS.forEach((s,i)=>{
+    const x=T[i],L=day.locked[i];
+    x.sec.classList.toggle("locked",L);x.lock.setAttribute("aria-pressed",L);
+    x.lock.setAttribute("aria-label",(L?"Unlock ":"Lock ")+s.name);
+    x.lock.innerHTML=(L?LOCKED:OPEN)+`<span>${L?"Locked":"Lock"}</span>`;
+    x.label.textContent=fmtTime(timeOf(ui.day,i));
+    x.cards.forEach((el,oi)=>el.classList.toggle("sel",oi===day.picks[i]));
+    x.dots.forEach((d,oi)=>d.setAttribute("aria-current",oi===day.picks[i]));
+    if(i!==except)scrollToPick(i,smooth);
+  });
+  const{k,p,c,f}=totals(ui.day);
+  $("dLabel").textContent=longDate(ui.day)+(isToday(ui.day)?" (today)":"");
+  $("kTotal").textContent=fmt(k);$("kOf").textContent=`/ ${fmt(state.target)} kcal`;
+  $("kFill").style.width=Math.min(100,k/(state.target*1.2)*100)+"%";
+  $("pTotal").textContent=`${fmt(p)} g`;$("pOf").textContent=`${state.protein} g`;
+  $("cTotal").textContent=`${fmt(c)} g`;$("fTotal").textContent=`${fmt(f)} g`;
+  $("kGoal").textContent=fmt(state.target);$("pGoal").textContent=`${state.protein} g`;
+  document.querySelectorAll(".preset").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.v===state.target));
+  const d=k-state.target;let m;
+  if(Math.abs(d)<=100)m="On target.";
+  else if(d<0)m=`${fmt(-d)} kcal short. Unlock a meal or swipe to something bigger.`;
+  else m=`${fmt(d)} kcal over. Unlock a meal or swipe to something lighter.`;
+  if(p<state.protein-5)m+=` Protein ${fmt(state.protein-p)} g under.`;
+  $("status").textContent=m;
+}
+function renderSettings(){
+  const el=$("times");el.innerHTML="";
+  SLOTS.forEach((s,i)=>{
+    const id="time"+i;const l=document.createElement("label");l.htmlFor=id;l.textContent=s.name;
+    const inp=document.createElement("input");inp.type="time";inp.id=id;inp.value=state.times[i];inp.step=300;
+    inp.onchange=()=>{if(/^\d{2}:\d{2}/.test(inp.value)){state.times[i]=inp.value.slice(0,5);save();updatePlan()}};
+    el.append(l,inp);
+  });
+  $("startDate").value=state.startDate;
+}
+$("startDate").onchange=e=>{const v=e.target.value;if(/^\d{4}-\d{2}-\d{2}$/.test(v)){state.startDate=v;save();renderAll(false)}};
+function setTarget(v){state.target=clamp(v,1800,4000);rebalanceAll();updatePlan();save()}
+function setProtein(v){state.protein=clamp(v,60,200);rebalanceAll();updatePlan();save()}
+$("kDown").onclick=()=>setTarget(state.target-100);$("kUp").onclick=()=>setTarget(state.target+100);
+$("pDown").onclick=()=>setProtein(state.protein-5);$("pUp").onclick=()=>setProtein(state.protein+5);
+document.querySelectorAll(".preset").forEach(b=>b.onclick=()=>setTarget(+b.dataset.v));
+$("shuffle").onclick=()=>{rebalanceDay(ui.day,-1,true);updatePlan();save()};
+$("unlockDay").onclick=()=>{state.days[ui.day].locked=Array(N).fill(false);rebalanceDay(ui.day);updatePlan();save()};
+let copyArm=null;
+$("copyAll").onclick=()=>{
+  const b=$("copyAll");
+  if(!copyArm){b.textContent="Tap again to replace every day";copyArm=setTimeout(()=>{copyArm=null;b.textContent="Copy this day to the whole week"},3500);return}
+  clearTimeout(copyArm);copyArm=null;b.textContent="Copied to all 7 days";
+  const src=state.days[ui.day];state.days=state.days.map(()=>({picks:src.picks.slice(),locked:src.locked.slice(),times:(src.times||Array(N).fill(null)).slice()}));save();
+  setTimeout(()=>{b.textContent="Copy this day to the whole week"},2000);
+};
+
+/* ---------- calendar ---------- */
+function gotoPlan(d,slot){
+  ui.day=d;switchTab("plan");
+  requestAnimationFrame(()=>{const s=T[slot].sec;s.scrollIntoView({behavior:reduceMotion?"auto":"smooth",block:"center"})});
+}
+function renderCal(){
+  document.querySelectorAll("[data-cv]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.cv===ui.cal));
+  $("strip").hidden=!(ui.tab==="plan"||(ui.tab==="cal"&&ui.cal!=="week"));
+  const body=$("calBody");body.innerHTML="";
+  if(ui.cal==="hour")renderHour(body);else if(ui.cal==="day")renderDay(body);else renderWeek(body);
+}
+function titleRow(d){
+  const t=totals(d);const w=document.createElement("div");w.className="cal-title narrow";
+  w.innerHTML=`<h2>${longDate(d)}</h2><span>${fmt(t.k)} kcal, ${fmt(t.p)} g protein</span>`;return w;
+}
+function renderHour(body){
+  body.appendChild(titleRow(ui.day));
+  const hint=document.createElement("p");hint.className="hour-hint narrow";hint.textContent="Press and hold a meal, then drag to change its time. Tap it for the recipe.";body.appendChild(hint);
+  const wrap=document.createElement("div");wrap.className="hours narrow";
+  const start=6,end=24,ph=60,H=50,d=ui.day;
+  for(let h=start;h<end;h++){const r=document.createElement("div");r.className="hr";r.innerHTML=`<span>${(h%12)||12} ${h<12?"AM":"PM"}</span>`;wrap.appendChild(r)}
+  const items=mealsOf(d).filter(m=>!m.o.skip).map(m=>({...m,mm:clamp(mins(m.time),start*60,end*60-60)}));
+  items.forEach((it,k)=>{const pv=items[k-1],nx=items[k+1];
+    it.lane=pv&&it.mm-pv.mm<H?1-pv.lane:0;it.half=(pv&&it.mm-pv.mm<H)||(nx&&nx.mm-it.mm<H)});
+  const topOf=m=>((m-start*60)/60*ph)+"px";
+  items.forEach(m=>{
+    const b=document.createElement("button");b.className="blk"+(m.half?" half":"");b.dataset.slot=m.i;
+    b.style.top=topOf(m.mm);
+    if(m.half){b.style.right="auto";b.style.width="calc((100% - 58px) / 2 - 3px)";if(m.lane)b.style.left="calc(58px + (100% - 58px) / 2 + 3px)"}
+    b.innerHTML=`<span style="min-width:0"><span class="t"></span><span class="n"></span></span><span class="kc">${fmt(m.o.k)}</span>`;
+    const tl=b.querySelector(".t");tl.textContent=`${fmtTime(m.time)}, ${m.slot}`;b.querySelector(".n").textContent=m.o.n;
+    b.setAttribute("aria-label",`${fmtTime(m.time)} ${m.slot}: ${m.o.n}. Up and down arrow keys move it 15 minutes. Enter opens the recipe.`);
+    let sy=0,st=0,drag=false,cur=m.mm,active=false,suppress=false,timer=null;
+    const moveTo=y=>{let mm=start*60+(st+y-sy)/ph*60;mm=clamp(Math.round(mm/15)*15,start*60,end*60-60);
+      if(mm!==cur){cur=mm;b.style.top=topOf(mm);tl.textContent=`${fmtTime(toHM(mm))}, ${m.slot}`}};
+    const finish=cancel=>{clearTimeout(timer);if(!active)return;active=false;b.classList.remove("drag");
+      if(drag){drag=false;suppress=true;if(!cancel&&cur!==m.mm){setTime(d,m.i,toHM(cur));renderCal()}else renderCal()}};
+    // Mouse and pen: drag straight away
+    b.addEventListener("pointerdown",e=>{if(e.pointerType==="touch"||e.button!==0)return;active=true;drag=false;sy=e.clientY;st=parseFloat(b.style.top);cur=m.mm;try{b.setPointerCapture(e.pointerId)}catch(_){}});
+    b.addEventListener("pointermove",e=>{if(e.pointerType==="touch"||!active)return;
+      if(!drag&&Math.abs(e.clientY-sy)>6){drag=true;b.classList.add("drag")}
+      if(drag){e.preventDefault();moveTo(e.clientY)}});
+    b.addEventListener("pointerup",e=>{if(e.pointerType!=="touch")finish(false)});
+    b.addEventListener("pointercancel",e=>{if(e.pointerType!=="touch")finish(true)});
+    // Touch: press and hold to pick up, so normal swipes still scroll the page
+    b.addEventListener("touchstart",e=>{
+      if(e.touches.length!==1)return;const t0=e.touches[0];
+      active=true;drag=false;sy=t0.clientY;st=parseFloat(b.style.top);cur=m.mm;
+      const sx=t0.clientX;b._sx=sx;
+      clearTimeout(timer);timer=setTimeout(()=>{if(!active)return;drag=true;b.classList.add("drag");if(navigator.vibrate)try{navigator.vibrate(12)}catch(_){}},420);
+    },{passive:true});
+    b.addEventListener("touchmove",e=>{
+      if(!active)return;const t0=e.touches[0];
+      if(!drag){if(Math.abs(t0.clientY-sy)>8||Math.abs(t0.clientX-b._sx)>8){clearTimeout(timer);active=false}return}
+      e.preventDefault();moveTo(t0.clientY);
+    },{passive:false});
+    b.addEventListener("touchend",()=>finish(false));
+    b.addEventListener("touchcancel",()=>finish(true));
+    b.addEventListener("contextmenu",e=>e.preventDefault());
+    b.addEventListener("click",()=>{if(suppress){suppress=false;return}openDetail(d,m.i)});
+    b.addEventListener("keydown",e=>{
+      if(e.key==="ArrowUp"||e.key==="ArrowDown"){e.preventDefault();
+        const mm=clamp(Math.round(mins(m.time)/15)*15+(e.key==="ArrowDown"?15:-15),start*60,end*60-60);
+        setTime(d,m.i,toHM(mm));renderCal();focusBlk(m.i,true)}
+    });
+    wrap.appendChild(b);
+  });
+  if(isToday(d)){const n=new Date();const nm=n.getHours()*60+n.getMinutes();
+    if(nm>=start*60&&nm<end*60){const l=document.createElement("div");l.className="now";l.style.top=topOf(nm);l.setAttribute("aria-hidden","true");wrap.appendChild(l)}}
+  body.appendChild(wrap);
+}
+function focusBlk(i,doFocus){const b=document.querySelector(`.blk[data-slot="${i}"]`);if(b&&doFocus)b.focus()}
+function renderDay(body){
+  body.appendChild(titleRow(ui.day));
+  const list=document.createElement("div");list.className="agenda narrow";
+  mealsOf(ui.day).forEach(m=>{
+    const b=document.createElement("button");b.className="ag"+(m.o.skip?" skipped":"");
+    b.innerHTML=`<span class="tm"></span><span><span class="sl"></span><span class="n"></span><span class="d"></span>${m.o.skip?"":`<span class="m"><b>${fmt(m.o.k)}</b> kcal &nbsp; <b>${fmt(m.o.p)} g</b> protein &nbsp; ${fmt(m.o.c)} g carbs &nbsp; ${fmt(m.o.f)} g fat</span>`}</span>`;
+    b.querySelector(".tm").textContent=fmtTime(m.time);
+    b.querySelector(".sl").textContent=m.slot+(m.locked?", locked":"");
+    b.querySelector(".n").textContent=m.o.skip?"Skipped":m.o.n;
+    b.querySelector(".d").textContent=m.o.skip?"":m.o.d;
+    b.onclick=()=>openDetail(ui.day,m.i);list.appendChild(b);
+  });
+  body.appendChild(list);
+}
+function renderWeek(body){
+  const g=document.createElement("div");g.className="week";
+  let sk=0,sp=0;
+  for(let d=0;d<D;d++){
+    const t=totals(d);sk+=t.k;sp+=t.p;
+    const col=document.createElement("div");col.className="wday"+(d===ui.day?" sel":"");
+    const h=document.createElement("button");h.className="wh";
+    h.innerHTML=`<b>${shortDate(d)}${isToday(d)?" (today)":""}</b><span>${fmt(t.k)} kcal</span>`;
+    h.setAttribute("aria-label",`${longDate(d)}, ${fmt(t.k)} kcal. Open day view.`);
+    h.onclick=()=>{ui.day=d;ui.cal="day";saveUi();renderAll(false)};
+    col.appendChild(h);
+    mealsOf(d).forEach(m=>{
+      if(m.o.skip)return;
+      const b=document.createElement("button");b.className="wm";
+      b.innerHTML=`<span class="t"></span><span class="n"></span>`;
+      b.querySelector(".t").textContent=fmtTime(m.time);b.querySelector(".n").textContent=m.o.n;
+      b.onclick=()=>openDetail(d,m.i);col.appendChild(b);
+    });
+    g.appendChild(col);
+  }
+  const top=document.createElement("div");top.className="cal-title";
+  top.innerHTML=`<h2>${dayDate(0).toLocaleDateString("en-US",{month:"short",day:"numeric"})} to ${dayDate(6).toLocaleDateString("en-US",{month:"short",day:"numeric"})}</h2>`;
+  body.appendChild(top);body.appendChild(g);
+  const s=document.createElement("div");s.className="wsum";
+  s.innerHTML=`<span>Average <b>${fmt(sk/D)}</b> kcal a day</span><span><b>${fmt(sp/D)} g</b> protein a day</span>`;
+  body.appendChild(s);
+  const f=document.createElement("div");f.className="foot";
+  const btn=document.createElement("button");btn.className="pdf";btn.textContent="Download week PDF";btn.hidden=!canPdf();
+  const msg=document.createElement("span");msg.className="msg";msg.setAttribute("role","status");
+  btn.onclick=()=>savePdf(btn,msg,weekPdf,`meal-plan-${state.startDate}.pdf`);
+  f.append(btn,msg);body.appendChild(f);
+}
+document.querySelectorAll("[data-cv]").forEach(b=>b.onclick=()=>{ui.cal=b.dataset.cv;saveUi();renderAll(false)});
+
+/* ---------- shopping ---------- */
+function frac(q){const w=Math.floor(q),r=Math.round((q-w)*4)/4,whole=r===1?w+1:w,f=r===1?0:r;const fs=f===0.25?"1/4":f===0.5?"1/2":f===0.75?"3/4":"";return whole&&fs?`${whole} ${fs}`:whole?`${whole}`:(fs||"1/4")}
+function qtyText(q,u){
+  if(u===""||u==="scoop"||u==="slices"){const n=Math.ceil(q-1e-9);return u===""?`${n}`:`${n} ${u==="scoop"?(n>1?"scoops":"scoop"):(n>1?"slices":"slice")}`}
+  if(u==="oz"&&q>=16)return `${frac(Math.ceil(q/16*4)/4)} lb`;
+  if(u==="tbsp"&&q>=8){const c=Math.ceil(q/16*4)/4;return `${frac(c)} cup${c>1?"s":""}`}
+  const r=Math.ceil(q*4-1e-9)/4;if(u==="cup")return `${frac(r)} cup${r>1?"s":""}`;return `${frac(r)} ${u}`;
+}
+function buildList(){
+  const map=new Map(),other=new Map();const ds=ui.scope==="week"?[...Array(D).keys()]:[ui.day];
+  ds.forEach(d=>SLOTS.forEach((s,i)=>{const o=s.opts[state.days[d].picks[i]];if(o.skip)return;
+    if(ING[o.n])ING[o.n].forEach(([n,q,u,sec,gf])=>{const key=n+"|"+u;const e=map.get(key)||{n,u,sec,gf:!!gf,q:0};e.q+=q;map.set(key,e)});
+    else (o.ing||[]).forEach(l=>other.set(l,(other.get(l)||0)+1));}));
+  const groups=SECTIONS.map(([k,label])=>({label,items:[...map.values()].filter(e=>e.sec===k).sort((a,b)=>a.n.localeCompare(b.n)).map(e=>({...e,text:qtyText(e.q,e.u)}))})).filter(g=>g.items.length);
+  if(other.size)groups.push({label:"From your Notion meals",items:[...other].map(([l,c])=>({n:l.replace(/\s*\(certified GF\)/i,""),gf:/certified GF/i.test(l),text:c>1?`×${c}`:""}))});
+  return groups;
+}
+function scopeLabel(){return ui.scope==="week"?`${shortDate(0)} to ${shortDate(6)}`:longDate(ui.day)}
+function renderShop(){
+  document.querySelectorAll("[data-sc]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.sc===ui.scope));
+  $("scDay").textContent=shortDate(ui.day);
+  $("strip").hidden=ui.scope!=="day";
+  const body=$("listBody");body.innerHTML="";const checked=new Set(state.checked);
+  buildList().forEach(g=>{
+    const sec=document.createElement("section");sec.className="grp";
+    const h=document.createElement("h3");h.textContent=g.label;sec.appendChild(h);
+    g.items.forEach(it=>{
+      const lab=document.createElement("label");lab.className="item"+(checked.has(it.n)?" done":"");
+      const cb=document.createElement("input");cb.type="checkbox";cb.checked=checked.has(it.n);
+      cb.onchange=()=>{const s=new Set(state.checked);cb.checked?s.add(it.n):s.delete(it.n);state.checked=[...s];lab.classList.toggle("done",cb.checked);save()};
+      const nm=document.createElement("span");nm.className="nm";nm.textContent=it.n;
+      if(it.gf){const x=document.createElement("span");x.className="gf";x.textContent="check GF label";nm.appendChild(x)}
+      const q=document.createElement("span");q.className="q";q.textContent=it.text;
+      lab.append(cb,nm,q);sec.appendChild(lab);
+    });
+    body.appendChild(sec);
+  });
+}
+document.querySelectorAll("[data-sc]").forEach(b=>b.onclick=()=>{ui.scope=b.dataset.sc;saveUi();renderAll(false)});
+$("clearChecks").onclick=()=>{state.checked=[];save();renderShop()};
+$("shopPdf").onclick=()=>savePdf($("shopPdf"),$("shopMsg"),shopPdf,ui.scope==="week"?`shopping-list-week-${state.startDate}.pdf`:`shopping-list-${iso(dayDate(ui.day))}.pdf`);
+
+/* ---------- PDFs ---------- */
+function shopPdf(){
+  const{jsPDF}=window.jspdf;const doc=new jsPDF({unit:"pt",format:"letter"});
+  const W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),M=56;let y=M+8;
+  doc.setFont("helvetica","normal");doc.setTextColor(20);doc.setFontSize(22);doc.text("Shopping list",M,y);y+=20;
+  doc.setFontSize(10);doc.setTextColor(130);doc.text(scopeLabel()+". Gluten-free weight-gain plan.",M,y);y+=28;
+  buildList().forEach(g=>{
+    if(y>H-M-60){doc.addPage();y=M}
+    doc.setFontSize(10);doc.setTextColor(130);doc.text(g.label,M,y);y+=8;doc.setDrawColor(220);doc.line(M,y,W-M,y);y+=16;
+    g.items.forEach(it=>{
+      if(y>H-M-20){doc.addPage();y=M}
+      const nm=it.n.replace(/⅓/g,"1/3").replace(/⅔/g,"2/3");doc.setDrawColor(150);doc.rect(M,y-9,10,10);doc.setFontSize(11);doc.setTextColor(20);doc.text(nm,M+20,y);
+      if(it.gf){const w=doc.getTextWidth(nm);doc.setFontSize(8);doc.setTextColor(140);doc.text("check GF label",M+26+w,y)}
+      doc.setFontSize(11);doc.setTextColor(90);doc.text(it.text,W-M,y,{align:"right"});y+=20;
+    });y+=10;
+  });
+  if(y>H-M-30){doc.addPage();y=M}
+  doc.setFontSize(8.5);doc.setTextColor(140);
+  doc.text(doc.splitTextToSize("Quantities are rounded up for shopping. Look for certified gluten-free on oats, granola, protein powder, sausage, crackers, chocolate, seasonings and curry paste.",W-2*M),M,y+10);
+  return doc.output("blob");
+}
+function weekPdf(){
+  const{jsPDF}=window.jspdf;const doc=new jsPDF({unit:"pt",format:"letter",orientation:"landscape"});
+  const W=doc.internal.pageSize.getWidth(),M=36,lc=78,cw=(W-2*M-lc)/D;let y=M+14;
+  doc.setFont("helvetica","normal");doc.setTextColor(20);doc.setFontSize(18);doc.text("Weekly meal plan",M,y);
+  doc.setFontSize(9);doc.setTextColor(130);doc.text(`${shortDate(0)} to ${shortDate(6)}. Goal ${fmt(state.target)} kcal and ${state.protein} g protein a day.`,M,y+14);y+=36;
+  doc.setFontSize(9);doc.setTextColor(20);
+  for(let d=0;d<D;d++)doc.text(shortDate(d),M+lc+d*cw+4,y);
+  y+=6;doc.setDrawColor(20);doc.line(M,y,W-M,y);y+=12;
+  const order=SLOTS.map((s,i)=>i).sort((a,b)=>mins(state.times[a])-mins(state.times[b]));
+  order.forEach(i=>{
+    const cells=[];let lines=1;
+    for(let d=0;d<D;d++){const o=SLOTS[i].opts[state.days[d].picks[i]];const txt=o.skip?["Skipped"]:doc.splitTextToSize(o.n,cw-8);cells.push({txt,o,t:fmtTime(timeOf(d,i))});lines=Math.max(lines,txt.length+(o.skip?1:2))}
+    doc.setFontSize(8.5);doc.setTextColor(20);doc.text(SLOTS[i].name,M,y+10);
+    cells.forEach((c,d)=>{const x=M+lc+d*cw+4;doc.setFontSize(7.5);doc.setTextColor(130);doc.text(c.t,x,y);
+      doc.setFontSize(8.5);doc.setTextColor(c.o.skip?150:20);doc.text(c.txt,x,y+10.5);
+      if(!c.o.skip){doc.setTextColor(130);doc.setFontSize(7.5);doc.text(`${c.o.k} kcal, ${c.o.p} g protein`,x,y+10.5+c.txt.length*10.5)}});
+    y+=Math.max(26,lines*10.5)+8;doc.setDrawColor(225);doc.line(M,y-8,W-M,y-8);y+=4;
+  });
+  doc.setFontSize(8.5);doc.setTextColor(20);doc.text("Day total",M,y);
+  for(let d=0;d<D;d++){const t=totals(d);doc.text(`${fmt(t.k)} kcal`,M+lc+d*cw+4,y);doc.setTextColor(130);doc.text(`${fmt(t.p)} g protein`,M+lc+d*cw+4,y+11);doc.setTextColor(20)}
+  return doc.output("blob");
+}
+function canPdf(){return !!window.jspdf}
+async function savePdf(btn,msg,make,name){
+  btn.disabled=true;msg.textContent="";
+  try{
+    const blob=make();const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),10000);msg.textContent="Downloaded.";
+  }catch(e){msg.textContent="The PDF couldn't be created."}
+  finally{btn.disabled=false}
+}
+
+/* ---------- detail sheet ---------- */
+function rq(q,u){
+  const w0=Math.floor(q+1e-9),r=q-w0;const F=[[0,""],[.25,"¼"],[1/3,"⅓"],[.5,"½"],[2/3,"⅔"],[.75,"¾"],[1,""]];
+  let b=F[0];F.forEach(f=>{if(Math.abs(r-f[0])<Math.abs(r-b[0]))b=f});
+  const w=w0+(b[0]===1?1:0),f=b[0]===1?"":b[1];const num=w&&f?`${w}${f}`:w?`${w}`:(f||"¼");
+  if(u==="")return num;if(u==="slices")return `${num} slice${q>1?"s":""}`;if(u==="cup")return `${num} cup${q>1?"s":""}`;if(u==="scoop")return `${num} scoop${q>1?"s":""}`;return `${num} ${u}`;
+}
+let sheetCtx=null,sheetFocus=null;
+function refreshBehind(){if(ui.tab==="cal")renderCal();else if(ui.tab==="plan")updatePlan(-1,false)}
+function openDetail(d,i){sheetCtx={d,i};sheetFocus=document.activeElement;renderSheet();$("sheet").hidden=false;document.body.style.overflow="hidden";const c=$("shClose");if(c)c.focus()}
+function closeDetail(){$("sheet").hidden=true;document.body.style.overflow="";sheetCtx=null;
+  const slot=sheetFocus&&sheetFocus.dataset?sheetFocus.dataset.slot:null;
+  if(sheetFocus&&document.contains(sheetFocus))sheetFocus.focus();else if(slot!=null)focusBlk(slot,true)}
+function renderSheet(){
+  const{d,i}=sheetCtx;const o=SLOTS[i].opts[state.days[d].picks[i]];const locked=state.days[d].locked[i];
+  const box=$("sheetBox");const t=timeOf(d,i),overridden=t!==state.times[i];
+  const ing=(o.ing&&o.ing.length)?o.ing.map(x=>{const gf=/certified GF/i.test(x);return `<li><span>${esc(x.replace(/\s*\(certified GF\)/i,""))}${gf?'<span class="gf">check GF label</span>':""}</span></li>`}).join("")
+    :(ING[o.n]||[]).map(([n,q,u,,gf])=>`<li><span>${n}${gf?'<span class="gf">check GF label</span>':""}</span><span class="q">${rq(q,u)}</span></li>`).join("");
+  const steps=((o.steps&&o.steps.length)?o.steps:(STEPS[o.n]||[])).map(x=>`<li>${esc(x)}</li>`).join("");
+  box.innerHTML=`
+    <div class="sh-top"><p class="sh-sl">${SLOTS[i].name}, ${shortDate(d)}${locked?", locked":""}</p><button class="txt" id="shClose">Close</button></div>
+    <h2 id="shTitle">${o.skip?"Skipped":esc(o.n)}</h2>
+    <p class="sh-d">${esc(o.d)}</p>
+    ${o.skip?"":`<div class="sh-m"><span><b>${fmt(o.k)}</b> kcal</span><span><b>${fmt(o.p)} g</b> protein</span><span><b>${fmt(o.c)} g</b> carbs</span><span><b>${fmt(o.f)} g</b> fat</span></div>`}
+    <div class="sh-time"><label for="shTime">Time</label><input type="time" id="shTime" step="300" value="${t}">
+      <button class="txt" id="shAll">Use this time every day</button>
+      ${overridden?`<button class="txt" id="shReset">Reset to ${fmtTime(state.times[i])}</button>`:""}
+      <span class="msg" id="shMsg" role="status"></span></div>
+    ${o.skip?"":`<h3>Ingredients</h3><ul class="ing">${ing}</ul><h3>Steps</h3><ol class="steps">${steps}</ol>`}
+    <div class="sh-foot"><button class="btn" id="shChange">Change meal</button><button class="txt" id="shLock">${locked?"Unlock":"Lock"} this meal</button>${o.url?`<a class="txt" href="${esc(o.url)}" target="_blank" rel="noopener">Open in Notion</a>`:""}</div>`;
+  $("shClose").onclick=closeDetail;
+  $("shTime").onchange=e=>{const v=e.target.value;if(/^\d{2}:\d{2}/.test(v)){setTime(d,i,v.slice(0,5));refreshBehind();renderSheetKeep("shTime")}};
+  $("shAll").onclick=()=>{const v=timeOf(d,i);state.times[i]=v;state.days.forEach(dy=>{if(dy.times)dy.times[i]=null});save();renderSettings();refreshBehind();renderSheetKeep("shAll");$("shMsg").textContent=`${SLOTS[i].name} is now ${fmtTime(v)} every day.`};
+  if($("shReset"))$("shReset").onclick=()=>{setTime(d,i,state.times[i]);refreshBehind();renderSheetKeep("shTime")};
+  $("shChange").onclick=()=>{closeDetail();gotoPlan(d,i)};
+  $("shLock").onclick=()=>{const dy=state.days[d];dy.locked[i]=!dy.locked[i];if(!dy.locked[i])rebalanceDay(d);save();refreshBehind();renderSheetKeep("shLock")};
+}
+function renderSheetKeep(id){renderSheet();const el=$(id);if(el)el.focus()}
+$("sheet").addEventListener("click",e=>{if(e.target===$("sheet"))closeDetail()});
+document.addEventListener("keydown",e=>{
+  if($("sheet").hidden)return;
+  if(e.key==="Escape"){e.preventDefault();closeDetail();return}
+  if(e.key==="Tab"){const f=[...$("sheetBox").querySelectorAll("button,input")];if(!f.length)return;const a=f[0],z=f[f.length-1];
+    if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
+});
+
+/* ---------- tabs & render ---------- */
+function switchTab(t){ui.tab=t;saveUi();renderAll(false)}
+document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{if(ui.tab!==b.dataset.tab){switchTab(b.dataset.tab);window.scrollTo(0,0)}});
+function renderAll(smooth=true){
+  document.querySelectorAll("[data-tab]").forEach(b=>b.dataset.tab===ui.tab?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current"));
+  $("view-plan").hidden=ui.tab!=="plan";$("view-cal").hidden=ui.tab!=="cal";$("view-shop").hidden=ui.tab!=="shop";
+  $("strip").hidden=false;renderStrip();
+  if(ui.tab==="plan"){requestAnimationFrame(()=>updatePlan(-1,smooth))}
+  if(ui.tab==="cal")renderCal();
+  if(ui.tab==="shop")renderShop();
+  $("shopPdf").hidden=!canPdf();
+}
+
+/* ---------- Notion backend (through your Cloudflare Worker) ---------- */
+function nSet(t,title){const b=$("notionBtn");b.hidden=false;b.textContent=t;b.title=title||"Sync with Notion now"}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+async function api(path,body){
+  let res;
+  try{res=await fetch(API_URL+path,{method:body?"POST":"GET",headers:{"Content-Type":"application/json","X-Passcode":passcode()},body:body?JSON.stringify(body):undefined,cache:"no-store"})}
+  catch(e){throw {code:"network",message:"Can't reach the server."}}
+  let data=null;try{data=await res.json()}catch(e){}
+  if(!res.ok)throw {code:(data&&data.error)||("http_"+res.status),status:res.status,message:(data&&data.message)||""};
+  return data;
+}
+async function apiRead(path){try{return await api(path)}catch(e){if(e.code==="network"||e.status>=500){await wait(1200+Math.random()*800);return api(path)}throw e}}
+function remapLibrary(lib){
+  const names=state.days.map(dy=>dy.picks.map((p,i)=>(SLOTS[i].opts[p]||{}).n));
+  applyLib(lib);
+  state.days.forEach((dy,d)=>{let miss=false;
+    dy.picks=dy.picks.map((_,i)=>{const k=SLOTS[i].opts.findIndex(o=>o.n===names[d][i]);if(k<0){dy.locked[i]=false;miss=true;return 0}return k});
+    if(miss)rebalanceDay(d)});
+  buildSlots();
+}
+async function nLoadLibrary(){
+  const data=await apiRead("/meals");
+  const lib=((data&&data.meals)||[]).map(m=>({slot:SLOT_NAMES.indexOf(m.slot),n:String(m.name||"").trim(),d:String(m.description||""),k:+m.calories||0,p:+m.protein||0,c:+m.carbs||0,f:+m.fat||0,
+    ing:Array.isArray(m.ingredients)?m.ingredients:[],steps:Array.isArray(m.steps)?m.steps:[],hide:!!m.hide,url:typeof m.url==="string"?m.url:""})).filter(m=>m.n&&m.slot>=0);
+  if(!lib.length)return false;
+  const sig=JSON.stringify(lib);if(sig===libSig)return false;
+  libSig=sig;try{localStorage.setItem(LIBKEY,sig)}catch(e){}
+  remapLibrary(lib);return true;
+}
+function keyOf(d,i){return `${iso(dayDate(d))} ${i}`}
+function offStr(dt){const m=-dt.getTimezoneOffset(),a=Math.abs(m);return `${m>=0?"+":"-"}${String(Math.floor(a/60)).padStart(2,"0")}:${String(a%60).padStart(2,"0")}`}
+function whenISO(d,i){const [h,mi]=timeOf(d,i).split(":").map(Number);const b=dayDate(d);const dt=new Date(b.getFullYear(),b.getMonth(),b.getDate(),h,mi);return `${iso(dt)}T${toHM(h*60+mi)}:00${offStr(dt)}`}
+function localStamp(v){if(!v)return "";const dt=new Date(v);if(isNaN(dt))return "";return `${iso(dt)} ${toHM(dt.getHours()*60+dt.getMinutes())}`}
+function desiredOf(d,i){const o=SLOTS[i].opts[state.days[d].picks[i]];return{meal:o.skip?"Skipped":o.n,when:`${iso(dayDate(d))} ${timeOf(d,i)}`,locked:!!state.days[d].locked[i],k:o.k||0,p:o.p||0}}
+function rowVal(r){return{meal:String(r.meal||"").trim(),when:localStamp(r.when),locked:!!r.locked}}
+const sameV=(a,b)=>!!a&&!!b&&a.meal===b.meal&&a.when===b.when&&a.locked===b.locked;
+const snapOf=v=>({meal:v.meal,when:v.when,locked:v.locked});
+function itemOf(d,i,v,id){const it={key:keyOf(d,i),meal:v.meal,when:whenISO(d,i),slot:SLOTS[i].name,calories:v.k,protein:v.p,locked:v.locked};if(id)it.id=id;return it}
+const STOP=["bad_passcode","origin_not_allowed","server_not_configured","notion_token","notion_access"];
+function nError(e,partial){
+  const c=e&&e.code;let t;
+  if(c==="bad_passcode")t="Notion: wrong passcode. Update it in Goals & schedule";
+  else if(c==="origin_not_allowed")t="Notion: this site isn't on the server's allowed list";
+  else if(c==="server_not_configured")t="Notion: the server is missing its settings";
+  else if(c==="notion_token")t="Notion: the server's Notion token isn't valid";
+  else if(c==="notion_access")t="Notion: share Gain Planner with your integration";
+  else if(c==="network")t="Notion: can't reach the server. Tap to retry";
+  else t=partial?"Notion: some changes didn't sync. Tap to retry":"Notion sync failed. Tap to retry";
+  nSet(t,(e&&e.message)||"");
+}
+function scheduleNotion(ms=5000){if(!notionOn()||nState.syncing)return;clearTimeout(nState.timer);nState.timer=setTimeout(()=>notionSync(),ms)}
+async function notionSync(){
+  if(!notionOn())return;
+  if(nState.busy){nState.again=true;return}
+  nState.busy=true;clearTimeout(nState.timer);nSet("Notion: syncing…");
+  let failed=0,lastErr=null,libChanged=false;
+  try{
+    libChanged=await nLoadLibrary();
+    const data=await apiRead("/plan?from="+encodeURIComponent(iso(dayDate(0))));
+    const byKey=new Map();((data&&data.rows)||[]).forEach(r=>{const k=String(r.key||"").trim();if(k&&!byKey.has(k))byKey.set(k,r)});
+    if(!state.nsnap)state.nsnap={};const snap=state.nsnap;
+    let pulled=false;const touched=new Set();
+    for(let d=0;d<D;d++)for(let i=0;i<N;i++){
+      const key=keyOf(d,i),r=byKey.get(key),s=snap[key];if(!r||!s)continue;
+      const v=rowVal(r);if(sameV(v,s))continue;
+      const day=state.days[d];
+      if(v.meal!==s.meal){
+        const want=v.meal.toLowerCase();
+        const idx=SLOTS[i].opts.findIndex(o=>o.skip?(want==="skipped"||want==="skip"):o.n.toLowerCase()===want);
+        if(idx>=0){day.picks[i]=idx;day.locked[i]=true;touched.add(d);pulled=true}
+      }else if(v.locked!==s.locked){day.locked[i]=v.locked;touched.add(d);pulled=true}
+      if(v.when!==s.when&&v.when.slice(0,10)===key.slice(0,10)){
+        const t=v.when.slice(11,16);
+        if(/^\d{2}:\d{2}$/.test(t)){if(!day.times)day.times=Array(N).fill(null);day.times[i]=t===state.times[i]?null:t;pulled=true}
+      }
+    }
+    touched.forEach(d=>rebalanceDay(d));
+    const jobs=[];
+    for(let d=0;d<D;d++)for(let i=0;i<N;i++){
+      const key=keyOf(d,i),r=byKey.get(key),v=desiredOf(d,i);
+      if(!r)jobs.push({kind:"create",key,v,item:itemOf(d,i,v)});
+      else if(!sameV(rowVal(r),v))jobs.push({kind:"update",key,v,item:itemOf(d,i,v,r.id)});
+      else snap[key]=snapOf(v);
+    }
+    for(let k=0;k<jobs.length;k+=20){
+      const chunk=jobs.slice(k,k+20);
+      try{
+        const res=await api("/plan/batch",{creates:chunk.filter(j=>j.kind==="create").map(j=>j.item),updates:chunk.filter(j=>j.kind==="update").map(j=>j.item)});
+        const okKeys=new Set((res&&res.ok)||[]);
+        chunk.forEach(j=>{if(okKeys.has(j.key))snap[j.key]=snapOf(j.v);else failed++});
+        if(res&&res.failed&&res.failed.length)lastErr={code:"partial",message:res.failed[0].message};
+      }catch(e){failed+=chunk.length;lastErr=e;if(STOP.includes(e.code))break}
+    }
+    const cutoff=iso(new Date(dayDate(0).getTime()-14*864e5));
+    Object.keys(snap).forEach(k=>{if(k.slice(0,10)<cutoff)delete snap[k]});
+    nState.syncing=true;save();nState.syncing=false;
+    if(pulled||libChanged){renderSettings();renderAll(false);if(sheetCtx)renderSheet()}
+    nState.last=Date.now();
+    if(failed)nError(lastErr,true);
+    else nSet(`Notion: synced ${new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})}`);
+  }catch(e){nError(e)}
+  finally{nState.busy=false;if(nState.again){nState.again=false;scheduleNotion(1500)}}
+}
+function openPassField(){ui.tab="plan";renderAll(false);const det=document.querySelector("details.goals");det.open=true;setTimeout(()=>{$("passcode").focus();$("passRow").scrollIntoView({block:"center"})},50)}
+$("notionBtn").onclick=()=>{if(!passcode())openPassField();else notionSync()};
+$("savePass").onclick=()=>{const v=$("passcode").value.trim();try{v?localStorage.setItem(PASSKEY,v):localStorage.removeItem(PASSKEY)}catch(e){}
+  $("passcode").value="";$("passcode").placeholder=v?"Saved":"Passcode";if(v){nSet("Notion");notionSync()}else nSet("Connect Notion")};
+$("passcode").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("savePass").click()}});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&notionOn()&&Date.now()-nState.last>60000)notionSync()});
+if(!API_URL){$("passRow").hidden=true}
+else{$("passcode").placeholder=passcode()?"Saved":"Passcode";if(passcode()){nSet("Notion");notionSync()}else nSet("Connect Notion")}
+
+/* ---------- local save ---------- */
+function setSync(t){$("sync").textContent=t}
+function scheduleRemote(){}
+setSync(API_URL?"":"Saved on this device");
+
+renderSettings();renderAll(false);
+let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(()=>{if(ui.tab==="plan")updatePlan(-1,false)},150)});
+</script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+name: Deploy app to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ["web/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # If the WORKER_URL repository variable is set, it replaces the address in web/config.js.
+      - name: Write config.js from WORKER_URL
+        if: ${{ vars.WORKER_URL != '' }}
+        env:
+          WORKER_URL: ${{ vars.WORKER_URL }}
+        run: |
+          node -e 'require("fs").writeFileSync("web/config.js", "window.GAIN_CONFIG = " + JSON.stringify({ workerUrl: process.env.WORKER_URL.trim() }) + ";\n")'
+          cat web/config.js
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+      - id: deployment
+        uses: actions/deploy-pages@v4
