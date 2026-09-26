@@ -63,7 +63,7 @@ function makeRing(seed) {
   let s = seed * 9301 + 49297; const rnd = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
   const ps = [];
   for (let i = 0; i < COUNT; i++) ps.push({ a: i / COUNT + rnd() * 0.004, rj: rnd() * 2 - 1, sp: 0.003 + rnd() * 0.002, ph: rnd() * 6.28, st: 0, sz: 0.7 + rnd() * 0.6 });
-  return { ps, e: 0, p: 0, te: 0, tp: 0, sparks: [], cx: 0, cy: 0, R: 0 };
+  return { ps, e: 0, p: 0, te: 0, tp: 0, sparks: [], cx: 0, cy: 0, R: 0, rgb: "20,20,20" };
 }
 
 export function createDashFx(hero, { reduceMotion = false, pageHost = null } = {}) {
@@ -75,10 +75,6 @@ export function createDashFx(hero, { reduceMotion = false, pageHost = null } = {
   if (!drawBg) bg.remove();
   const ctx = pt.getContext("2d");
   const rings = [makeRing(1), makeRing(2), makeRing(3)];
-  const halo = document.createElement("canvas"); halo.width = halo.height = 32; // soft glow sprite for eaten particles
-  { const h = halo.getContext("2d"), gr = h.createRadialGradient(16, 16, 0, 16, 16, 16);
-    gr.addColorStop(0, "rgba(20,20,20,.55)"); gr.addColorStop(0.35, "rgba(20,20,20,.18)"); gr.addColorStop(1, "rgba(20,20,20,0)");
-    h.fillStyle = gr; h.fillRect(0, 0, 32, 32); }
   let W = 0, H = 0, dpr = 1, running = false, visible = true, raf = 0, last = 0, clock = Math.random() * 100;
 
   function measure() {
@@ -125,8 +121,8 @@ export function createDashFx(hero, { reduceMotion = false, pageHost = null } = {
         const lit = Math.max(0, st * 2 - 1);                     // 0 below planned, 1 when eaten
         const a = 0.16 + Math.min(1, st * 2) * 0.16 + lit * 0.68, size = (0.55 + st * 0.35 + lit * 0.45 + glow * 0.9) * q.sz;
         const x = g.cx + Math.cos(th) * R, y = g.cy + Math.sin(th) * R;
-        if (lit > 0.05) { const hs = (5 + glow * 7) * q.sz; ctx.globalAlpha = lit * glow * 0.18; ctx.drawImage(halo, x - hs, y - hs, hs * 2, hs * 2); ctx.globalAlpha = 1; }
-        ctx.fillStyle = `rgba(20,20,20,${Math.min(1, a).toFixed(3)})`;
+        // eaten and planned particles wear the ring's color; the empty track stays neutral gray
+        ctx.fillStyle = st > 0.25 ? `rgba(${g.rgb},${Math.min(1, a + 0.05).toFixed(3)})` : `rgba(20,20,20,${Math.min(1, a).toFixed(3)})`;
         ctx.beginPath(); ctx.arc(x, y, size, 0, 6.2832); ctx.fill();
       }
       for (const s of g.sparks) {
@@ -164,8 +160,8 @@ export function createDashFx(hero, { reduceMotion = false, pageHost = null } = {
       const host = on ? pageHost : hero; if (bg.parentElement === host) return;
       host.prepend(bg); measure(); if (!running) settle();
     },
-    update(data) { // [{e: eaten 0..1, p: planned 0..1}] for each ring
-      data.forEach((d, i) => { const g = rings[i]; if (!g) return; g.te = Math.max(0, Math.min(1, d.e)); g.tp = Math.max(g.te, Math.min(1, d.p)); });
+    update(data) { // [{e: eaten 0..1, p: planned 0..1, rgb: "r,g,b"}] for each ring
+      data.forEach((d, i) => { const g = rings[i]; if (!g) return; if (d.rgb) g.rgb = d.rgb; g.te = Math.max(0, Math.min(1, d.e)); g.tp = Math.max(g.te, Math.min(1, d.p)); });
       measure();
       if (reduceMotion) settle(); else sync();
     },
