@@ -1,0 +1,34 @@
+name: Check a product link
+
+# Run by hand to see what the Worker's /product lookup returns for a store link,
+# e.g. when a store's photo doesn't come through in the app.
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: Product page link
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      APP_PASSCODE: ${{ secrets.APP_PASSCODE }}
+      PRODUCT_URL: ${{ inputs.url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ask the Worker
+        run: |
+          api=$(node -e 'const s=require("fs").readFileSync("web/config.js","utf8");console.log((s.match(/workerUrl:\s*"([^"]+)"/)||[])[1]||"")')
+          enc=$(node -e 'console.log(encodeURIComponent(process.env.PRODUCT_URL))')
+          code=$(curl -s -o out.json -w "%{http_code}" -H "X-Passcode: $APP_PASSCODE" "$api/product?url=$enc")
+          echo "HTTP $code"; head -c 3000 out.json; echo
+      - name: Fetch the page directly (for comparison)
+        run: |
+          curl -s -o page.html -w "HTTP %{http_code}  final %{url_effective}  %{size_download} bytes\n" -L --max-time 20 \
+            -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15" \
+            -H "Accept-Language: en-US,en;q=0.9" "$PRODUCT_URL" || true
+          grep -o -i -E 'robot or human|px-captcha|captcha|__NEXT_DATA__|og:image[^>]{0,200}' page.html | head -8 || true
