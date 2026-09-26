@@ -421,6 +421,16 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .ic.spin{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
 .with-ic{display:inline-flex;align-items:center;gap:6px}
 .tabbar button[aria-current="page"]{background:rgba(0,0,0,.07);color:var(--ink)}
+/* toasts: above the tab bar, newest at the bottom */
+.toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(82px + env(safe-area-inset-bottom,0px));z-index:45;width:min(420px,calc(100% - 28px));
+  display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
+.toast{pointer-events:auto;display:flex;align-items:center;gap:10px;max-width:100%;padding:10px 12px 10px 14px;border-radius:16px;background:var(--ink);color:#fff;
+  font-size:.86rem;line-height:1.3;box-shadow:0 10px 28px rgba(0,0,0,.2);opacity:0;transform:translateY(8px) scale(.98);transition:opacity .25s,transform .3s cubic-bezier(.3,.7,.2,1)}
+.toast.in{opacity:1;transform:none}
+.toast .ic{width:16px;height:16px;flex:none;opacity:.9}.toast.error .ic{color:#ff8a7a}.toast.ok .ic{color:#6fd3a5}
+.toast .msg{color:inherit;flex:1;min-width:0}
+.toast button{flex:none;color:#fff;font-weight:500;padding:4px 8px;margin:-4px -4px -4px 0;border-radius:8px;background:rgba(255,255,255,.14)}
+@media (min-width:900px){.toasts{bottom:calc(84px + env(safe-area-inset-bottom,0px))}}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 @media (max-width:639px){
   .hours{margin:18px 12px 0}
@@ -585,6 +595,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 <div class="sheet-bg" id="sheet" hidden><div class="sheet" id="sheetBox" role="dialog" aria-modal="true" aria-labelledby="shTitle"></div></div>
 <div class="sheet-bg" id="infoBg" hidden><div class="sheet" id="infoBox" role="dialog" aria-modal="true" aria-labelledby="infoTitle"></div></div>
 
+<div class="toasts" id="toasts" aria-live="polite"></div>
 <nav class="tabbar" aria-label="Sections">
   <button data-tab="plan" aria-current="page" aria-label="Plan" title="Plan"><svg class="ic" aria-hidden="true"><use href="#i-plan"/></svg></button>
   <button data-tab="cal" aria-label="Calendar" title="Calendar"><svg class="ic" aria-hidden="true"><use href="#i-cal"/></svg></button>
@@ -1491,6 +1502,26 @@ function renderAll(smooth=true){
   $("shopPdf").hidden=!canPdf();
 }
 
+/* ---------- toasts ---------- */
+// Short notes about network calls. A toast with the same key replaces the one on screen, and the same
+// message repeated within `quiet` ms is dropped, so background retries don't pile up.
+const toastSeen={};
+function toast(text,{kind="info",key=text,ms,action,onAction,quiet=0}={}){
+  const now=Date.now(),seen=key+"|"+text;if(quiet&&toastSeen[seen]&&now-toastSeen[seen]<quiet)return;toastSeen[seen]=now;
+  const box=$("toasts");let el=box.querySelector(`[data-key="${CSS.escape(key)}"]`);
+  if(!el){el=document.createElement("div");el.dataset.key=key;box.appendChild(el);while(box.children.length>3)box.firstChild.remove();requestAnimationFrame(()=>el.classList.add("in"))}
+  el.className="toast "+kind+(el.classList.contains("in")?" in":"");el.setAttribute("role",kind==="error"?"alert":"status");
+  const icon={error:"warn",ok:"ok",info:"syncl"}[kind]||"syncl";
+  el.innerHTML=`<svg class="ic${kind==="info"?" spin":""}" aria-hidden="true"><use href="#i-${icon}"/></svg><span class="msg"></span>`;el.querySelector(".msg").textContent=text;
+  if(action){const b=document.createElement("button");b.textContent=action;b.onclick=()=>{dismiss();onAction&&onAction()};el.appendChild(b)}
+  const dismiss=()=>{clearTimeout(el._t);el.classList.remove("in");setTimeout(()=>el.remove(),300)};
+  el.onclick=e=>{if(e.target.tagName!=="BUTTON")dismiss()};
+  clearTimeout(el._t);el._t=setTimeout(dismiss,ms||(kind==="error"?6000:kind==="info"?15000:2400));
+  return{done:(t,k="ok")=>toast(t,{kind:k,key})};
+}
+window.addEventListener("offline",()=>toast("You're offline. Changes are kept on this device.",{kind:"error",key:"net"}));
+window.addEventListener("online",()=>{toast("Back online",{kind:"ok",key:"net"});if(notionOn())notionSync()});
+
 /* ---------- Notion backend (through your Cloudflare Worker) ---------- */
 // Notion status is a single icon in the header; the full message is its label and shows in Settings.
 function nSet(t,title){const b=$("notionBtn");
@@ -1503,7 +1534,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
 async function api(path,body){
   let res;
   try{res=await fetch(API_URL+path,{method:body?"POST":"GET",headers:{"Content-Type":"application/json","X-Passcode":passcode()},body:body?JSON.stringify(body):undefined,cache:"no-store"})}
-  catch(e){throw {code:"network",message:"Can't reach the server."}}
+  catch(e){toast(navigator.onLine===false?"You're offline. Changes are kept on this device.":"Can't reach the server. Changes are kept on this device.",{kind:"error",key:"net",quiet:20000});throw {code:"network",message:"Can't reach the server."}}
   let data=null;try{data=await res.json()}catch(e){}
   if(!res.ok)throw {code:(data&&data.error)||("http_"+res.status),status:res.status,message:(data&&data.message)||""};
   return data;
@@ -1544,7 +1575,7 @@ function itemOf(d,i,v,id){const it={key:keyOf(d,i),meal:v.meal,when:whenISO(d,i)
 const STOP=["bad_passcode","origin_not_allowed","server_not_configured","notion_token","notion_access"];
 function nError(e,partial){
   const c=e&&e.code;let t;
-  if(c==="bad_passcode")t="Notion: wrong passcode. Update it in Goals & schedule";
+  if(c==="bad_passcode")t="Notion: wrong passcode. Update it in Goals & settings";
   else if(c==="origin_not_allowed")t="Notion: this site isn't on the server's allowed list";
   else if(c==="server_not_configured")t="Notion: the server is missing its settings";
   else if(c==="notion_token")t="Notion: the server's Notion token isn't valid";
@@ -1552,6 +1583,7 @@ function nError(e,partial){
   else if(c==="network")t="Notion: can't reach the server. Tap to retry";
   else t=partial?"Notion: some changes didn't sync. Tap to retry":"Notion sync failed. Tap to retry";
   nSet(t,(e&&e.message)||"");
+  if(c!=="network")toast(t.replace(/\. Tap to retry$/,""),{kind:"error",key:"sync",action:/retry/i.test(t)?"Retry":null,onAction:()=>notionSync(true),quiet:30000});
 }
 function optIndex(i,name){const want=name.toLowerCase();return SLOTS[i].opts.findIndex(o=>o.skip?(want==="skipped"||want==="skip"):o.n.toLowerCase()===want)}
 function pullTime(day,i,key,when){
@@ -1559,10 +1591,11 @@ function pullTime(day,i,key,when){
   if(!day.times)day.times=Array(N).fill(null);day.times[i]=t===state.times[i]?null:t;return true;
 }
 function scheduleNotion(ms=5000){if(!notionOn()||nState.syncing)return;clearTimeout(nState.timer);nState.timer=setTimeout(()=>notionSync(),ms)}
-async function notionSync(){
+async function notionSync(manual){
   if(!notionOn())return;
   if(nState.busy){nState.again=true;return}
   nState.busy=true;clearTimeout(nState.timer);nSet("Notion: syncing…");
+  const tt=manual?toast("Syncing with Notion…",{key:"sync"}):null;
   let failed=0,lastErr=null,libChanged=false;
   try{
     libChanged=await nLoadLibrary();
@@ -1611,8 +1644,12 @@ async function notionSync(){
     if(pulled||libChanged){renderSettings();renderAll(false);if(sheetCtx)renderSheet()}
     nState.last=Date.now();
     if(failed)nError(lastErr,true);
-    else nSet(`Notion: synced ${new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})}`);
-  }catch(e){nError(e)}
+    else{nSet(`Notion: synced ${new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})}`);
+      const pushed=jobs.length>0;
+      if(tt)tt.done(pulled||libChanged?"Synced. Updated from Notion":pushed?"Synced. Saved to Notion":"Up to date with Notion");
+      else if(pulled||libChanged)toast("Updated from Notion",{kind:"ok",key:"sync"});
+      else if(pushed)toast("Saved to Notion",{kind:"ok",key:"sync"});}
+  }catch(e){nError(e);if(tt&&e&&e.code==="network")document.querySelector('.toast[data-key="sync"]')?.remove()}
   finally{nState.busy=false;if(nState.again){nState.again=false;scheduleNotion(1500)}}
 }
 // Goals & schedule opens over the page instead of pushing the plan down.
@@ -1632,11 +1669,11 @@ document.addEventListener("keydown",e=>{
     if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
 });
 function openPassField(){openGoals("passcode")}
-$("notionBtn").onclick=()=>{if(!passcode())openPassField();else if(nState.status==="warn")openGoals(null,"settings");else notionSync()};
-$("syncNow").onclick=()=>{if(!passcode())$("passcode").focus();else notionSync()};
+$("notionBtn").onclick=()=>{if(!passcode())openPassField();else if(nState.status==="warn")openGoals(null,"settings");else notionSync(true)};
+$("syncNow").onclick=()=>{if(!passcode())$("passcode").focus();else notionSync(true)};
 // A real form submit lets the browser offer to save the passcode (iCloud Keychain, Google Password Manager).
 $("passRow").addEventListener("submit",e=>{e.preventDefault();const v=$("passcode").value.trim();try{v?localStorage.setItem(PASSKEY,v):localStorage.removeItem(PASSKEY)}catch(e){}
-  $("passcode").placeholder=v?"Saved":"Passcode";$("passHint").hidden=!v;if(v){keepStorage();nSet("Notion");notionSync()}else nSet("Connect Notion")});
+  $("passcode").placeholder=v?"Saved":"Passcode";$("passHint").hidden=!v;if(v){keepStorage();nSet("Notion");notionSync(true)}else nSet("Connect Notion")});
 $("copyLink").onclick=async()=>{const link=location.origin+location.pathname+"#key="+encodeURIComponent(passcode());
   try{await navigator.clipboard.writeText(link);$("passMsg").textContent="Copied. Paste it into Notes or a bookmark on your other devices."}
   catch(e){$("passMsg").textContent=link}};
@@ -1785,13 +1822,13 @@ function filteredPantry(){
     &&(!pf.loc.size||pf.loc.has(it.location))&&(!pf.cat.size||pf.cat.has(it.category))
     &&(!pf.st.size||(pf.st.has("Expiring soon")&&expSoon(it))||(pf.st.has("Running low")&&lowQ(it))));
 }
-function pErr(e){const c=e&&e.code;return c==="bad_passcode"?"Wrong passcode. Update it in Goals & schedule.":c==="notion_access"?"Share Gain Planner (including Pantry) with your integration in Notion.":c==="server_not_configured"?"The server is missing PANTRY_DB. Deploy the Worker again.":c==="network"?"Can't reach the server. Changes are saved on this device for now.":(e&&e.message)||"Pantry sync failed."}
+function pErr(e){const c=e&&e.code;return c==="bad_passcode"?"Wrong passcode. Update it in Goals & settings.":c==="notion_access"?"Share Gain Planner (including Pantry) with your integration in Notion.":c==="server_not_configured"?"The server is missing PANTRY_DB. Deploy the Worker again.":c==="network"?"Can't reach the server. Changes are saved on this device for now.":(e&&e.message)||"Pantry sync failed."}
 async function pantryLoad(force){
   if(!notionOn()||(!force&&Date.now()-pLast<30000))return;
   // Items added offline (or whose upload failed) still have a local id; keep them and send them now.
   const pend=pantry.filter(x=>/^r/.test(x.id));
   try{const d=await apiRead("/pantry");pantry=[...((d&&d.items)||[]),...pend];pLast=Date.now();savePantryLocal();$("pMsg").textContent="";renderPantry()}
-  catch(e){$("pMsg").textContent=pErr(e);return}
+  catch(e){$("pMsg").textContent=pErr(e);if(e.code!=="network")toast(pErr(e),{kind:"error",key:"pantry",quiet:30000});return}
   for(let k=0;k<pend.length;k+=20){
     try{const r=await api("/pantry/batch",{creates:pend.slice(k,k+20).map(x=>({...x,ref:x.id}))});
       (r.created||[]).forEach(c=>{const it=pantry.find(x=>x.id===c.ref);if(it){it.id=c.id;it.url=c.url}});savePantryLocal();renderPantry()}
@@ -1816,7 +1853,9 @@ async function pantryWrite(ch){
       if(r.failed&&r.failed.length)bad={message:r.failed[0].message};
     }catch(e){bad=e;break}}
   savePantryLocal();
-  if(bad){$("pMsg").textContent=pErr(bad);return false}
+  if(bad){$("pMsg").textContent=pErr(bad);if(bad.code!=="network")toast(pErr(bad),{kind:"error",key:"pantry"});return false}
+  const n=all.length,what=deletes.length&&!creates.length&&!updates.length?"Removed from pantry":creates.length&&!updates.length&&!deletes.length?(n>1?`Added ${n} items to pantry`:"Added to pantry"):"Pantry saved";
+  toast(what,{kind:"ok",key:"pantry"});
   $("pMsg").textContent="";pLast=0;pantryLoad(true);return true;
 }
 function renderPantryFilters(){
@@ -1944,7 +1983,7 @@ function openPantryItem(it){
   if(photo&&notionOn())showPhoto();
   $("pfGet").onclick=async()=>{
     const link=$("pfLink").value.trim();if(!link){msg("Paste a link from a store first.");$("pfLink").focus();return}
-    if(!notionOn()){msg("Connect Notion (Goals & schedule) to fetch product photos.");return}
+    if(!notionOn()){msg("Connect Notion (Goals & settings) to fetch product photos.");return}
     msg("Looking up the product…");$("pfGet").disabled=true;
     try{const r=await api("/product?url="+encodeURIComponent(link));
       alts=(r.images||[]).slice(0,5);photo=r.image||alts[0]||"";
@@ -1966,7 +2005,7 @@ function openPantryItem(it){
   const origGet=$("pfGet").onclick;$("pfGet").onclick=async()=>{await origGet();try{lastProduct=null;const r=await lookup();
     const n={...parseNutrition(r.nutritionText),...nutritionFromLd(r.nutrition)};if(Object.keys(n).length&&!["calories","protein"].some(k=>$("pfN_"+k).value))fillNut(n,"the store page")}catch(e){}};
   $("pfNutPage").onclick=async()=>{
-    if(!notionOn()){nmsg("Connect Notion (Goals & schedule) to read store pages.");return}
+    if(!notionOn()){nmsg("Connect Notion (Goals & settings) to read store pages.");return}
     nmsg("Reading the store page…");
     try{const r=await lookup();const n={...parseNutrition(r.nutritionText),...nutritionFromLd(r.nutrition)};
       if(!fillNut(n,"the store page"))nmsg("That page doesn't list nutrition facts as text. Try Read a label photo; stores often include a photo of the panel.")}

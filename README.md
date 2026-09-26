@@ -113,6 +113,8 @@ Every week adds 42 rows to Meal Plan. They're kept as history by default. To tid
 
 ## Status messages
 
+Short notes pop up above the tab bar for network activity: **Saved to Notion** or **Updated from Notion** when a sync changes something, a confirmation when you tap Sync now or change the pantry, and errors such as being offline or a wrong passcode. Sync errors have a **Retry** button. The same error isn't repeated while background syncs keep failing.
+
 | Message | What to do |
 |---|---|
 | Connect Notion | Enter your passcode in Goals & settings → Settings. |
