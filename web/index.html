@@ -41,6 +41,7 @@ button:focus-visible,summary:focus-visible,input:focus-visible{outline:1.5px sol
 .sync{font-size:.78rem;color:var(--muted)}
 .pass{display:flex;align-items:center;gap:12px}
 .pass input{width:9.5em}
+.vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;padding:0;margin:-1px}
 .head-r{display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right}
 .nbtn{text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line);min-height:24px}
 a.txt{color:inherit}
@@ -365,7 +366,10 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
         <p class="hint">Dragging a meal on the calendar changes the time for that day only.</p>
         <div class="row"><label for="startDate">Week starts</label><input type="date" id="startDate"></div>
         <p class="hint">Meals and your weekly plan are stored in Notion. <a class="txt" href="https://app.notion.com/p/3e71fe5d3fa48144bd10fd03a50ec960" target="_blank" rel="noopener">Open Gain Planner in Notion</a></p>
-        <div class="row" id="passRow"><label for="passcode">Notion passcode</label><span class="pass"><input type="password" id="passcode" autocomplete="current-password" placeholder="Passcode"><button class="txt" id="savePass">Save</button></span></div>
+        <form class="row" id="passRow" action="#" method="post" autocomplete="on"><label for="passcode">Notion passcode</label>
+          <input class="vh" type="text" name="username" autocomplete="username" value="Gain planner" tabindex="-1" aria-hidden="true" readonly>
+          <span class="pass"><input type="password" name="password" id="passcode" autocomplete="current-password" placeholder="Passcode"><button class="txt" id="savePass" type="submit">Save</button></span></form>
+        <p class="hint" id="passHint" hidden>Saved on this device. <button class="txt" id="copyLink" type="button">Copy sign-in link</button> Opening that link on any device signs it in, so keep it private. <span class="msg" id="passMsg" role="status"></span></p>
       </div>
     </details>
    </div>
@@ -587,6 +591,11 @@ let libSig="";
 const API_URL=String((window.GAIN_CONFIG||{}).workerUrl||"").replace(/\/+$/,"");
 const PASSKEY="gf-gain-planner-pass";
 function passcode(){try{return localStorage.getItem(PASSKEY)||""}catch(e){return ""}}
+function keepStorage(){try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}}
+// A sign-in link (…#key=passcode) stores the passcode on this device, then the key is removed from the address bar.
+(()=>{const m=location.hash.match(/^#key=(.+)$/);if(!m)return;
+  try{localStorage.setItem(PASSKEY,decodeURIComponent(m[1]))}catch(e){}keepStorage();
+  history.replaceState(null,"",location.pathname+location.search)})();
 const notionOn=()=>!!(API_URL&&passcode());
 const nState={busy:false,again:false,timer:null,last:0,syncing:false};
 function applyLib(lib){
@@ -1241,12 +1250,15 @@ async function notionSync(){
 }
 function openPassField(){ui.tab="plan";renderAll(false);const det=document.querySelector("details.goals");det.open=true;setTimeout(()=>{$("passcode").focus();$("passRow").scrollIntoView({block:"center"})},50)}
 $("notionBtn").onclick=()=>{if(!passcode())openPassField();else notionSync()};
-$("savePass").onclick=()=>{const v=$("passcode").value.trim();try{v?localStorage.setItem(PASSKEY,v):localStorage.removeItem(PASSKEY)}catch(e){}
-  $("passcode").value="";$("passcode").placeholder=v?"Saved":"Passcode";if(v){nSet("Notion");notionSync()}else nSet("Connect Notion")};
-$("passcode").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("savePass").click()}});
+// A real form submit lets the browser offer to save the passcode (iCloud Keychain, Google Password Manager).
+$("passRow").addEventListener("submit",e=>{e.preventDefault();const v=$("passcode").value.trim();try{v?localStorage.setItem(PASSKEY,v):localStorage.removeItem(PASSKEY)}catch(e){}
+  $("passcode").placeholder=v?"Saved":"Passcode";$("passHint").hidden=!v;if(v){keepStorage();nSet("Notion");notionSync()}else nSet("Connect Notion")});
+$("copyLink").onclick=async()=>{const link=location.origin+location.pathname+"#key="+encodeURIComponent(passcode());
+  try{await navigator.clipboard.writeText(link);$("passMsg").textContent="Copied. Paste it into Notes or a bookmark on your other devices."}
+  catch(e){$("passMsg").textContent=link}};
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&notionOn()&&Date.now()-nState.last>60000)notionSync()});
 if(!API_URL){$("passRow").hidden=true}
-else{$("passcode").placeholder=passcode()?"Saved":"Passcode";if(passcode()){nSet("Notion");notionSync()}else nSet("Connect Notion")}
+else{$("passcode").placeholder=passcode()?"Saved":"Passcode";$("passHint").hidden=!passcode();if(passcode()){keepStorage();nSet("Notion");notionSync()}else nSet("Connect Notion")}
 
 /* ---------- pantry ---------- */
 const PANKEY="gf-gain-planner-pantry";
