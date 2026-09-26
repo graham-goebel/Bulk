@@ -2,6 +2,7 @@
 // Each ring is a stream of particles flowing clockwise; the arc that's been eaten glows solid,
 // the planned-but-not-eaten arc is dimmer, and the rest is loose drifting dust.
 // Falls back to the page's SVG rings if WebGL isn't available (the particles are 2D canvas).
+// The shader draws inside the card, or behind the whole page (pageHost) when the dashboard has its own tab.
 
 const VERT = `attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}`;
 const FRAG = `precision mediump float;
@@ -53,7 +54,7 @@ function makeRing(seed) {
   return { ps, e: 0, p: 0, te: 0, tp: 0, sparks: [], cx: 0, cy: 0, R: 0 };
 }
 
-export function createDashFx(hero, { reduceMotion = false } = {}) {
+export function createDashFx(hero, { reduceMotion = false, pageHost = null } = {}) {
   const bg = document.createElement("canvas"), pt = document.createElement("canvas");
   bg.className = "fx-bg"; pt.className = "fx-pt"; bg.setAttribute("aria-hidden", "true"); pt.setAttribute("aria-hidden", "true");
   hero.prepend(bg, pt);
@@ -71,7 +72,7 @@ export function createDashFx(hero, { reduceMotion = false } = {}) {
   function measure() {
     const hb = hero.getBoundingClientRect(); W = hb.width; H = hb.height; dpr = Math.min(window.devicePixelRatio || 1, 2);
     pt.width = Math.round(W * dpr); pt.height = Math.round(H * dpr);
-    if (drawBg) { const k = Math.min(dpr, 1.5) * 0.5; bg.width = Math.max(2, Math.round(W * k)); bg.height = Math.max(2, Math.round(H * k)); }
+    if (drawBg) { const b = bg.getBoundingClientRect(), k = Math.min(dpr, 1.5) * 0.5; bg.width = Math.max(2, Math.round(b.width * k)); bg.height = Math.max(2, Math.round(b.height * k)); }
     hero.querySelectorAll(".dial").forEach((d, i) => {
       const r = d.getBoundingClientRect(), g = rings[i]; if (!g) return;
       g.cx = r.left - hb.left + r.width / 2; g.cy = r.top - hb.top + r.height / 2; g.R = r.width * 0.43;
@@ -143,13 +144,18 @@ export function createDashFx(hero, { reduceMotion = false } = {}) {
     draw();
   };
 
-  const ro = new ResizeObserver(() => { measure(); if (!running) settle(); }); ro.observe(hero);
+  const ro = new ResizeObserver(() => { measure(); if (!running) settle(); }); ro.observe(hero); if (pageHost) ro.observe(pageHost);
   const io = new IntersectionObserver(es => { visible = es[es.length - 1].isIntersecting; sync(); }); io.observe(hero);
   document.addEventListener("visibilitychange", sync);
   hero.classList.add("fx-on");
   measure();
 
   return {
+    setPage(on) { // move the shader behind the whole page, or back into the card
+      if (!drawBg || !pageHost) return;
+      const host = on ? pageHost : hero; if (bg.parentElement === host) return;
+      host.prepend(bg); measure(); if (!running) settle();
+    },
     update(data) { // [{e: eaten 0..1, p: planned 0..1}] for each ring
       data.forEach((d, i) => { const g = rings[i]; if (!g) return; g.te = Math.max(0, Math.min(1, d.e)); g.tp = Math.max(g.te, Math.min(1, d.p)); });
       measure();
