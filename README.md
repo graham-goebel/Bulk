@@ -71,6 +71,14 @@ Kept on each device:
 - calorie and protein goals, default meal times, and the week's start date
 - shopping list checkmarks
 
+## Nutrition and diversity score
+
+Each meal in the Meals database has micronutrient columns (fiber, iron, zinc, calcium, magnesium, potassium, vitamin D, B12, folate, vitamin C, omega-3), a **Food groups** tag, and a **Diversity score** formula from 0 to 10: a point per food group (up to 5) plus up to 5 for how many of the 11 nutrients reach 15% of the daily value. Edit the numbers or tags in Notion and the score updates itself.
+
+The app shows the breakdown in each meal's detail sheet, the score on the plan cards, a variety line under the day's totals, and a day-wide nutrient summary in Calendar's Day view. When it fills unlocked slots, it also prefers days that cover more food groups.
+
+The built-in values are estimates from typical USDA ingredient data, so labels on the brands you buy may differ.
+
 ## Cleaning up old weeks
 
 Every week adds 42 rows to Meal Plan. They're kept as history by default. To tidy them automatically, set `KEEP_WEEKS` in `worker/wrangler.toml` (for example `"8"`) and deploy the Worker again. Once a day it moves up to 40 rows older than that many weeks to Notion's trash, where they can be restored for 30 days. The app only reads rows from the current week start on, so this never touches the plan you're using.

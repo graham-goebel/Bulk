@@ -3,7 +3,8 @@
 // It keeps your Notion token secret and checks a passcode on every request.
 //
 // Endpoints (all need the X-Passcode header):
-//   GET  /meals              -> { meals: [...] }        the meal library
+//   GET  /meals              -> { meals: [...] }        the meal library, with nutrients,
+//                                                       food groups and diversity score
 //   GET  /plan?from=YYYY-MM-DD -> { rows: [...] }       planned meals from that date on
 //   POST /plan/batch         -> { ok: [keys], failed: [{key, message}] }
 //        body: { creates: [item], updates: [item + id] }  (max 20 items per call)
@@ -128,6 +129,14 @@ async function queryAll(env, dsId, query) {
 
 const text = (p) => (p && (p.title || p.rich_text) ? (p.title || p.rich_text).map((t) => t.plain_text).join("") : "");
 const num = (p) => (p && typeof p.number === "number" ? p.number : 0);
+const numOrNull = (p) => (p && typeof p.number === "number" ? p.number : null);
+
+// Micronutrient columns in the Meals database, keyed by the name the app uses.
+const NUTRIENTS = {
+  fiber: "Fiber (g)", iron: "Iron (mg)", zinc: "Zinc (mg)", calcium: "Calcium (mg)", magnesium: "Magnesium (mg)",
+  potassium: "Potassium (mg)", vitd: "Vitamin D (mcg)", b12: "Vitamin B12 (mcg)", folate: "Folate (mcg)",
+  vitc: "Vitamin C (mg)", omega3: "Omega-3 (g)",
+};
 const lines = (s) => s.split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
 
 async function listMeals(env) {
@@ -150,6 +159,10 @@ async function listMeals(env) {
         ingredients: lines(text(pr["Ingredients"])),
         steps: lines(text(pr["Steps"])),
         hide: !!(pr["Hide from planner"] && pr["Hide from planner"].checkbox),
+        nutrients: Object.fromEntries(Object.entries(NUTRIENTS).map(([k, col]) => [k, numOrNull(pr[col])])),
+        groups: pr["Food groups"] && Array.isArray(pr["Food groups"].multi_select) ? pr["Food groups"].multi_select.map((o) => o.name) : [],
+        diversity: pr["Diversity score"] && pr["Diversity score"].formula && typeof pr["Diversity score"].formula.number === "number"
+          ? pr["Diversity score"].formula.number : null,
       };
     })
     .filter((m) => m.name && SLOTS.includes(m.slot));

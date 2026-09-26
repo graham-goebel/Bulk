@@ -147,6 +147,17 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .ing li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:.92rem}
 .ing .q{color:var(--muted)}
 .ing .gf{font-size:.72rem;color:var(--muted);margin-left:6px}
+.dv{margin:0 0 2px;font-size:.95rem}.dv b{font-weight:500}
+.grps{margin:0 0 8px;font-size:.84rem;color:var(--muted)}
+.nut{list-style:none;margin:0;padding:0}
+.nut li{display:grid;grid-template-columns:1fr auto 3.4em;gap:5px 12px;padding:7px 0;border-bottom:1px solid var(--line);font-size:.9rem}
+.nut .q{color:var(--muted)}.nut .pct{text-align:right;font-variant-numeric:tabular-nums}
+.nut .bar{grid-column:1/-1;height:3px;background:var(--soft);border-radius:2px;overflow:hidden}
+.nut .bar i{display:block;height:100%;background:var(--ink)}
+.nut li.low .pct{color:var(--muted)}.nut li.low .bar i{background:var(--muted)}
+.fine{font-size:.75rem;color:var(--muted);margin:8px 0 0;line-height:1.4}
+.daynut{padding:8px 24px 0}
+.dn-h{margin:22px 0 6px;font-size:.85rem;font-weight:400;color:var(--muted)}
 .steps{margin:0;padding:0 0 0 1.2em}
 .steps li{padding:5px 0 5px 4px;font-size:.92rem}
 .steps li::marker{color:var(--muted)}
@@ -225,6 +236,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
       <div class="line"><div class="fill" id="kFill"></div><div class="tick"></div></div>
       <div class="sub"><span>Protein <b id="pTotal">0 g</b> / <span id="pOf">110 g</span></span><span>Carbs <b id="cTotal">0</b></span><span>Fat <b id="fTotal">0</b></span></div>
       <p class="status" id="status"></p>
+      <p class="status" id="variety" hidden></p>
     </div>
 
     <details class="goals">
@@ -425,6 +437,12 @@ const OPEN='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-wi
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const NOTION={server:"Notion",planView:"view://3e71fe5d-3fa4-8136-aea7-000c56e9c45c",mealsView:"view://3e71fe5d-3fa4-81df-8be4-000ceb822b9e",planDS:"f4b01177-7e91-4185-b510-94e551e0d877"};
 const LIBKEY="gf-gain-planner-lib";
+// Micronutrients shown per meal: key, label, unit, daily value (FDA; omega-3 uses the adult AI).
+const NUTR=[["fiber","Fiber","g",28],["iron","Iron","mg",18],["zinc","Zinc","mg",11],["calcium","Calcium","mg",1300],["magnesium","Magnesium","mg",420],
+  ["potassium","Potassium","mg",4700],["vitd","Vitamin D","mcg",20],["b12","Vitamin B12","mcg",2.4],["folate","Folate","mcg",400],["vitc","Vitamin C","mg",90],["omega3","Omega-3","g",1.6]];
+const GROUPS=["Meat & poultry","Fish & seafood","Eggs","Dairy","Legumes & soy","Grains","Vegetables","Fruit","Nuts & seeds"];
+const groupMask=g=>(g||[]).reduce((a,x)=>{const j=GROUPS.indexOf(x);return j<0?a:a|(1<<j)},0);
+const bits=m=>{let c=0;while(m){c+=m&1;m>>=1}return c};
 const SLOT_NAMES=SLOTS.map(s=>s.name);
 const HAS_SKIP=SLOTS.map(s=>s.opts.some(o=>o.skip));
 const BASE_ORDER=SLOTS.map(s=>s.opts.map(o=>o.n));
@@ -439,7 +457,7 @@ function applyLib(lib){
     const list=lib.filter(m=>m.slot===i&&!m.hide);if(!list.length)return;
     list.sort((a,b)=>{const ia=BASE_ORDER[i].indexOf(a.n),ib=BASE_ORDER[i].indexOf(b.n);return (ia<0?999:ia)-(ib<0?999:ib)||a.n.localeCompare(b.n)});
     const seen=new Set();
-    s.opts=list.filter(m=>{if(seen.has(m.n))return false;seen.add(m.n);return true}).map(m=>({n:m.n,d:m.d,k:m.k,p:m.p,c:m.c,f:m.f,ing:m.ing,steps:m.steps,url:m.url}));
+    s.opts=list.filter(m=>{if(seen.has(m.n))return false;seen.add(m.n);return true}).map(m=>({n:m.n,d:m.d,k:m.k,p:m.p,c:m.c,f:m.f,ing:m.ing,steps:m.steps,url:m.url,nu:m.nu||null,g:m.g||[],dv:typeof m.dv==="number"?m.dv:null,gm:groupMask(m.g)}));
     if(HAS_SKIP[i])s.opts.push(SKIP);
   });
 }
@@ -498,15 +516,34 @@ function rebalanceDay(d,fixed=-1,shuffle=false){
     c+=shuffle?Math.random()*70:(oi!==day.picks[si]?10:0);
     return c;
   }));
+  // Variety: each food group missing from the day costs as much as being 15 kcal off target.
+  const useVar=SLOTS.some(s=>s.opts.some(o=>o.gm));let bm=0;
+  SLOTS.forEach((s,i)=>{if(day.locked[i]||i===fixed)bm|=s.opts[day.picks[i]].gm||0});
   let best=null,bestScore=Infinity;const ch=[];
-  (function rec(j,k,p,c){
-    if(j===free.length){const sc=Math.abs(k-state.target)+Math.max(0,state.protein-p)*10+c;if(sc<bestScore){bestScore=sc;best=ch.slice()}return}
-    const si=free[j];SLOTS[si].opts.forEach((o,oi)=>{ch[j]=oi;rec(j+1,k+o.k,p+o.p,c+cost[j][oi])});
-  })(0,bk,bp,0);
+  (function rec(j,k,p,c,m){
+    if(c>=bestScore)return;
+    if(j===free.length){const sc=Math.abs(k-state.target)+Math.max(0,state.protein-p)*10+c+(useVar?(GROUPS.length-bits(m))*15:0);if(sc<bestScore){bestScore=sc;best=ch.slice()}return}
+    const si=free[j];SLOTS[si].opts.forEach((o,oi)=>{ch[j]=oi;rec(j+1,k+o.k,p+o.p,c+cost[j][oi],m|(o.gm||0))});
+  })(0,bk,bp,0,bm);
   free.forEach((si,j)=>day.picks[si]=best[j]);
 }
 function rebalanceAll(){for(let d=0;d<D;d++)rebalanceDay(d)}
 function totals(d){let k=0,p=0,c=0,f=0;SLOTS.forEach((s,i)=>{const o=s.opts[state.days[d].picks[i]];k+=o.k;p+=o.p;c+=o.c;f+=o.f});return{k,p,c,f}}
+function dayNutrition(d){
+  const sum={};NUTR.forEach(([k])=>sum[k]=0);let m=0,has=false;
+  SLOTS.forEach((s,i)=>{const o=s.opts[state.days[d].picks[i]];if(o.skip)return;m|=o.gm||0;
+    if(o.nu){has=true;NUTR.forEach(([k])=>{sum[k]+=o.nu[k]||0})}});
+  return{sum,mask:m,has,groups:GROUPS.filter((_,j)=>m&(1<<j))};
+}
+function fmtN(v){return v>=100?fmt(Math.round(v)):v>=10?String(Math.round(v)):String(Math.round(v*10)/10)}
+function nutRows(nu,scale){return NUTR.map(([k,l,u,dv])=>{const v=nu[k];if(v==null)return "";const pct=Math.round(v/dv*100);
+  return `<li class="${pct<(scale||0)?"low":""}"><span>${l}</span><span class="q">${fmtN(v)} ${u}</span><span class="pct">${pct}%</span><span class="bar"><i style="width:${Math.min(100,pct)}%"></i></span></li>`}).join("")}
+function mealNutrition(o){
+  if(o.skip||(!o.nu&&o.dv==null))return "";
+  return `<h3>Nutrition</h3>${o.dv!=null?`<p class="dv"><b>${o.dv}/10</b> diversity score</p>`:""}${o.g&&o.g.length?`<p class="grps">${o.g.map(esc).join(" · ")}</p>`:""}
+    ${o.nu?`<ul class="nut">${nutRows(o.nu)}</ul>`:""}
+    <p class="fine">Percent of daily value. The diversity score gives a point per food group (up to 5) and up to 5 more for how many of these 11 nutrients reach 15% of daily value. Values are estimates from typical ingredients; brands vary.</p>`;
+}
 function timeOf(d,i){const t=state.days[d].times&&state.days[d].times[i];return t||state.times[i]}
 function toHM(m){return `${String(Math.floor(m/60)).padStart(2,"0")}:${String(m%60).padStart(2,"0")}`}
 function setTime(d,i,hm){const day=state.days[d];if(!day.times)day.times=Array(N).fill(null);day.times[i]=hm===state.times[i]?null:hm;save()}
@@ -537,7 +574,7 @@ SLOTS.forEach((s,i)=>{
   track.setAttribute("aria-label",`${s.name} options. Left and right arrow keys choose.`);
   s.opts.forEach((o,oi)=>{
     const c=document.createElement("article");c.className="card"+(o.skip?" skip":"");
-    c.innerHTML=`<h3>${esc(o.n)}</h3><p class="d">${esc(o.d)}</p>`+(o.skip?"":`<div class="m"><span><b>${fmt(o.k)}</b> kcal</span><span><b>${fmt(o.p)} g</b> protein</span></div>`);
+    c.innerHTML=`<h3>${esc(o.n)}</h3><p class="d">${esc(o.d)}</p>`+(o.skip?"":`<div class="m"><span><b>${fmt(o.k)}</b> kcal</span><span><b>${fmt(o.p)} g</b> protein</span>${o.dv!=null?`<span><b>${o.dv}</b>/10 diversity</span>`:""}</div>`);
     c.addEventListener("click",()=>{if(state.days[ui.day].picks[i]!==oi)choose(i,oi)});
     track.appendChild(c);
   });
@@ -588,6 +625,12 @@ function updatePlan(except=-1,smooth=true){
   else m=`${fmt(d)} kcal over. Unlock a meal or swipe to something lighter.`;
   if(p<state.protein-5)m+=` Protein ${fmt(state.protein-p)} g under.`;
   $("status").textContent=m;
+  const dn=dayNutrition(ui.day),v=$("variety");
+  if(!dn.mask&&!dn.has){v.hidden=true}else{
+    const miss=GROUPS.filter(g=>!dn.groups.includes(g)).map(g=>g.toLowerCase());
+    const low=dn.has?NUTR.filter(([k,,,dv])=>dn.sum[k]<dv).map(([k,l,,dv])=>`${l} ${Math.round(dn.sum[k]/dv*100)}%`):[];
+    v.textContent=`Variety: ${dn.groups.length} of ${GROUPS.length} food groups${miss.length?` (no ${miss.join(", ")})`:""}.`+(low.length?` Under daily value: ${low.join(", ")}.`:dn.has?" Every tracked nutrient reaches its daily value.":"");
+    v.hidden=false}
 }
 function renderSettings(){
   const el=$("times");el.innerHTML="";
@@ -701,6 +744,10 @@ function renderDay(body){
     b.onclick=()=>openDetail(ui.day,m.i);list.appendChild(b);
   });
   body.appendChild(list);
+  const dn=dayNutrition(ui.day);
+  if(dn.has||dn.mask){const w=document.createElement("div");w.className="daynut narrow sheet-like";
+    w.innerHTML=`<h3 class="dn-h">Nutrition for the day</h3><p class="grps">${dn.groups.length} of ${GROUPS.length} food groups: ${dn.groups.map(esc).join(" · ")||"none"}</p>${dn.has?`<ul class="nut">${nutRows(dn.sum,100)}</ul><p class="fine">Percent of daily value across all of the day's meals. Faded bars are under 100%.</p>`:""}`;
+    body.appendChild(w)}
 }
 function renderWeek(body){
   const g=document.createElement("div");g.className="week";
@@ -856,6 +903,7 @@ function renderSheet(){
     <h2 id="shTitle">${o.skip?"Skipped":esc(o.n)}</h2>
     <p class="sh-d">${esc(o.d)}</p>
     ${o.skip?"":`<div class="sh-m"><span><b>${fmt(o.k)}</b> kcal</span><span><b>${fmt(o.p)} g</b> protein</span><span><b>${fmt(o.c)} g</b> carbs</span><span><b>${fmt(o.f)} g</b> fat</span></div>`}
+    ${mealNutrition(o)}
     <div class="sh-time"><label for="shTime">Time</label><input type="time" id="shTime" step="300" value="${t}">
       <button class="txt" id="shAll">Use this time every day</button>
       ${overridden?`<button class="txt" id="shReset">Reset to ${fmtTime(state.times[i])}</button>`:""}
@@ -911,10 +959,13 @@ function remapLibrary(lib){
     if(miss)rebalanceDay(d)});
   buildSlots();
 }
+function cleanNu(x){if(!x||typeof x!=="object")return null;const nu={};let any=false;
+  NUTR.forEach(([k])=>{const v=x[k];nu[k]=typeof v==="number"&&isFinite(v)?v:null;if(nu[k]!=null)any=true});return any?nu:null}
 async function nLoadLibrary(){
   const data=await apiRead("/meals");
   const lib=((data&&data.meals)||[]).map(m=>({slot:SLOT_NAMES.indexOf(m.slot),n:String(m.name||"").trim(),d:String(m.description||""),k:+m.calories||0,p:+m.protein||0,c:+m.carbs||0,f:+m.fat||0,
-    ing:Array.isArray(m.ingredients)?m.ingredients:[],steps:Array.isArray(m.steps)?m.steps:[],hide:!!m.hide,url:typeof m.url==="string"?m.url:""})).filter(m=>m.n&&m.slot>=0);
+    ing:Array.isArray(m.ingredients)?m.ingredients:[],steps:Array.isArray(m.steps)?m.steps:[],hide:!!m.hide,url:typeof m.url==="string"?m.url:"",
+    nu:cleanNu(m.nutrients),g:Array.isArray(m.groups)?m.groups.filter(x=>GROUPS.includes(x)):[],dv:typeof m.diversity==="number"&&isFinite(m.diversity)?m.diversity:null})).filter(m=>m.n&&m.slot>=0);
   if(!lib.length)return false;
   const sig=JSON.stringify(lib);if(sig===libSig)return false;
   libSig=sig;try{localStorage.setItem(LIBKEY,sig)}catch(e){}
