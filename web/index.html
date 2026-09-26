@@ -211,7 +211,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .seg{display:flex;gap:22px}
 .seg button{color:var(--muted);font-size:.92rem;padding:6px 0;border-bottom:1.5px solid transparent}
 .seg button[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--ink)}
-.cal-title{display:block;padding:14px 24px 6px}
+.cal-title{display:block;padding:14px 24px 0}
 .cal-title h2{margin:0;font-size:1.35rem;font-weight:400;letter-spacing:-0.02em}
 .cal-title span{display:block;margin-top:2px;font-size:.85rem;color:var(--muted)}
 
@@ -226,7 +226,6 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .blk{touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:grab;transition:box-shadow .15s,transform .15s}
 .blk.drag{cursor:grabbing;box-shadow:0 6px 20px rgba(0,0,0,.18);z-index:3;transform:scale(1.02)}
 .blk.half .kc{display:none}
-.hour-hint{padding:0 24px;margin:2px 0 0;font-size:.8rem;color:var(--muted)}
 .sheet-bg{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.38);display:flex;align-items:flex-end;justify-content:center}
 .sheet{background:var(--bg);width:100%;max-width:560px;max-height:88%;overflow-y:auto;overscroll-behavior:contain;border-radius:18px 18px 0 0;
   padding:0 24px calc(24px + env(safe-area-inset-bottom,0px))}
@@ -312,14 +311,14 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 /* next meal */
 /* White frosted glass over a field of the urgency color: green while there's time, yellow when a meal
    is close or has just started, red once it's an hour overdue. */
-.next{--a1:#1baf7a;--a2:#8fe0bf;--a0:#d3f3e5;position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;width:calc(100% - 48px);margin:14px 24px 0;padding:16px 14px 16px 18px;text-align:left;
-  border-radius:24px;color:var(--ink);box-shadow:0 10px 30px -12px var(--a1),0 1px 2px rgba(0,0,0,.05)}
-.next.u-soon{--a1:#f1b21c;--a2:#ffd970;--a0:#fff0c2}
-.next.u-late{--a1:#e2492f;--a2:#ff9c85;--a0:#ffdcd3}
+.next{--a1:#1baf7a;position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;width:calc(100% - 48px);margin:14px 24px 0;padding:16px 14px 16px 18px;text-align:left;
+  border-radius:24px;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.next.u-soon{--a1:#e8ab1c}
+.next.u-late{--a1:#d6482f}
 .next::before{content:"";position:absolute;inset:0;z-index:-2;background:
-  radial-gradient(70% 110% at 0% 0%,var(--a1) 0,transparent 70%),radial-gradient(60% 120% at 100% 100%,var(--a2) 0,transparent 70%),radial-gradient(40% 80% at 78% 10%,var(--a1) 0,transparent 70%),var(--a0);transition:background .4s}
-.next::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;background:linear-gradient(180deg,rgba(255,255,255,.62),rgba(255,255,255,.42));
-  -webkit-backdrop-filter:blur(22px) saturate(1.5);backdrop-filter:blur(22px) saturate(1.5);box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 0 0 1px rgba(255,255,255,.55)}
+  radial-gradient(90% 140% at 0% 0%,var(--a1) 0,transparent 65%) var(--soft);opacity:.16;transition:background .4s,opacity .4s}
+.next::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;background:var(--soft);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.045)}
 
 .next .main{display:block;min-width:0;text-align:left;color:inherit}
 .next .nm-more{align-self:start;width:40px;height:40px;margin:-4px -2px 0 0;color:var(--ink);background:rgba(255,255,255,.55);box-shadow:inset 0 0 0 1px rgba(255,255,255,.8)}
@@ -1304,7 +1303,6 @@ function titleRow(d){
 }
 function renderHour(body){
   body.appendChild(titleRow(ui.day));
-  const hint=document.createElement("p");hint.className="hour-hint narrow";hint.textContent="Press and hold a meal, then drag to change its time. Tap it for the recipe.";body.appendChild(hint);
   const wrap=document.createElement("div");wrap.className="hours narrow";
   const start=6,end=24,ph=60,H=50,d=ui.day;
   for(let h=start;h<end;h++){const r=document.createElement("div");r.className="hr";r.innerHTML=`<span>${(h%12)||12} ${h<12?"AM":"PM"}</span>`;wrap.appendChild(r)}
