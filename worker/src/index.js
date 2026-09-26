@@ -13,7 +13,7 @@
 //   GET  /pantry             -> { items: [...] }        what's in the fridge, freezer and pantry
 //   POST /pantry/batch       -> { created: [{ref, id, url}], ok: [ids], failed: [{ref, message}] }
 //        body: { creates: [item + ref], updates: [item + id], deletes: [id] }  (max 20 in total)
-//   GET  /product?url=...    -> { title, image, images: [...] }  reads a store's product page
+//   GET  /product?url=...    -> { title, image, images: [...], nutrition, nutritionText }  reads a store's product page
 //   GET  /img?url=...        -> the image itself, with CORS so the app can cut out its background
 //   GET  /health             -> { ok: true }
 //
@@ -25,6 +25,9 @@ const NOTION_API = "https://api.notion.com/v1";
 const SLOTS = ["Breakfast", "Morning snack", "Lunch", "Afternoon snack", "Dinner", "Before bed"];
 const MAX_ITEMS = 20;
 const LOCATIONS = ["Fridge", "Freezer", "Pantry"];
+// Per-serving nutrition columns in the Pantry database, keyed by the name the app uses.
+const PANTRY_NUTRITION = { servings: "Servings", calories: "Calories", protein: "Protein (g)", carbs: "Carbs (g)", fat: "Fat (g)",
+  fiber: "Fiber (g)", sugar: "Sugar (g)", sodium: "Sodium (mg)" };
 const CATEGORIES = ["Produce", "Dairy & eggs", "Meat & fish", "Grains & bread", "Cans & jars", "Nuts & snacks", "Oils & sauces", "Frozen", "Drinks", "Other"];
 const CLEANUP_PER_RUN = 40; // stays under the free plan's 50 subrequests per invocation
 
@@ -325,6 +328,8 @@ async function listPantry(env) {
         expires: pr["Expires"] && pr["Expires"].date ? String(pr["Expires"].date.start).slice(0, 10) : "",
         link: (pr["Link"] && pr["Link"].url) || "",
         image: (pr["Image"] && pr["Image"].url) || "",
+        serving: text(pr["Serving size"]).trim(),
+        nutrition: Object.fromEntries(Object.entries(PANTRY_NUTRITION).map(([k, col]) => [k, numOrNull(pr[col])])),
       };
     })
     .filter((it) => it.name);
@@ -343,6 +348,12 @@ function cleanPantry(raw, needId) {
     expires: /^\d{4}-\d{2}-\d{2}$/.test(String(raw.expires || "")) ? String(raw.expires) : "",
     link: webUrl(raw.link),
     image: webUrl(raw.image),
+    serving: String(raw.serving || "").trim().slice(0, 60),
+    nutrition: Object.fromEntries(Object.keys(PANTRY_NUTRITION).map((k) => {
+      const v = raw.nutrition && raw.nutrition[k];
+      const n = v === null || v === undefined || v === "" ? null : +v;
+      return [k, Number.isFinite(n) && n >= 0 && n <= 100000 ? Math.round(n * 10) / 10 : null];
+    })),
   };
   if (!it.name) return null;
   if (needId) {
@@ -362,6 +373,8 @@ function pantryProps(it) {
     Expires: { date: it.expires ? { start: it.expires } : null },
     Link: { url: it.link || null },
     Image: { url: it.image || null },
+    "Serving size": { rich_text: it.serving ? [{ text: { content: it.serving } }] : [] },
+    ...Object.fromEntries(Object.entries(PANTRY_NUTRITION).map(([k, col]) => [col, { number: it.nutrition[k] }])),
   };
 }
 
@@ -437,7 +450,7 @@ async function readProduct(target) {
   if (ct.startsWith("image/")) return { title: "", image: base, images: [base] };
   const html = (await res.text()).slice(0, 2_000_000);
   const images = [], add = (v) => { try { const u = new URL(decode(v), base).href; if (/^https?:/.test(u) && !images.includes(u)) images.push(u); } catch {} };
-  let title = "";
+  let title = "", nutrition = null;
   // JSON-LD Product data is the most reliable source on store pages.
   for (const m of html.matchAll(/<script[^>]+application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) {
     let data; try { data = JSON.parse(m[1].trim()); } catch { continue; }
@@ -448,6 +461,12 @@ async function readProduct(target) {
       if (/Product/i.test(type)) {
         if (!title && o.name) title = decode(o.name);
         [].concat(o.image || []).forEach((im) => add(typeof im === "string" ? im : im && (im.url || im.contentUrl)));
+      }
+      if (!nutrition && (o.nutrition || /NutritionInformation/i.test(type))) {
+        const n = o.nutrition || o, keep = {};
+        ["servingSize", "calories", "proteinContent", "carbohydrateContent", "fatContent", "fiberContent", "sugarContent", "sodiumContent"]
+          .forEach((k) => { if (n[k] !== undefined && n[k] !== null) keep[k] = String(n[k]).slice(0, 60); });
+        if (Object.keys(keep).length) nutrition = keep;
       }
       if (o["@graph"]) walk(o["@graph"]);
     };
@@ -461,10 +480,22 @@ async function readProduct(target) {
   }
   ["og:image:secure_url", "og:image", "twitter:image", "twitter:image:src", "image"].forEach((k) => metas[k] && add(metas[k]));
   const link = html.match(/<link[^>]+rel=["']image_src["'][^>]*href=["']([^"']+)["']/i); if (link) add(link[1]);
+  // gallery shots of the back of the pack or the Nutrition Facts panel, for reading the label
+  for (const m of html.matchAll(/<img\s[^>]*>/gi)) {
+    const tag = m[0], src = (tag.match(/\b(?:data-src|src)\s*=\s*["']([^"']+)["']/i) || [])[1], alt = (tag.match(/\balt\s*=\s*["']([^"']*)["']/i) || [])[1] || "";
+    if (src && !/^data:/.test(src) && /nutrition|facts|label|panel|back|ingredient/i.test(src + " " + alt)) add(src);
+  }
   if (!title) title = decode(metas["og:title"] || metas["twitter:title"] || (html.match(/<title[^>]*>([^<]*)<\/title>/i) || [])[1] || "");
+  const site = decode(metas["og:site_name"] || "");
+  if (site && title.toLowerCase().endsWith(site.toLowerCase())) title = title.slice(0, -site.length).replace(/\s*[|\-–:]\s*$/, "");
   title = title.replace(/\s*[|\-–:]\s*(Target|Walmart\.com|Walmart|Amazon\.com|Whole Foods Market|Trader Joe's|Kroger|Instacart|Costco)\s*$/i, "").slice(0, 100);
-  if (!images.length) throw fetchFail("Couldn't find a product photo on that page. Paste the image address instead.");
-  return { title, image: images[0], images: images.slice(0, 6) };
+  // A text excerpt around a "Nutrition Facts" panel, if the page has one in its HTML.
+  const plain = html.replace(/<(script|style|noscript)[\s\S]*?<\/\1>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ");
+  const flat = decode(plain).replace(/\s+/g, " ");
+  const at = flat.search(/nutrition(al)? (facts|information|info)|serving size/i);
+  const nutritionText = at >= 0 ? flat.slice(Math.max(0, at - 100), at + 2500) : "";
+  if (!images.length && !nutrition && !nutritionText) throw fetchFail("Couldn't find a product photo on that page. Paste the image address instead.");
+  return { title, image: images[0] || "", images: images.slice(0, 8), nutrition, nutritionText };
 }
 
 async function proxyImage(target, cors) {

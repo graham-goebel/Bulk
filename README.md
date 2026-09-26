@@ -69,6 +69,8 @@ Items live in the **Pantry** database in Notion (`PANTRY_DB` in `worker/wrangler
 
 To use a real product photo, open an item, paste a link to the product page (or straight to the photo) into **Store link**, and tap **Get photo**. The Worker reads the page's product photo and name; the app removes a plain studio background and shows the cut-out in the 3D view and the list. Busy lifestyle photos are left as they are. Some stores block automated requests; for those, open the photo in your browser, copy its image address, and paste that instead. The Pantry database keeps the link and photo address in its **Link** and **Image** columns.
 
+Each item also has **Nutrition per serving** (serving size, servings per container, calories, protein, carbs, fat, fiber, sugar, sodium). **Read from store page** picks these up when the page lists them as text or product data. **Read a label photo** reads a Nutrition Facts panel with on-device OCR (tesseract.js, bundled in `web/vendor/tesseract`, about 7 MB downloaded the first time you use it): pick one of the store's photos or take your own. Always check the numbers against the package before saving.
+
 ## Meal times across time zones
 
 Each row in Meal Plan has a **Time** column with the wall-clock time the meal is planned for, such as `07:30`. The app syncs that, so a phone and a laptop set to different time zones show the same times. **When** is kept up to date for Notion's calendar view but can look shifted if your devices are in different zones. To change a meal's time from Notion, edit **Time**.

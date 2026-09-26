@@ -282,6 +282,11 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .pf-photo .alts button[aria-pressed="true"]{border-color:var(--ink)}
 .pf-photo .alts canvas{max-width:40px;max-height:40px}
 .pl-row.img{grid-template-columns:40px 1fr auto}
+.pf-nbtns{display:flex;flex-wrap:wrap;gap:4px 20px}
+.pf-pick{margin-top:8px}.pf-pick .alts{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.pf-pick .alts button{width:48px;height:48px;border:1px solid var(--line);border-radius:10px;display:grid;place-items:center;overflow:hidden;background:#fbfaf7}
+.pf-n{margin-top:10px}
+.pf-ocr{margin-top:10px;font-size:.8rem;color:var(--muted)}.pf-ocr pre{white-space:pre-wrap;max-height:180px;overflow:auto;background:var(--soft);padding:8px 10px;border-radius:8px}
 .pl-row .th{grid-row:1/3;width:40px;height:40px;object-fit:contain;align-self:center}
 .pl-row.img .nm,.pl-row.img .mt{grid-column:2}.pl-row.img .q{grid-column:3}
 @media (min-width:900px){
@@ -1245,6 +1250,7 @@ else{$("passcode").placeholder=passcode()?"Saved":"Passcode";if(passcode()){nSet
 
 /* ---------- pantry ---------- */
 const PANKEY="gf-gain-planner-pantry";
+const BUILD="__BUILD__"; // replaced with the commit id when the site is published, so new versions aren't served from cache
 const LOCS=["Fridge","Freezer","Pantry"];
 const CATS=["Produce","Dairy & eggs","Meat & fish","Grains & bread","Cans & jars","Nuts & snacks","Oils & sauces","Frozen","Drinks","Other"];
 let pantry=[];try{const c=JSON.parse(localStorage.getItem(PANKEY)||"[]");if(Array.isArray(c))pantry=c}catch(e){}
@@ -1270,13 +1276,22 @@ function guessPlace(name,sec){
   return{location:"Pantry",category:"Other"};
 }
 // Product photos: fetched through the Worker (so the canvas isn't tainted), then cut out.
-const photoCache=new Map();
+const photoCache=new Map(),bitmapCache=new Map();
+function photoBitmap(url){
+  if(!bitmapCache.has(url))bitmapCache.set(url,(async()=>{
+    let err;
+    try{const res=await fetch(API_URL+"/img?url="+encodeURIComponent(url),{headers:{"X-Passcode":passcode()}});
+      if(res.ok)return await createImageBitmap(await res.blob());
+      let m="";try{m=(await res.json()).message}catch(e){}err={code:"photo",message:m||`The photo server answered ${res.status}.`};
+    }catch(e){err={code:"photo",message:(e&&e.message)||"Couldn't reach the server for that photo."}}
+    // Some image hosts allow direct cross-site loading; try that before giving up.
+    try{const r=await fetch(url,{mode:"cors"});if(r.ok)return await createImageBitmap(await r.blob())}catch(e){}
+    throw err;
+  })().catch(e=>{bitmapCache.delete(url);throw e}));
+  return bitmapCache.get(url);
+}
 function productPhoto(url){
-  if(!photoCache.has(url))photoCache.set(url,(async()=>{
-    const res=await fetch(API_URL+"/img?url="+encodeURIComponent(url),{headers:{"X-Passcode":passcode()}});
-    if(!res.ok){let m="";try{m=(await res.json()).message}catch(e){}throw {code:"photo",message:m||"Couldn't load that photo."}}
-    const bmp=await createImageBitmap(await res.blob());return cutout(bmp);
-  })().catch(e=>{photoCache.delete(url);throw e}));
+  if(!photoCache.has(url))photoCache.set(url,photoBitmap(url).then(cutout).catch(e=>{photoCache.delete(url);throw e}));
   return photoCache.get(url);
 }
 const thumbCache=new Map();
@@ -1314,6 +1329,59 @@ function cutout(src){
   const out=document.createElement("canvas");out.width=x1-x0+1;out.height=y1-y0+1;out.getContext("2d").drawImage(cv,x0,y0,out.width,out.height,0,0,out.width,out.height);
   return out;
 }
+// ---- nutrition facts ----
+const PNUT=[["calories","Calories",""],["protein","Protein","g"],["carbs","Carbs","g"],["fat","Fat","g"],["fiber","Fiber","g"],["sugar","Sugar","g"],["sodium","Sodium","mg"]];
+function firstNum(s){const m=String(s||"").replace(/,(?=\d{3}\b)/g,"").match(/\d+(?:\.\d+)?/);return m?+m[0]:null}
+// Reads a Nutrition Facts panel from page text or OCR output. OCR often turns "5g" into "59",
+// so gram values that end in 9 without a unit are checked against the calories.
+function parseNutrition(text){
+  let t=" "+String(text||"").replace(/[\u2018\u2019]/g,"'").replace(/\s+/g," ")+" ";
+  t=t.replace(/\b[Oo](?=\s?m?g\b)/g,"0").replace(/(\d)[Oo]\b/g,"$10").replace(/\b[Oo](\d)/g,"0$1");
+  const out={},cand={};
+  let m=t.match(/serving size[:\s]*(.{1,48}?)(?=\s+(?:amount|calories|servings?|per container|total|%|$))/i);if(m)out.serving=m[1].replace(/[^\w\s()./%-]/g,"").trim();
+  m=t.match(/(?:about\s*)?(\d+(?:\.\d+)?)\s*servings?\s*per\s*(?:container|package|pkg)/i)||t.match(/servings?\s*per\s*(?:container|package)[:\s]*(?:about\s*)?(\d+(?:\.\d+)?)/i);if(m)out.servings=+m[1];
+  m=t.match(/calories(?!\s*from)[^\d]{0,14}(\d{1,4})\b/i);if(m)out.calories=+m[1];
+  const grams=(key,re)=>{const x=t.match(re);if(!x)return;const raw=x[1],unit=(x[2]||"").toLowerCase(),v=+raw;
+    cand[key]=unit||!/9$/.test(raw)||raw.length<2?[v]:[v,+raw.slice(0,-1)||0]};
+  grams("fat",/total\s*fat[^\d]{0,8}(\d+(?:\.\d+)?)\s*(m?g)?/i);
+  grams("carbs",/total\s*carb(?:ohydrates?|s)?\.?[^\d]{0,8}(\d+(?:\.\d+)?)\s*(m?g)?/i);
+  grams("protein",/protein[^\d]{0,8}(\d+(?:\.\d+)?)\s*(m?g)?/i);
+  grams("fiber",/(?:dietary\s*)?fib(?:er|re)[^\d]{0,8}(\d+(?:\.\d+)?)\s*(m?g)?/i);
+  grams("sugar",/(?:total\s*)?sugars?(?!\s*alcohol)[^\d]{0,8}(\d+(?:\.\d+)?)\s*(m?g)?/i);
+  m=t.match(/sodium[^\d]{0,8}(\d+(?:\.\d+)?)\s*(m?g)?/i);if(m)out.sodium=m[2]&&m[2].toLowerCase()==="g"?+m[1]*1000:+m[1];
+  // pick the reading of protein/carbs/fat that best matches the calories
+  const P=cand.protein||[null],C=cand.carbs||[null],F=cand.fat||[null];let best=null,bd=Infinity;
+  P.forEach(p=>C.forEach(c=>F.forEach(f=>{const e=4*(p||0)+4*(c||0)+9*(f||0),d=out.calories?Math.abs(e-out.calories):[p,c,f].reduce((a,v)=>a+(v>150?v:0),0);if(d<bd){bd=d;best=[p,c,f]}})));
+  if(best){if(best[0]!=null)out.protein=best[0];if(best[1]!=null)out.carbs=best[1];if(best[2]!=null)out.fat=best[2]}
+  // sugar and fiber are part of the carbs, so a reading above the carbs is the OCR "g" slip
+  ["fiber","sugar"].forEach(k=>{const c=cand[k];if(c)out[k]=c.length>1&&(c[0]>(out.carbs??39))?c[1]:c[0]});
+  return out;
+}
+function nutritionFromLd(n){if(!n)return{};const o={};
+  if(n.servingSize)o.serving=String(n.servingSize).trim();
+  [["calories","calories"],["protein","proteinContent"],["carbs","carbohydrateContent"],["fat","fatContent"],["fiber","fiberContent"],["sugar","sugarContent"]]
+    .forEach(([k,f])=>{const v=firstNum(n[f]);if(v!=null)o[k]=v});
+  if(n.sodiumContent!=null){const v=firstNum(n.sodiumContent);if(v!=null)o.sodium=/\bm?g\b/i.test(n.sodiumContent)&&!/mg/i.test(n.sodiumContent)?v*1000:v}
+  return o;
+}
+let ocrWorker=null;
+function loadScript(src){return new Promise((ok,no)=>{const e=document.createElement("script");e.src=src;e.onload=ok;e.onerror=()=>no(new Error("Couldn't load the label reader."));document.head.appendChild(e)})}
+async function readLabel(bitmap,progress){
+  if(!window.Tesseract)await loadScript("vendor/tesseract/tesseract.min.js?v="+BUILD);
+  if(!ocrWorker){const base=new URL("vendor/tesseract/",location.href).href;
+    ocrWorker=await Tesseract.createWorker("eng",1,{workerPath:base+"worker.min.js?v="+BUILD,corePath:base+"core",langPath:base+"lang",gzip:true,
+      logger:m=>{if(progress&&m.status)progress(m.status,m.progress)}})}
+  // upscale small photos, greyscale and stretch contrast so the small print is readable
+  const k=Math.min(3,Math.max(1,1600/Math.max(bitmap.width,bitmap.height))),cv=document.createElement("canvas");
+  cv.width=Math.round(bitmap.width*k);cv.height=Math.round(bitmap.height*k);const cx=cv.getContext("2d",{willReadFrequently:true});
+  cx.fillStyle="#fff";cx.fillRect(0,0,cv.width,cv.height);cx.drawImage(bitmap,0,0,cv.width,cv.height);
+  const im=cx.getImageData(0,0,cv.width,cv.height),d=im.data;let lo=255,hi=0;const g=new Uint8Array(d.length/4);
+  for(let i=0;i<g.length;i++){const v=(d[i*4]*299+d[i*4+1]*587+d[i*4+2]*114)/1000;g[i]=v;if(v<lo)lo=v;if(v>hi)hi=v}
+  const r=Math.max(1,hi-lo);for(let i=0;i<g.length;i++){const v=Math.max(0,Math.min(255,(g[i]-lo)*255/r));d[i*4]=d[i*4+1]=d[i*4+2]=v}
+  cx.putImageData(im,0,0);
+  const{data}=await ocrWorker.recognize(cv);return data.text||"";
+}
+function nutSummary(it){const n=it.nutrition||{};return n.calories!=null?`${fmt(n.calories)} kcal${n.protein!=null?` · ${+n.protein} g protein`:""} per serving`:""}
 function filteredPantry(){
   const q=pf.q.trim().toLowerCase();
   return pantry.filter(it=>(!q||it.name.toLowerCase().includes(q)||it.category.toLowerCase().includes(q))
@@ -1389,7 +1457,7 @@ function renderPantry(){
         b.innerHTML=(it.image?`<img class="th" alt="">`:"")+`<span class="nm"></span><span class="q"></span><span class="mt"></span>`;
         if(it.image&&notionOn())photoThumb(it.image).then(u=>{const im=b.querySelector(".th");if(im)im.src=u}).catch(()=>{});
         b.querySelector(".nm").textContent=it.name;b.querySelector(".q").textContent=qtyLabel(it);
-        const mt=b.querySelector(".mt");mt.textContent=it.category;const ex=expLabel(it);
+        const mt=b.querySelector(".mt");mt.textContent=[it.category,nutSummary(it)].filter(Boolean).join(" · ");const ex=expLabel(it);
         if(ex){const s=document.createElement("span");s.className=expSoon(it)?"exp":"";s.textContent=` · ${ex}`;mt.appendChild(s)}
         b.onclick=()=>openPantryItem(it);box.appendChild(b)});
     });
@@ -1398,12 +1466,12 @@ function renderPantry(){
 }
 function ensureScene(){
   if(P3||p3Failed)return Promise.resolve(P3);
-  if(!p3Loading)p3Loading=import("./pantry3d.js").then(m=>{
+  if(!p3Loading)p3Loading=import("./pantry3d.js?v="+BUILD).then(m=>{
     P3=m.createPantryScene($("pCanvas"),{
-      loadImage:url=>notionOn()?productPhoto(url):Promise.resolve(null),
+      loadImage:url=>notionOn()?productPhoto(url).catch(e=>{$("pMsg").textContent=`A product photo didn't load: ${(e&&e.message)||"unknown error"}`;throw e}):Promise.resolve(null),
       onPick:id=>{if(!id)return;const it=pantry.find(x=>x.id===id);if(it){P3.select(id);openPantryItem(it)}},
       onHover:(id,x,y)=>{const tip=$("pTip"),it=id&&pantry.find(v=>v.id===id);if(!it){tip.hidden=true;return}
-        const r=$("pCanvas").getBoundingClientRect();tip.textContent=it.name+(qtyLabel(it)?` · ${qtyLabel(it)}`:"");tip.style.left=(x-r.left)+"px";tip.style.top=(y-r.top)+"px";tip.hidden=false}});
+        const r=$("pCanvas").getBoundingClientRect();tip.textContent=it.name+(qtyLabel(it)?` · ${qtyLabel(it)}`:"")+(nutSummary(it)?` · ${nutSummary(it).replace(" per serving","")}`:"");tip.style.left=(x-r.left)+"px";tip.style.top=(y-r.top)+"px";tip.hidden=false}});
     P3.setLayout(ui.pl==="shelves"?"shelves":"sphere");renderPantry();return P3;
   }).catch(e=>{p3Failed=true;$("pMsg").textContent="3D view isn't available on this device, so here's the list.";renderPantry();return null});
   return p3Loading;
@@ -1442,6 +1510,18 @@ function openPantryItem(it){
       <label for="pfLink">Store link</label><span class="link"><input id="pfLink" type="url" inputmode="url" placeholder="Paste a product page or image link" value="${esc(v.link||"")}"><button id="pfGet">Get photo</button></span>
       <div class="pf-photo" id="pfPhoto" hidden><div class="main" id="pfMain"></div><div><div class="alts" id="pfAlts"></div><button class="txt" id="pfNoPhoto">Remove photo</button></div></div>
     </div>
+    <h3>Nutrition per serving</h3>
+    <div class="pf-nbtns"><button class="txt" id="pfNutPage">Read from store page</button><button class="txt" id="pfNutLabel">Read a label photo</button>
+      <input type="file" id="pfNutFile" accept="image/*" hidden></div>
+    <div class="pf-pick" id="pfPick" hidden><p class="hint">Pick the photo that shows the Nutrition Facts panel, or use your own.</p><div class="alts" id="pfPickImgs"></div>
+      <button class="txt" id="pfNutOwn">Take or choose a photo</button></div>
+    <div class="pf pf-n">
+      <label for="pfServ">Serving size</label><input id="pfServ" type="text" maxlength="60" value="${esc(v.serving||"")}" placeholder="e.g. 1 cup (228 g)">
+      <label for="pfN_servings">Servings</label><input id="pfN_servings" type="number" min="0" step="any" inputmode="decimal" value="${(v.nutrition||{}).servings??""}" placeholder="per container">
+      ${PNUT.map(([k,l,u])=>`<label for="pfN_${k}">${l}${u?` (${u})`:""}</label><input id="pfN_${k}" type="number" min="0" step="any" inputmode="decimal" value="${(v.nutrition||{})[k]??""}">`).join("")}
+    </div>
+    <p class="msg" id="pfNutMsg" role="status"></p>
+    <details class="pf-ocr" id="pfOcr" hidden><summary>Text read from the label</summary><pre id="pfOcrText"></pre></details>
     <div class="sh-foot"><button class="btn" id="pfSave">${isNew?"Add":"Save"}</button>${isNew?"":`<button class="txt" id="pfDel">Remove from pantry</button>`}${v.url?`<a class="txt" href="${esc(v.url)}" target="_blank" rel="noopener">Open in Notion</a>`:""}<span class="msg" id="pfMsg" role="status"></span></div>`;
   $("sheet").hidden=false;document.body.style.overflow="hidden";
   $("shClose").onclick=closeDetail;
@@ -1472,10 +1552,46 @@ function openPantryItem(it){
   };
   $("pfLink").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("pfGet").click()}});
   $("pfNoPhoto").onclick=()=>{photo="";alts=[];showPhoto()};
+  // nutrition
+  let lastProduct=null;const nmsg=t=>{$("pfNutMsg").textContent=t};
+  const fillNut=(n,from)=>{let c=0;
+    if(n.serving&&!$("pfServ").value.trim()){$("pfServ").value=n.serving;c++}else if(n.serving)c++;
+    [["servings"],...PNUT].forEach(([k])=>{if(n[k]!=null&&isFinite(n[k])){$("pfN_"+k).value=+(+n[k]).toFixed(1);c++}});
+    nmsg(c?`Filled ${c} value${c===1?"":"s"} from ${from}. Check them against the package before saving.`:`Couldn't find nutrition facts in ${from}.`);return c};
+  const lookup=async()=>{const link=$("pfLink").value.trim();if(!link)throw new Error("Paste the store link above first.");
+    if(!lastProduct||lastProduct.link!==link){lastProduct={link,...await api("/product?url="+encodeURIComponent(link))}}return lastProduct};
+  const origGet=$("pfGet").onclick;$("pfGet").onclick=async()=>{await origGet();try{lastProduct=null;const r=await lookup();
+    const n={...parseNutrition(r.nutritionText),...nutritionFromLd(r.nutrition)};if(Object.keys(n).length&&!["calories","protein"].some(k=>$("pfN_"+k).value))fillNut(n,"the store page")}catch(e){}};
+  $("pfNutPage").onclick=async()=>{
+    if(!notionOn()){nmsg("Connect Notion (Goals & schedule) to read store pages.");return}
+    nmsg("Reading the store page…");
+    try{const r=await lookup();const n={...parseNutrition(r.nutritionText),...nutritionFromLd(r.nutrition)};
+      if(!fillNut(n,"the store page"))nmsg("That page doesn't list nutrition facts as text. Try Read a label photo; stores often include a photo of the panel.")}
+    catch(e){nmsg(e.message||"Couldn't read that page.")}
+  };
+  const runOcr=async(getBitmap,label)=>{
+    $("pfPick").hidden=true;nmsg("Loading the label reader…");
+    try{const bmp=await getBitmap();
+      const text=await readLabel(bmp,(st,p)=>nmsg(/recogniz/i.test(st)?`Reading the label… ${Math.round((p||0)*100)}%`:"Loading the label reader…"));
+      $("pfOcrText").textContent=text.trim();$("pfOcr").hidden=!text.trim();fillNut(parseNutrition(text),label);
+    }catch(e){nmsg((e&&e.message)||"Couldn't read that photo.")}
+  };
+  $("pfNutLabel").onclick=async()=>{
+    const box=$("pfPickImgs");box.innerHTML="";$("pfPick").hidden=false;
+    let imgs=alts.length?alts:photo?[photo]:[];
+    if(!imgs.length&&$("pfLink").value.trim()&&notionOn()){try{imgs=(await lookup()).images||[]}catch(e){}}
+    imgs.forEach(u=>{const b=document.createElement("button");b.setAttribute("aria-label","Read this photo");
+      photoBitmap(u).then(bm=>{const c=document.createElement("canvas"),k=40/Math.max(bm.width,bm.height);c.width=Math.max(1,bm.width*k);c.height=Math.max(1,bm.height*k);c.getContext("2d").drawImage(bm,0,0,c.width,c.height);b.replaceChildren(c)}).catch(()=>b.remove());
+      b.onclick=()=>runOcr(()=>photoBitmap(u),"the label photo");box.appendChild(b)});
+    if(!imgs.length)$("pfNutFile").click();
+  };
+  $("pfNutOwn").onclick=()=>$("pfNutFile").click();
+  $("pfNutFile").onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)runOcr(()=>createImageBitmap(f),"your photo");e.target.value=""};
   $("pfSave").onclick=()=>{
     const name=$("pfName").value.trim();if(!name){$("pfMsg").textContent="Add a name.";$("pfName").focus();return}
     const d={name,location:$("pfLoc").value,category:$("pfCat").value,quantity:q.value===""?null:Math.max(0,+q.value),unit:$("pfUnit").value.trim(),expires:$("pfExp").value||"",
-      link:$("pfLink").value.trim(),image:photo};
+      link:$("pfLink").value.trim(),image:photo,serving:$("pfServ").value.trim(),
+      nutrition:Object.fromEntries([["servings"],...PNUT].map(([k])=>{const x=$("pfN_"+k).value;return [k,x===""?null:Math.max(0,+x)]}))};
     closeDetail();
     if(isNew)pantryWrite({creates:[{...d,ref:"r"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}]});
     else pantryWrite({updates:[{...d,id:it.id}]});
