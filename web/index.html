@@ -86,13 +86,19 @@ main{max-width:960px;margin:0 auto;padding-bottom:calc(112px + env(safe-area-ins
 .icon-btn{width:42px;height:42px;border-radius:50%;background:var(--soft);display:grid;place-items:center;color:var(--ink)}
 .icon-btn .ic{width:19px;height:19px}
 .icon-btn:focus-visible{border-radius:50%}
-.rings{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:18px 20px 6px}
+.hero{position:relative;overflow:hidden;isolation:isolate;margin:14px 24px 0;border-radius:28px;color:#fff;
+  background:radial-gradient(120% 90% at 20% 10%,#4a3d86 0,transparent 55%),radial-gradient(90% 80% at 90% 90%,#8a4a33 0,transparent 60%),radial-gradient(80% 70% at 80% 10%,#1f5c63 0,transparent 60%),#0c0c10}
+.hero .fx-bg,.hero .fx-pt{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
+.hero .fx-bg{z-index:-2}.hero .fx-pt{z-index:-1}
+.rings{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:22px 12px 18px}
 .ring{display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0}
-.ring svg{width:100%;max-width:112px;aspect-ratio:1;display:block}
-.ring .val{font-size:22px;font-weight:500;letter-spacing:-0.03em;fill:var(--ink)}
-.ring .unit{font-size:9.5px;fill:var(--muted);letter-spacing:.04em}
-.ring .lab{margin-top:8px;font-size:.84rem;font-weight:500}
-.ring .cap{font-size:.74rem;color:var(--muted)}
+.dial{position:relative;width:100%;max-width:112px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.dial svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hero.fx-on .dial svg{visibility:hidden}
+.dial .val{position:relative;font-size:22px;font-weight:500;letter-spacing:-0.03em;line-height:1.1;text-shadow:0 1px 12px rgba(0,0,0,.35)}
+.dial .unit{position:relative;font-size:9.5px;color:rgba(255,255,255,.66);letter-spacing:.08em;margin-top:3px}
+.ring .lab{margin-top:10px;font-size:.84rem;font-weight:500}
+.ring .cap{font-size:.74rem;color:rgba(255,255,255,.62)}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 24px 22px}
 .tile{display:block;width:100%;text-align:left;background:var(--soft);border-radius:20px;padding:14px 16px 15px;min-width:0}
 button.tile:hover{outline:1px solid var(--line)}
@@ -413,7 +419,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   <!-- PLAN -->
   <section id="view-plan" class="narrow" aria-label="Plan">
    <div class="plan-side">
-    <div class="rings" id="rings" aria-live="polite"></div>
+    <div class="hero" id="hero"><div class="rings" id="rings" aria-live="polite"></div></div>
     <div class="next" id="nextMeal" hidden></div>
     <div class="tiles" id="tiles"></div>
    </div>
@@ -870,11 +876,12 @@ $("copyAll").onclick=()=>{
 };
 
 /* ---------- calorie meter: eaten vs planned against the goal ---------- */
+var dashFx=null,meterData=[]; // particle rings (dashfx.js) once loaded; the SVG arcs below are the fallback
 function ringSvg(planned,eaten,val,unit){
-  // two arcs: the day's plan in grey, what's been eaten in ink
+  // two arcs: the day's plan dimmed, what's been eaten solid
   const r=42,C=2*Math.PI*r,arc=(f,col,w)=>f>0?`<circle cx="50" cy="50" r="${r}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" stroke-dasharray="${Math.max(0.001,Math.min(1,f)*C)} ${C}" transform="rotate(-90 50 50)"/>`:"";
-  return `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="${r}" fill="none" stroke="var(--line)" stroke-width="8"/>${arc(planned,"#cfcfcb",8)}${arc(eaten,"var(--ink)",8)}
-    <text x="50" y="50" text-anchor="middle" class="val">${val}</text><text x="50" y="65" text-anchor="middle" class="unit">${unit}</text></svg>`;
+  return `<div class="dial"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="${r}" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="6"/>${arc(planned,"rgba(255,255,255,.4)",6)}${arc(eaten,"#fff",6)}</svg>
+    <span class="val">${val}</span><span class="unit">${unit}</span></div>`;
 }
 function renderMeter(){
   const d=ui.day,ms=mealsOf(d).filter(m=>!m.o.skip),today=isToday(d),past=iso(dayDate(d))<iso(new Date());
@@ -885,6 +892,8 @@ function renderMeter(){
     ring("Calories",`of ${fmt(state.target)}`,t.k/state.target,showEaten?ek/state.target:0,fmt(showEaten?ek:t.k),showEaten?"EATEN":"PLANNED")+
     ring("Protein",`of ${state.protein} g`,t.p/state.protein,showEaten?ep/state.protein:0,`${fmt(showEaten?ep:t.p)}`,showEaten?"G EATEN":"G PLANNED")+
     ring("Meals",showEaten?`${ms.length-done.length} to go`:"planned",1,ms.length?done.length/ms.length:0,showEaten?`${done.length}/${ms.length}`:String(ms.length),showEaten?"DONE":"MEALS");
+  meterData=[{p:t.k/state.target,e:showEaten?ek/state.target:0},{p:t.p/state.protein,e:showEaten?ep/state.protein:0},{p:1,e:showEaten&&ms.length?done.length/ms.length:0}];
+  if(dashFx)dashFx.update(meterData);
   $("rings").setAttribute("aria-label",`${fmt(ek)} of ${fmt(state.target)} kcal eaten, ${fmt(ep)} of ${state.protein} g protein, ${done.length} of ${ms.length} meals`);
   // tiles
   const diff=t.k-state.target,dn=dayNutrition(d);
@@ -1445,6 +1454,7 @@ else{$("passcode").placeholder=passcode()?"Saved":"Passcode";$("passHint").hidde
 /* ---------- pantry ---------- */
 const PANKEY="gf-gain-planner-pantry";
 const BUILD="__BUILD__"; // replaced with the commit id when the site is published, so new versions aren't served from cache
+import("./dashfx.js?v="+BUILD).then(m=>{dashFx=m.createDashFx($("hero"),{reduceMotion});dashFx.update(meterData)}).catch(e=>console.warn("dashboard effects unavailable",e));
 const LOCS=["Fridge","Freezer","Pantry"];
 const CATS=["Produce","Dairy & eggs","Meat & fish","Grains & bread","Cans & jars","Nuts & snacks","Oils & sauces","Frozen","Drinks","Other"];
 let pantry=[];try{const c=JSON.parse(localStorage.getItem(PANKEY)||"[]");if(Array.isArray(c))pantry=c}catch(e){}
