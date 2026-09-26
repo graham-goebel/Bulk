@@ -15,6 +15,8 @@
 //        body: { creates: [item + ref], updates: [item + id], deletes: [id] }  (max 20 in total)
 //   GET  /product?url=...    -> { title, image, images: [...], nutrition, nutritionText }  reads a store's product page
 //   GET  /img?url=...        -> the image itself, with CORS so the app can cut out its background
+//   GET  /ics?e=...          -> a calendar file (text/calendar) with alerts, for meal reminders.
+//        No passcode: it only echoes the titles and times it's given and reads nothing from Notion.
 //   GET  /health             -> { ok: true }
 //
 // Optional history cleanup: when KEEP_WEEKS is set above 0, a daily cron moves
@@ -49,6 +51,7 @@ export default {
       new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json", "Cache-Control": "no-store" } });
 
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+    if (request.method === "GET" && new URL(request.url).pathname === "/ics") return icsResponse(new URL(request.url).searchParams.get("e"));
     if (!originOk) return json({ error: "origin_not_allowed", message: `Add ${origin} to ALLOWED_ORIGINS.` }, 403);
     if (!env.NOTION_TOKEN || !env.APP_PASSCODE || !env.MEALS_DB || !env.PLAN_DB)
       return json({ error: "server_not_configured", message: "Set NOTION_TOKEN, APP_PASSCODE, MEALS_DB and PLAN_DB." }, 500);
@@ -510,4 +513,34 @@ async function proxyImage(target, cors) {
   const buf = await res.arrayBuffer();
   if (buf.byteLength > 8_000_000) throw fetchFail("That photo is too large.");
   return new Response(buf, { headers: { ...cors, "Content-Type": ct, "Cache-Control": "private, max-age=604800" } });
+}
+
+// ---------- calendar reminders ----------
+// e = base64url JSON: [{ u: uid, t: title, d: "YYYYMMDDTHHMM" (local wall time), m: minutes long, n: notes, a: alert minutes before }]
+function icsResponse(e) {
+  let events;
+  try {
+    const b64 = String(e || "").replace(/-/g, "+").replace(/_/g, "/");
+    events = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0))));
+  } catch { return new Response("Bad reminder link.", { status: 400 }); }
+  if (!Array.isArray(events) || !events.length || events.length > 12) return new Response("Bad reminder link.", { status: 400 });
+  const esc = (v) => String(v || "").slice(0, 200).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+  const fold = (line) => { const out = []; let rest = line; while (rest.length > 74) { out.push(rest.slice(0, 74)); rest = " " + rest.slice(74); } out.push(rest); return out.join("\r\n"); };
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+Z$/, "Z");
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Gain planner//Meal reminders//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH"];
+  for (const ev of events) {
+    if (!ev || !/^\d{8}T\d{4}$/.test(ev.d)) return new Response("Bad reminder link.", { status: 400 });
+    const y = +ev.d.slice(0, 4), mo = +ev.d.slice(4, 6) - 1, da = +ev.d.slice(6, 8), h = +ev.d.slice(9, 11), mi = +ev.d.slice(11, 13);
+    const dur = Math.max(5, Math.min(240, Math.round(+ev.m || 30))), end = new Date(Date.UTC(y, mo, da, h, mi + dur));
+    const p2 = (n) => String(n).padStart(2, "0");
+    // floating times (no zone), so the phone reads them as its own local time
+    const endStr = `${end.getUTCFullYear()}${p2(end.getUTCMonth() + 1)}${p2(end.getUTCDate())}T${p2(end.getUTCHours())}${p2(end.getUTCMinutes())}00`;
+    const alert = Math.max(0, Math.min(720, Math.round(+ev.a || 0)));
+    lines.push("BEGIN:VEVENT", `UID:${String(ev.u || ev.d).replace(/[^\w.-]/g, "").slice(0, 60)}@gain-planner`, `DTSTAMP:${stamp}`,
+      `DTSTART:${ev.d}00`, `DTEND:${endStr}`, fold(`SUMMARY:${esc(ev.t)}`), fold(`DESCRIPTION:${esc(ev.n)}`),
+      "BEGIN:VALARM", "ACTION:DISPLAY", fold(`DESCRIPTION:${esc(ev.t)}`), `TRIGGER:${alert ? `-PT${alert}M` : "PT0M"}`, "END:VALARM", "END:VEVENT");
+  }
+  lines.push("END:VCALENDAR");
+  return new Response(lines.join("\r\n") + "\r\n", { headers: {
+    "Content-Type": "text/calendar; charset=utf-8", "Content-Disposition": 'inline; filename="meal-reminder.ics"', "Cache-Control": "no-store" } });
 }

@@ -79,6 +79,10 @@ Each row in Meal Plan has a **Time** column with the wall-clock time the meal is
 
 Only meals you mark as eaten count toward the day's progress. Tap **Mark eaten** on a meal in the Plan tab, on the next-meal card, or in a meal's detail sheet. Marking a meal also locks it so rebalancing won't swap it. Meals whose time has passed without being marked show as striped "not marked yet" on the calorie bar. The mark is stored in the **Eaten** column of Meal Plan, so it syncs across devices and you can tick it in Notion too.
 
+## Meal reminders
+
+Tap the bell on the next-meal card, or **Remind me** in a meal's sheet, and choose when to be alerted (at meal time, 10 or 30 minutes before). You can include the rest of the day's meals too. The app opens a calendar invite with the alert already set; tap **Add** (or **Add All**) and your phone's Calendar handles the reminder, even when the app is closed. The invite is built by the Worker's `/ics` endpoint, which needs no passcode because it only turns the meal name, time and calories it's given into a calendar file.
+
 ## What syncs and what stays on the device
 
 Stored in Notion and shared across your devices:
