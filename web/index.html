@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Gain planner</title>
 <meta name="description" content="Gluten-free weight-gain meal planner">
-<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0F0F0F" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#FFFFFF">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -992,6 +991,11 @@ function nError(e,partial){
   else t=partial?"Notion: some changes didn't sync. Tap to retry":"Notion sync failed. Tap to retry";
   nSet(t,(e&&e.message)||"");
 }
+function optIndex(i,name){const want=name.toLowerCase();return SLOTS[i].opts.findIndex(o=>o.skip?(want==="skipped"||want==="skip"):o.n.toLowerCase()===want)}
+function pullTime(day,i,key,when){
+  if(when.slice(0,10)!==key.slice(0,10))return false;const t=when.slice(11,16);if(!/^\d{2}:\d{2}$/.test(t))return false;
+  if(!day.times)day.times=Array(N).fill(null);day.times[i]=t===state.times[i]?null:t;return true;
+}
 function scheduleNotion(ms=5000){if(!notionOn()||nState.syncing)return;clearTimeout(nState.timer);nState.timer=setTimeout(()=>notionSync(),ms)}
 async function notionSync(){
   if(!notionOn())return;
@@ -1005,18 +1009,19 @@ async function notionSync(){
     if(!state.nsnap)state.nsnap={};const snap=state.nsnap;
     let pulled=false;const touched=new Set();
     for(let d=0;d<D;d++)for(let i=0;i<N;i++){
-      const key=keyOf(d,i),r=byKey.get(key),s=snap[key];if(!r||!s)continue;
-      const v=rowVal(r);if(sameV(v,s))continue;
-      const day=state.days[d];
+      const key=keyOf(d,i),r=byKey.get(key),s=snap[key];if(!r)continue;
+      const v=rowVal(r),day=state.days[d];
+      if(!s){
+        // First time this device sees the row: Notion's version wins, so a new device never overwrites the plan.
+        const idx=optIndex(i,v.meal);if(idx>=0)day.picks[i]=idx;
+        day.locked[i]=v.locked;pullTime(day,i,key,v.when);pulled=true;continue;
+      }
+      if(sameV(v,s))continue;
       if(v.meal!==s.meal){
-        const want=v.meal.toLowerCase();
-        const idx=SLOTS[i].opts.findIndex(o=>o.skip?(want==="skipped"||want==="skip"):o.n.toLowerCase()===want);
+        const idx=optIndex(i,v.meal);
         if(idx>=0){day.picks[i]=idx;day.locked[i]=true;touched.add(d);pulled=true}
       }else if(v.locked!==s.locked){day.locked[i]=v.locked;touched.add(d);pulled=true}
-      if(v.when!==s.when&&v.when.slice(0,10)===key.slice(0,10)){
-        const t=v.when.slice(11,16);
-        if(/^\d{2}:\d{2}$/.test(t)){if(!day.times)day.times=Array(N).fill(null);day.times[i]=t===state.times[i]?null:t;pulled=true}
-      }
+      if(v.when!==s.when&&pullTime(day,i,key,v.when))pulled=true;
     }
     touched.forEach(d=>rebalanceDay(d));
     const jobs=[];
