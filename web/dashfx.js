@@ -14,13 +14,14 @@ void main(){
   vec2 uv=gl_FragCoord.xy/r;vec2 q=uv*vec2(r.x/r.y,1.)*1.5;float T=t*.045;
   vec2 w=vec2(fbm(q+vec2(0.,T)),fbm(q+vec2(5.2,1.3)-T));
   float f=fbm(q+2.2*w+vec2(T*.6,-T*.3));
-  vec3 col=vec3(.06,.05,.1);
-  col=mix(col,vec3(.40,.30,.92),smoothstep(.3,.8,f)*.85);
-  col=mix(col,vec3(.10,.62,.70),smoothstep(.35,.85,w.x)*.6);
-  col=mix(col,vec3(1.,.48,.30),smoothstep(.45,.9,w.y)*(.35+.5*p));
-  col=mix(col,vec3(.95,.35,.65),smoothstep(.62,.95,f*w.x*1.6)*.45);
-  col*=.78+.35*smoothstep(1.25,.15,length(uv-vec2(.5,.62)));
-  col+=(h(gl_FragCoord.xy+fract(t))-.5)*.035;
+  // monochrome: a single gray value, brightening a little as more calories are eaten
+  float base=mix(.035,.24,f)+smoothstep(.4,.95,w.x)*.05+p*.05;
+  vec3 col=vec3(base);
+  col*=.8+.35*smoothstep(1.25,.15,length(uv-vec2(.5,.62)));
+  // heavy film grain
+  float g1=h(gl_FragCoord.xy+fract(t*53.));
+  float g2=h(gl_FragCoord.xy*1.7+fract(t*97.)+3.1);
+  col+=(g1-.5)*.11+(g2-.5)*.05;
   gl_FragColor=vec4(col,1.);
 }`;
 
@@ -63,7 +64,7 @@ export function createDashFx(hero, { reduceMotion = false } = {}) {
   const rings = [makeRing(1), makeRing(2), makeRing(3)];
   const halo = document.createElement("canvas"); halo.width = halo.height = 32; // soft glow sprite for eaten particles
   { const h = halo.getContext("2d"), gr = h.createRadialGradient(16, 16, 0, 16, 16, 16);
-    gr.addColorStop(0, "rgba(255,244,230,1)"); gr.addColorStop(0.35, "rgba(255,232,210,.35)"); gr.addColorStop(1, "rgba(255,220,200,0)");
+    gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(0.35, "rgba(240,240,240,.35)"); gr.addColorStop(1, "rgba(230,230,230,0)");
     h.fillStyle = gr; h.fillRect(0, 0, 32, 32); }
   let W = 0, H = 0, dpr = 1, running = false, visible = true, raf = 0, last = 0, clock = Math.random() * 100;
 
@@ -120,7 +121,7 @@ export function createDashFx(hero, { reduceMotion = false } = {}) {
       }
       for (const s of g.sparks) {
         const f = 1 - s.life / s.max;
-        ctx.fillStyle = `rgba(255,236,214,${(f * 0.8).toFixed(3)})`;
+        ctx.fillStyle = `rgba(235,235,235,${(f * 0.8).toFixed(3)})`;
         ctx.beginPath(); ctx.arc(g.cx + Math.cos(s.th) * s.r, g.cy + Math.sin(s.th) * s.r, 0.6 + f, 0, 6.2832); ctx.fill();
       }
     }

@@ -86,8 +86,9 @@ main{max-width:960px;margin:0 auto;padding-bottom:calc(112px + env(safe-area-ins
 .icon-btn{width:42px;height:42px;border-radius:50%;background:var(--soft);display:grid;place-items:center;color:var(--ink)}
 .icon-btn .ic{width:19px;height:19px}
 .icon-btn:focus-visible{border-radius:50%}
+.icon-btn.sm{width:34px;height:34px}.icon-btn.sm .ic{width:16px;height:16px}
 .hero{position:relative;overflow:hidden;isolation:isolate;margin:14px 24px 0;border-radius:28px;color:#fff;
-  background:radial-gradient(120% 90% at 20% 10%,#4a3d86 0,transparent 55%),radial-gradient(90% 80% at 90% 90%,#8a4a33 0,transparent 60%),radial-gradient(80% 70% at 80% 10%,#1f5c63 0,transparent 60%),#0c0c10}
+  background:radial-gradient(120% 90% at 20% 10%,#3a3a3a 0,transparent 55%),radial-gradient(90% 80% at 90% 90%,#202020 0,transparent 60%),radial-gradient(80% 70% at 80% 10%,#2c2c2c 0,transparent 60%),#0b0b0b}
 .hero .fx-bg,.hero .fx-pt{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
 .hero .fx-bg{z-index:-2}.hero .fx-pt{z-index:-1}
 .rings{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:22px 12px 18px}
@@ -163,7 +164,8 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .txt:hover{text-decoration-color:var(--ink)}
 .note{padding:18px 24px 0;margin:0;font-size:.8rem;color:var(--muted)}
 
-.seg{display:flex;gap:22px;padding:14px 24px 4px}
+.seg-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 24px 4px}
+.seg{display:flex;gap:22px}
 .seg button{color:var(--muted);font-size:.92rem;padding:6px 0;border-bottom:1.5px solid transparent}
 .seg button[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--ink)}
 .cal-title{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:14px 24px 6px}
@@ -184,8 +186,12 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .hour-hint{padding:0 24px;margin:2px 0 0;font-size:.8rem;color:var(--muted)}
 .sheet-bg{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.38);display:flex;align-items:flex-end;justify-content:center}
 .sheet{background:var(--bg);width:100%;max-width:560px;max-height:88%;overflow-y:auto;overscroll-behavior:contain;border-radius:18px 18px 0 0;
-  padding:22px 24px calc(24px + env(safe-area-inset-bottom,0px))}
+  padding:0 24px calc(24px + env(safe-area-inset-bottom,0px))}
+.sheet>:first-child{padding-top:22px}
+.sh-head{position:sticky;top:0;z-index:2;background:var(--bg)}
 @media (min-width:700px){.sheet-bg{align-items:center}.sheet{border-radius:18px;max-height:84%}}
+#goalsBox{display:flex;flex-direction:column;height:min(600px,86vh);max-height:min(600px,86vh);overflow:hidden}
+#goalsBox .goal-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .sh-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .sh-sl{font-size:.82rem;color:var(--muted);margin:0}
 .sheet h2{margin:4px 0 4px;font-size:1.6rem;font-weight:400;letter-spacing:-0.02em;line-height:1.15}
@@ -386,17 +392,40 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .msg{font-size:.82rem;color:var(--muted)}
 
 .tabbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:15;
-  width:min(440px,calc(100% - 28px));display:flex;padding:5px;border-radius:28px;
+  width:min(500px,calc(100% - 20px));display:flex;padding:5px;border-radius:28px;
   background:rgba(255,255,255,.82);-webkit-backdrop-filter:saturate(1.8) blur(18px);backdrop-filter:saturate(1.8) blur(18px);
   box-shadow:0 10px 30px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.06)}
-.tabbar button{flex:1;height:54px;border-radius:23px;transition:background .2s,color .2s;font-size:.74rem;color:var(--muted);text-align:center;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
-.tabbar button .ic{width:22px;height:22px}
+.tabbar button{flex:1;height:54px;border-radius:23px;transition:background .2s,color .2s;font-size:.68rem;color:var(--muted);text-align:center;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0}
+.tabbar button .ic{width:20px;height:20px}
+@media (min-width:900px){.tabbar button[data-tab="dash"]{display:none}}
 .ic{width:1em;height:1em;flex:none;vertical-align:-0.14em}
 .ic.spin{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
 .with-ic{display:inline-flex;align-items:center;gap:6px}
 .tabbar button[aria-current="page"]{color:var(--ink)}
 .tabbar button[aria-current="page"]{background:var(--ink);color:var(--bg)}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+@media (max-width:639px){
+  .hours{margin:18px 12px 0}
+  .blk{left:42px}
+  .now{left:34px}
+  .hr span{padding-right:4px}
+}
+@media (max-width:899px){
+  #view-pantry{padding:0 0 0}
+  .pan{display:block;position:relative}
+  .pan-side{position:absolute;top:10px;left:12px;right:12px;z-index:6;padding:0;display:flex;flex-direction:column;gap:8px;min-width:0}
+  .pan-search{background:var(--bg);box-shadow:0 8px 22px rgba(0,0,0,.14)}
+  .pan-count{background:var(--bg);border-radius:999px;padding:6px 14px;box-shadow:0 6px 16px rgba(0,0,0,.12);margin:0;min-height:0}
+  .pan-fdet summary{background:var(--bg);box-shadow:0 6px 16px rgba(0,0,0,.12);margin:0}
+  .pan-fdet[open]{background:var(--bg);border-radius:16px;box-shadow:0 10px 26px rgba(0,0,0,.16);padding:8px 10px 2px;margin-top:2px}
+  .pan-stage{padding:0;min-width:0}
+  .pan-canvas{height:var(--pan-h,60vh);min-height:280px;border-radius:0}
+  .pan-list{padding:128px 20px calc(84px + env(safe-area-inset-bottom,0px))}
+  .pan-tools{position:absolute;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:6;margin:0;background:var(--bg);padding:8px;border-radius:20px;box-shadow:0 8px 22px rgba(0,0,0,.14)}
+  .pan-btn.primary{margin-left:auto}
+  #pMax{display:none}
+}
+
 </style>
 </head>
 <body>
@@ -418,11 +447,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 
   <!-- PLAN -->
   <section id="view-plan" class="narrow" aria-label="Plan">
-   <div class="plan-side">
-    <div class="hero" id="hero"><div class="rings" id="rings" aria-live="polite"></div></div>
-    <div class="next" id="nextMeal" hidden></div>
-    <div class="tiles" id="tiles"></div>
-   </div>
+   <div class="plan-side" id="dashMountPlan"></div>
    <div class="plan-main">
     <div id="slots"></div>
 
@@ -431,16 +456,24 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
       <button class="txt" id="copyAll">Copy this day to the whole week</button>
       <button class="txt" id="unlockDay">Unlock day</button>
     </div>
-    <p class="note">Swipe to choose. Lock a meal to hold it; unlocked meals rebalance to hit your goals.</p>
+    <p class="note">Swipe to choose. Lock a meal to hold it; unlocked meals rebalance to hit your goals. Shake your phone to shuffle.</p>
    </div>
+  </section>
+
+  <!-- DASHBOARD (mobile) -->
+  <section id="view-dash" class="narrow" aria-label="Dashboard" hidden>
+    <div id="dashMountTab"></div>
   </section>
 
   <!-- CALENDAR -->
   <section id="view-cal" aria-label="Calendar" hidden>
-    <div class="seg narrow" role="group" aria-label="Calendar view">
-      <button data-cv="hour" aria-pressed="true">Hour</button>
-      <button data-cv="day" aria-pressed="false">Day</button>
-      <button data-cv="week" aria-pressed="false">Week</button>
+    <div class="seg-row narrow" id="calSegRow">
+      <div class="seg" role="group" aria-label="Calendar view">
+        <button data-cv="hour" aria-pressed="true">Hour</button>
+        <button data-cv="day" aria-pressed="false">Day</button>
+        <button data-cv="week" aria-pressed="false">Week</button>
+      </div>
+      <button class="icon-btn sm" id="calRemind" aria-label="Remind me about these meals" title="Remind me"><svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg></button>
     </div>
     <div id="calBody"></div>
   </section>
@@ -485,6 +518,11 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   </section>
 </main>
 
+<div id="dashWrap">
+  <div class="hero" id="hero"><div class="rings" id="rings" aria-live="polite"></div></div>
+  <div class="next" id="nextMeal" hidden></div>
+  <div class="tiles" id="tiles"></div>
+</div>
 <div class="sheet-bg" id="goals" hidden><div class="sheet" id="goalsBox" role="dialog" aria-modal="true" aria-labelledby="goalsTitle">
   <div class="sh-top"><h2 id="goalsTitle" class="g-title">Goals &amp; settings</h2><button class="txt" id="goalsClose">Close</button></div>
   <div class="g-tabs" role="tablist" aria-label="Goals and settings"><button role="tab" id="gtGoals" data-gt="goals" aria-selected="true">Goals</button><button role="tab" id="gtSettings" data-gt="settings" aria-selected="false">Settings</button></div>
@@ -512,15 +550,19 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
           <input class="vh" type="text" name="username" autocomplete="username" value="Gain planner" tabindex="-1" aria-hidden="true" readonly>
           <span class="pass"><input type="password" name="password" id="passcode" autocomplete="current-password" placeholder="Passcode"><button class="txt" id="savePass" type="submit">Save</button></span></form>
         <p class="hint" id="passHint" hidden>Saved on this device. <button class="txt" id="copyLink" type="button">Copy sign-in link</button> Opening that link on any device signs it in, so keep it private. <span class="msg" id="passMsg" role="status"></span></p>
+        <p class="subhead">Shake to shuffle</p>
+        <div class="row"><span>Shake your phone on the Plan or Dashboard tab to shuffle today's unlocked meals</span><button class="btn" id="shakeToggle" type="button" aria-pressed="false">Off</button></div>
         <p class="subhead">This device</p>
         <p class="hint" id="sync" role="status"></p>
         <p class="hint">Goals, default meal times, the week's start date and shopping checkmarks are kept on this device. Meals, your weekly plan, eaten marks and the pantry sync through Notion.</p>
       </div>
 </div></div>
 <div class="sheet-bg" id="sheet" hidden><div class="sheet" id="sheetBox" role="dialog" aria-modal="true" aria-labelledby="shTitle"></div></div>
+<div class="sheet-bg" id="infoBg" hidden><div class="sheet" id="infoBox" role="dialog" aria-modal="true" aria-labelledby="infoTitle"></div></div>
 
 <nav class="tabbar" aria-label="Sections">
   <button data-tab="plan" aria-current="page"><svg class="ic" aria-hidden="true"><use href="#i-plan"/></svg><span>Plan</span></button>
+  <button data-tab="dash"><svg class="ic" aria-hidden="true"><use href="#i-okl"/></svg><span>Dashboard</span></button>
   <button data-tab="cal"><svg class="ic" aria-hidden="true"><use href="#i-cal"/></svg><span>Calendar</span></button>
   <button data-tab="shop"><svg class="ic" aria-hidden="true"><use href="#i-shop"/></svg><span>Shop</span></button>
   <button data-tab="pantry"><svg class="ic" aria-hidden="true"><use href="#i-pantry"/></svg><span>Pantry</span></button>
@@ -723,7 +765,8 @@ if(!state){
       state.days[0]={picks:o.picks.map((v,i)=>clamp(v|0,0,SLOTS[i].opts.length-1)),locked:SLOTS.map((_,i)=>!!(o.locked&&o.locked[i])),times:Array(N).fill(null),done:Array(N).fill(false)}}}}catch(e){}
 }
 let ui={tab:"plan",day:0,cal:"hour",scope:"week"};
-try{const u=JSON.parse(localStorage.getItem(UIKEY)||"null");if(u){ui.tab=["plan","cal","shop","pantry"].includes(u.tab)?u.tab:"plan";ui.pl=["sphere","shelves","list"].includes(u.pl)?u.pl:"sphere";ui.day=clamp(u.day|0,0,D-1);ui.cal=["hour","day","week"].includes(u.cal)?u.cal:"hour";ui.scope=u.scope==="day"?"day":"week"}}catch(e){}
+const TABS=["plan","dash","cal","shop","pantry"];
+try{const u=JSON.parse(localStorage.getItem(UIKEY)||"null");if(u){ui.tab=TABS.includes(u.tab)?u.tab:"plan";ui.pl=["sphere","shelves","list"].includes(u.pl)?u.pl:"sphere";ui.day=clamp(u.day|0,0,D-1);ui.cal=["hour","day","week"].includes(u.cal)?u.cal:"hour";ui.scope=u.scope==="day"?"day":"week"}}catch(e){}
 function saveUi(){try{localStorage.setItem(UIKEY,JSON.stringify(ui))}catch(e){}}
 function syncNames(){state.days.forEach(dy=>{dy.names=dy.picks.map((p,i)=>(SLOTS[i].opts[p]||{}).n||null)})}
 function saveLocal(){syncNames();try{localStorage.setItem(KEY2,JSON.stringify(state))}catch(e){}}
@@ -804,7 +847,7 @@ SLOTS.forEach((s,i)=>{
   s.opts.forEach((o,oi)=>{
     const c=document.createElement("article");c.className="card"+(o.skip?" skip":"");
     c.innerHTML=`<h3>${esc(o.n)}</h3><p class="d">${esc(o.d)}</p>`+(o.skip?"":`<div class="m"><span><b>${fmt(o.k)}</b> kcal</span><span><b>${fmt(o.p)} g</b> protein</span>${o.dv!=null?`<span><b>${o.dv}</b>/10 diversity</span>`:""}</div>`);
-    c.addEventListener("click",()=>{if(state.days[ui.day].picks[i]!==oi)choose(i,oi)});
+    c.addEventListener("click",()=>{if(state.days[ui.day].picks[i]!==oi)choose(i,oi);else if(!o.skip)openDetail(ui.day,i)});
     track.appendChild(c);
   });
   const dots=document.createElement("div");dots.className="dots";
@@ -901,16 +944,47 @@ function renderMeter(){
   const miss=GROUPS.filter(g=>!dn.groups.includes(g));
   const mx=Math.max(t.p,t.c,t.f,1),mac=(l,g)=>`<span>${l}</span><span class="bar"><i style="width:${g/mx*100}%"></i></span><span><b>${fmt(g)}</b> g</span>`;
   $("tiles").innerHTML=`
-    <button class="tile" data-go="meals"><span class="t">Planned</span><span class="v">${fmt(t.k)}<small>kcal</small></span>
+    <button class="tile" data-modal="planned"><span class="t">Planned</span><span class="v">${fmt(t.k)}<small>kcal</small></span>
       <span class="c">${Math.abs(diff)<=100?"On target":diff>0?`${fmt(diff)} over goal`:`${fmt(-diff)} short of goal`}</span></button>
-    <div class="tile"><span class="t">Macros</span><span class="mac">${mac("P",t.p)}${mac("C",t.c)}${mac("F",t.f)}</span></div>
-    ${dn.mask?`<button class="tile" data-go="day"><span class="t">Variety</span><span class="v">${dn.groups.length}<small>of ${GROUPS.length} groups</small></span>
+    <button class="tile" data-modal="macros"><span class="t">Macros</span><span class="mac">${mac("P",t.p)}${mac("C",t.c)}${mac("F",t.f)}</span></button>
+    ${dn.mask?`<button class="tile" data-modal="variety"><span class="t">Variety</span><span class="v">${dn.groups.length}<small>of ${GROUPS.length} groups</small></span>
       <span class="c">${miss.length?`No ${miss.slice(0,2).join(", ").toLowerCase()}`:"Every food group"}</span></button>`:""}
-    ${dn.has?`<button class="tile" data-go="day"><span class="t">Nutrients</span><span class="v">${NUTR.length-low.length}<small>of ${NUTR.length} met</small></span>
+    ${dn.has?`<button class="tile" data-modal="nutrients"><span class="t">Nutrients</span><span class="v">${NUTR.length-low.length}<small>of ${NUTR.length} met</small></span>
       <span class="c">${low.length?`Low: ${low.slice(0,2).join(", ")}`:"All daily values met"}</span></button>`:""}`;
-  $("tiles").querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{
-    if(b.dataset.go==="day"){ui.cal="day";switchTab("cal");window.scrollTo(0,0)}
-    else $("slots").scrollIntoView({behavior:reduceMotion?"auto":"smooth",block:"start"})});
+  $("tiles").querySelectorAll("[data-modal]").forEach(b=>b.onclick=()=>TILE_MODALS[b.dataset.modal]());
+}
+const TILE_MODALS={planned:openPlannedDetail,macros:openMacrosDetail,variety:openVarietyDetail,nutrients:openNutrientsDetail};
+let infoFocus=null;
+function tileModal(title,sub,bodyHtml){
+  infoFocus=document.activeElement;
+  $("infoBox").innerHTML=`<div class="sh-head"><div class="sh-top"><p class="sh-sl">${esc(sub||"")}</p><button class="txt" id="infoClose">Close</button></div><h2 id="infoTitle">${esc(title)}</h2></div>${bodyHtml}`;
+  $("infoBg").hidden=false;document.body.style.overflow="hidden";$("infoClose").onclick=closeInfo;$("infoClose").focus();
+}
+function closeInfo(){$("infoBg").hidden=true;document.body.style.overflow="";if(infoFocus&&document.contains(infoFocus))infoFocus.focus()}
+$("infoBg").addEventListener("click",e=>{if(e.target===$("infoBg"))closeInfo()});
+document.addEventListener("keydown",e=>{
+  if($("infoBg").hidden)return;
+  if(e.key==="Escape"){e.preventDefault();closeInfo();return}
+  if(e.key==="Tab"){const f=[...$("infoBox").querySelectorAll("button,input,a[href]")];if(!f.length)return;const a=f[0],z=f[f.length-1];
+    if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
+});
+function openPlannedDetail(){
+  const d=ui.day,ms=mealsOf(d).filter(m=>!m.o.skip),t=totals(d),diff=t.k-state.target;
+  const rows=ms.map(m=>`<li><span>${esc(m.slot)}: ${esc(m.o.n)}</span><span class="q">${fmt(m.o.k)} kcal</span></li>`).join("");
+  tileModal("Planned calories",longDate(d),`<p class="sh-d">${fmt(t.k)} kcal planned, ${Math.abs(diff)<=100?"on target":diff>0?`${fmt(diff)} over your ${fmt(state.target)} kcal goal`:`${fmt(-diff)} short of your ${fmt(state.target)} kcal goal`}.</p><ul class="ing">${rows}</ul>`);
+}
+function openMacrosDetail(){
+  const d=ui.day,t=totals(d);
+  tileModal("Macros",longDate(d),`<div class="sh-m"><span><b>${fmt(t.p)} g</b> protein</span><span><b>${fmt(t.c)} g</b> carbs</span><span><b>${fmt(t.f)} g</b> fat</span></div><p class="fine">The protein goal is ${state.protein} g a day. There's no set target for carbs or fat; meals are balanced to hit calories and protein.</p>`);
+}
+function openVarietyDetail(){
+  const d=ui.day,dn=dayNutrition(d);
+  const rows=GROUPS.map(g=>`<li><span>${esc(g)}</span><span class="q">${dn.groups.includes(g)?"✓":"—"}</span></li>`).join("");
+  tileModal("Food group variety",longDate(d),`<p class="sh-d">${dn.groups.length} of ${GROUPS.length} food groups today.</p><ul class="ing">${rows}</ul>`);
+}
+function openNutrientsDetail(){
+  const d=ui.day,dn=dayNutrition(d);
+  tileModal("Nutrients",longDate(d),dn.has?`<ul class="nut">${nutRows(dn.sum,100)}</ul><p class="fine">Percent of daily value across today's meals. Faded bars are under 100%.</p>`:`<p class="sh-d">No meals with nutrition data today.</p>`);
 }
 
 /* ---------- reminders in the phone's own Calendar ---------- */
@@ -934,14 +1008,31 @@ function openCalendarFile(events){
   L.push("END:VCALENDAR");const url=URL.createObjectURL(new Blob([L.join("\r\n")],{type:"text/calendar"}));
   const a=document.createElement("a");a.href=url;a.download="meal-reminder.ics";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);
 }
+function openReminderAll(){
+  sheetFocus=document.activeElement;sheetCtx=null;
+  const now=new Date(),nm=now.getHours()*60+now.getMinutes();
+  const upcoming=x=>!x.o.skip&&!x.done&&(!isToday(x._d)||mins(x.time)>nm);
+  let list=[];
+  if(ui.cal==="week"){for(let d=0;d<D;d++)mealsOf(d).forEach(m=>{m._d=d;if(upcoming(m))list.push({d,i:m.i})})}
+  else{const d=ui.day;mealsOf(d).forEach(m=>{m._d=d;if(upcoming(m))list.push({d,i:m.i})})}
+  const scopeTxt=ui.cal==="week"?"this week":isToday(ui.day)?"today":wk(ui.day,"long");
+  $("sheetBox").innerHTML=`
+    <div class="sh-head"><div class="sh-top"><p class="sh-sl">Calendar</p><button class="txt" id="shClose">Close</button></div><h2 id="shTitle">Remind me</h2></div>
+    <p class="sh-d">${list.length} upcoming meal${list.length===1?"":"s"} ${scopeTxt}.</p>
+    <div class="rem-opts">${list.length?`<button class="rem-opt" data-a="0">At meal time</button><button class="rem-opt" data-a="10">10 minutes before</button><button class="rem-opt" data-a="30">30 minutes before</button>`:`<p class="hint">Nothing left to remind you about.</p>`}</div>
+    <p class="hint" style="margin-top:14px">Opens your phone's Calendar with an alert for each meal. Tap Add All to save them.</p>`;
+  $("sheet").hidden=false;document.body.style.overflow="hidden";$("shClose").onclick=closeDetail;$("shClose").focus();
+  $("sheetBox").querySelectorAll(".rem-opt").forEach(b=>b.onclick=()=>{const a=+b.dataset.a;closeDetail();openCalendarFile(list.map(x=>reminderEvent(x.d,x.i,a)))});
+}
+$("calRemind").onclick=openReminderAll;
 function openReminder(d,i){
   sheetFocus=document.activeElement;sheetCtx=null;
   const o=SLOTS[i].opts[state.days[d].picks[i]],t=timeOf(d,i),at=mins(t),now=new Date(),nm=isToday(d)?now.getHours()*60+now.getMinutes():-1;
   const rest=mealsOf(d).filter(m=>!m.o.skip&&!m.done&&m.i!==i&&mins(m.time)>Math.max(nm,-1));
   const opt=(a,label)=>at-a>nm?`<button class="rem-opt" data-a="${a}">${label}<span>${fmtTime(toHM(((at-a)%1440+1440)%1440))}</span></button>`:"";
   $("sheetBox").innerHTML=`
-    <div class="sh-top"><p class="sh-sl">${SLOTS[i].name}, ${shortDate(d)}</p><button class="txt" id="shClose">Close</button></div>
-    <h2 id="shTitle">Remind me</h2><p class="sh-d">${esc(o.n)} at ${fmtTime(t)}</p>
+    <div class="sh-head"><div class="sh-top"><p class="sh-sl">${SLOTS[i].name}, ${shortDate(d)}</p><button class="txt" id="shClose">Close</button></div>
+    <h2 id="shTitle">Remind me</h2></div><p class="sh-d">${esc(o.n)} at ${fmtTime(t)}</p>
     <div class="rem-opts">${opt(0,"At meal time")}${opt(10,"10 minutes before")}${opt(30,"30 minutes before")}</div>
     ${rest.length?`<label class="rem-all"><input type="checkbox" id="remAll"> Also the rest of ${isToday(d)?"today":wk(d,"long")}'s meals (${rest.length})</label>`:""}
     <p class="hint" style="margin-top:14px">Opens your phone's Calendar with an alert set. Tap <b>Add</b> (or <b>Add All</b>) to save it.</p>`;
@@ -987,7 +1078,7 @@ function renderNext(){
   const bl=el.querySelector(".bell");bl.setAttribute("aria-label",`Set a reminder for ${m.slot}`);bl.onclick=()=>openReminder(d,m.i);
   el.classList.add("has-mark");el.hidden=false;
 }
-setInterval(()=>{if(ui.tab==="plan"&&document.visibilityState==="visible"){renderNext();renderMeter()}},30000);
+setInterval(()=>{if((ui.tab==="plan"||ui.tab==="dash")&&document.visibilityState==="visible"){renderNext();renderMeter()}},30000);
 
 /* ---------- calendar ---------- */
 function gotoPlan(d,slot){
@@ -996,7 +1087,7 @@ function gotoPlan(d,slot){
 }
 function renderCal(){
   document.querySelectorAll("[data-cv]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.cv===ui.cal));
-  document.querySelector("#view-cal .seg").classList.toggle("narrow",ui.cal!=="week");
+  document.getElementById("calSegRow").classList.toggle("narrow",ui.cal!=="week");
   $("strip").hidden=!(ui.tab==="plan"||(ui.tab==="cal"&&ui.cal!=="week"));
   const body=$("calBody");body.innerHTML="";
   if(ui.cal==="hour")renderHour(body);else if(ui.cal==="day")renderDay(body);else renderWeek(body);
@@ -1247,8 +1338,8 @@ function renderSheet(){
     :(ING[o.n]||[]).map(([n,q,u,,gf])=>`<li><span>${n}${gf?'<span class="gf">check GF label</span>':""}</span><span class="q">${rq(q,u)}</span></li>`).join("");
   const steps=((o.steps&&o.steps.length)?o.steps:(STEPS[o.n]||[])).map(x=>`<li>${esc(x)}</li>`).join("");
   box.innerHTML=`
-    <div class="sh-top"><p class="sh-sl">${SLOTS[i].name}, ${shortDate(d)}${locked?", locked":""}</p><button class="txt" id="shClose">Close</button></div>
-    <h2 id="shTitle">${o.skip?"Skipped":esc(o.n)}</h2>
+    <div class="sh-head"><div class="sh-top"><p class="sh-sl">${SLOTS[i].name}, ${shortDate(d)}${locked?", locked":""}</p><button class="txt" id="shClose">Close</button></div>
+    <h2 id="shTitle">${o.skip?"Skipped":esc(o.n)}</h2></div>
     <p class="sh-d">${esc(o.d)}</p>
     ${o.skip?"":`<div class="sh-m"><span><b>${fmt(o.k)}</b> kcal</span><span><b>${fmt(o.p)} g</b> protein</span><span><b>${fmt(o.c)} g</b> carbs</span><span><b>${fmt(o.f)} g</b> fat</span></div>`}
     ${mealNutrition(o)}
@@ -1277,12 +1368,15 @@ document.addEventListener("keydown",e=>{
 });
 
 /* ---------- tabs & render ---------- */
-function switchTab(t){ui.tab=t;saveUi();renderAll(false)}
+const wideMQ=window.matchMedia("(min-width:900px)");
+function switchTab(t){if(t==="dash"&&wideMQ.matches)t="plan";ui.tab=t;saveUi();renderAll(false)}
+function placeDash(){const mount=$(wideMQ.matches?"dashMountPlan":"dashMountTab");if($("dashWrap").parentElement!==mount)mount.appendChild($("dashWrap"))}
+(wideMQ.addEventListener?wideMQ.addEventListener("change",()=>{if(ui.tab==="dash"&&wideMQ.matches)switchTab("plan");else placeDash()}):wideMQ.addListener(()=>{if(ui.tab==="dash"&&wideMQ.matches)switchTab("plan");else placeDash()}));
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{if(ui.tab!==b.dataset.tab){switchTab(b.dataset.tab);window.scrollTo(0,0)}});
 function renderHead(){
   let k="",t="";
-  if(ui.tab==="plan"){const d=ui.day,dd=dayDate(d),today=isToday(d),tmr=iso(dd)===iso(new Date(Date.now()+864e5)),yst=iso(dd)===iso(new Date(Date.now()-864e5));
-    k=dd.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"});t=today?"Today":tmr?"Tomorrow":yst?"Yesterday":wk(d,"long")}
+  if(ui.tab==="plan"||ui.tab==="dash"){const d=ui.day,dd=dayDate(d),today=isToday(d),tmr=iso(dd)===iso(new Date(Date.now()+864e5)),yst=iso(dd)===iso(new Date(Date.now()-864e5));
+    k=dd.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"});t=ui.tab==="dash"?"Dashboard":today?"Today":tmr?"Tomorrow":yst?"Yesterday":wk(d,"long")}
   else if(ui.tab==="cal"){k=`${dayDate(0).toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${dayDate(D-1).toLocaleDateString("en-US",{month:"short",day:"numeric"})}`;t="Calendar"}
   else if(ui.tab==="shop"){k=ui.scope==="day"?shortDate(ui.day):"Whole week";t="Shopping list"}
   else{k="Fridge, freezer & pantry";t="Pantry"}
@@ -1291,10 +1385,10 @@ function renderHead(){
 function renderAll(smooth=true){
   renderHead();
   document.querySelectorAll("[data-tab]").forEach(b=>b.dataset.tab===ui.tab?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current"));
-  $("view-plan").hidden=ui.tab!=="plan";$("view-cal").hidden=ui.tab!=="cal";$("view-shop").hidden=ui.tab!=="shop";$("view-pantry").hidden=ui.tab!=="pantry";
-  $("strip").hidden=ui.tab==="pantry";renderStrip();
+  $("view-plan").hidden=ui.tab!=="plan";$("view-dash").hidden=ui.tab!=="dash";$("view-cal").hidden=ui.tab!=="cal";$("view-shop").hidden=ui.tab!=="shop";$("view-pantry").hidden=ui.tab!=="pantry";
+  $("strip").hidden=ui.tab==="pantry";renderStrip();placeDash();
   if(ui.tab==="pantry")openPantry();else if(P3)P3.stop();
-  if(ui.tab==="plan"){requestAnimationFrame(()=>updatePlan(-1,smooth))}
+  if(ui.tab==="plan"||ui.tab==="dash"){requestAnimationFrame(()=>updatePlan(-1,smooth))}
   if(ui.tab==="cal")renderCal();
   if(ui.tab==="shop")renderShop();
   $("shopPdf").hidden=!canPdf();
@@ -1680,8 +1774,15 @@ function ensureScene(){
   }).catch(e=>{p3Failed=true;$("pMsg").textContent="3D view isn't available on this device, so here's the list.";renderPantry();return null});
   return p3Loading;
 }
+function sizePantryMobile(){
+  if(window.matchMedia("(min-width:900px)").matches)return;
+  const head=document.querySelector(".app-head"),bar=document.querySelector(".tabbar");
+  const h=Math.round(window.innerHeight-(head?head.getBoundingClientRect().height:0)-(bar?bar.getBoundingClientRect().height+16:0));
+  document.documentElement.style.setProperty("--pan-h",Math.max(280,h)+"px");
+  if(P3)requestAnimationFrame(()=>P3.resize());
+}
 function openPantry(){
-  renderPantry();pantryLoad(false);
+  renderPantry();pantryLoad(false);sizePantryMobile();
   if(ui.pl!=="list")ensureScene().then(s=>{if(s&&ui.tab==="pantry"&&ui.pl!=="list"){s.resize();s.start()}});
 }
 document.querySelectorAll("[data-pl]").forEach(b=>b.onclick=()=>{
@@ -1701,8 +1802,8 @@ function openPantryItem(it){
   const v=it?{...it}:{name:"",location:"Fridge",category:"Produce",quantity:1,unit:"",expires:""};
   const opt=(list,sel)=>list.map(o=>`<option${o===sel?" selected":""}>${esc(o)}</option>`).join("");
   $("sheetBox").innerHTML=`
-    <div class="sh-top"><p class="sh-sl">${isNew?"New item":esc(v.location)+", "+esc(v.category)}</p><button class="txt" id="shClose">Close</button></div>
-    <h2 id="shTitle">${isNew?"Add to pantry":esc(v.name)}</h2>
+    <div class="sh-head"><div class="sh-top"><p class="sh-sl">${isNew?"New item":esc(v.location)+", "+esc(v.category)}</p><button class="txt" id="shClose">Close</button></div>
+    <h2 id="shTitle">${isNew?"Add to pantry":esc(v.name)}</h2></div>
     ${isNew?"":`<p class="sh-d">${esc([qtyLabel(v),expLabel(v)].filter(Boolean).join(" · "))||"&nbsp;"}</p>`}
     <div class="pf">
       <label for="pfName">Name</label><input id="pfName" type="text" maxlength="100" value="${esc(v.name)}" placeholder="e.g. Greek yogurt">
@@ -1826,13 +1927,37 @@ $("toPantry").onclick=()=>{
 };
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&ui.tab==="pantry")pantryLoad(false);if(P3){document.visibilityState==="visible"&&ui.tab==="pantry"&&ui.pl!=="list"?P3.start():P3.stop()}});
 
+/* ---------- shake to shuffle ---------- */
+const SHAKEKEY="gf-gain-planner-shake";
+let shakeOn=false,shakeLastMag=null,shakeLastAt=0;
+function setShakeUI(){const b=$("shakeToggle");if(!b)return;b.setAttribute("aria-pressed",shakeOn);b.textContent=shakeOn?"On":"Off"}
+function handleShake(e){
+  const a=e.accelerationIncludingGravity||e.acceleration;if(!a||a.x==null)return;
+  const mag=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2),now=Date.now();
+  if(shakeLastMag!=null&&Math.abs(mag-shakeLastMag)>18&&now-shakeLastAt>1500){
+    shakeLastAt=now;
+    if(ui.tab==="plan"||ui.tab==="dash"){rebalanceDay(ui.day,-1,true);updatePlan();save();
+      if(navigator.vibrate)try{navigator.vibrate([15,40,15])}catch(_){}}
+  }
+  shakeLastMag=mag;
+}
+function startShake(){window.addEventListener("devicemotion",handleShake);shakeOn=true;try{localStorage.setItem(SHAKEKEY,"1")}catch(_){}setShakeUI()}
+function stopShake(){window.removeEventListener("devicemotion",handleShake);shakeOn=false;try{localStorage.removeItem(SHAKEKEY)}catch(_){}setShakeUI()}
+function enableShake(){
+  if(typeof DeviceMotionEvent!=="undefined"&&typeof DeviceMotionEvent.requestPermission==="function"){
+    DeviceMotionEvent.requestPermission().then(r=>{if(r==="granted")startShake()}).catch(()=>{});
+  }else if("ondevicemotion" in window){startShake()}
+}
+if($("shakeToggle"))$("shakeToggle").onclick=()=>{shakeOn?stopShake():enableShake()};
+try{if(localStorage.getItem(SHAKEKEY)==="1"&&!(typeof DeviceMotionEvent!=="undefined"&&typeof DeviceMotionEvent.requestPermission==="function"))startShake();else setShakeUI()}catch(_){setShakeUI()}
+
 /* ---------- local save ---------- */
 function setSync(t){$("sync").textContent=t}
 function scheduleRemote(){}
 setSync(API_URL?"":"Saved on this device");
 
 renderSettings();renderAll(false);
-let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(()=>{if(ui.tab==="plan")updatePlan(-1,false)},150)});
+let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(()=>{if(ui.tab==="plan"||ui.tab==="dash")updatePlan(-1,false);if(ui.tab==="pantry")sizePantryMobile()},150)});
 </script>
 </body>
 </html>

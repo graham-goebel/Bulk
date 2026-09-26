@@ -81,7 +81,11 @@ Only meals you mark as eaten count toward the day's progress. Tap **Mark eaten**
 
 ## Meal reminders
 
-Tap the bell on the next-meal card, or **Remind me** in a meal's sheet, and choose when to be alerted (at meal time, 10 or 30 minutes before). You can include the rest of the day's meals too. The app opens a calendar invite with the alert already set; tap **Add** (or **Add All**) and your phone's Calendar handles the reminder, even when the app is closed. The invite is built by the Worker's `/ics` endpoint, which needs no passcode because it only turns the meal name, time and calories it's given into a calendar file.
+Tap the bell on the next-meal card, or **Remind me** in a meal's sheet, and choose when to be alerted (at meal time, 10 or 30 minutes before). You can include the rest of the day's meals too. On the Calendar tab, the bell next to Hour/Day/Week does the same for every upcoming meal in view (the day, or the whole week). The app opens a calendar invite with the alert already set; tap **Add** (or **Add All**) and your phone's Calendar handles the reminder, even when the app is closed. The invite is built by the Worker's `/ics` endpoint, which needs no passcode because it only turns the meal name, time and calories it's given into a calendar file.
+
+## Shake to shuffle
+
+Turn on **Shake to shuffle** in Goals & settings → Settings, and shaking your phone on the Plan or Dashboard tab shuffles that day's unlocked meals, the same as tapping Shuffle unlocked meals. iOS asks for motion permission the first time you turn it on.
 
 ## What syncs and what stays on the device
 
