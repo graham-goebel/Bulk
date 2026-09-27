@@ -85,7 +85,19 @@ If you skip a meal, choose **I skipped it** from its **⋯** menu or in its shee
 
 Below the rings on the Dashboard, a card shows the whole day from the first meal to the last, with a dot for each meal, a mark for the current time, and a status: on track, behind by some calories, goal met, or short at the end of the day. A meal counts toward "behind" only once it's an hour past its start time, so you aren't flagged the moment a meal begins.
 
-The Dashboard opens on one card: a greeting with the day's status, the next meal said as a sentence ("Lunch starts in 44 minutes." or "Lunch started 1 hour and 36 minutes ago."), **Mark eaten** and **Skip**, then how the day is going with each meal on a timeline. On a phone it fills most of the screen, and the rest of the dashboard slides up over it like a drawer: a line each on the plan, protein, food groups and nutrients, then the day's nutrition as percent of daily value. Between meals, and once the day's meals are done, the card shows an orb instead: a 3D cloud of points on a turning sphere, after the particles shape in Dovetail's Thinking component, drawn from what you've eaten today. More calories put more points on it, each food group you've eaten paints a patch of the globe in its colour, and more groups and meals make it turn faster and twist and ripple more. A day with little eaten is a sparse, grey, slowly breathing sphere.
+The Dashboard opens on one card: a greeting with the day's status, the next meal said as a sentence ("Lunch starts in 44 minutes." or "Lunch started 1 hour and 36 minutes ago."), **Mark eaten** and **Skip**, then how the day is going with each meal on a timeline. On a phone it fills most of the screen, and the rest of the dashboard slides up over it like a drawer: a line each on the plan, protein, food groups and nutrients, then the day's nutrition as percent of daily value. Between meals, and once the day's meals are done, the card shows an orb instead: a living picture of how varied and steady your eating is, loosely modelled on a gut microbiome. It's a 3D cloud of points on a turning sphere, after the particles shape in Dovetail's Thinking component.
+
+- **Points:** more calories eaten today put more points on the surface.
+- **Colonies:** every different food you've eaten this week (each ingredient, add-on or logged meal) is a colony, tinted by its food group.
+- **Fiber** pulls the points together into their colonies, which slowly swell and part. With little fiber they scatter and drift.
+- **Fermented foods** (yogurt, kefir, cottage cheese, kimchi, miso and the like) send bright ripples across it for a few hours.
+- **Pulse:** meals eaten on schedule keep a steady heartbeat; missed or unmarked meals make it stutter, and a long gap since your last meal slows everything down.
+- **Threads** join nearby points from different food groups.
+- **Moons:** one per tracked nutrient, bright once today's meals reach its daily value.
+- **Inner layers:** earlier days this week turn inside as fainter shells.
+- A food group appearing for the first time today blooms out from the centre, and the sentence under the orb says so.
+
+Tap a patch to see which food it is, or **What's in it** for a line on each of these. It's a picture of variety and habits, not a measure of your microbiome.
 
 Tap any tile on the Dashboard for its detail with a chart: calories through the day against your goal (or by day over 3 or 7 days), the energy split of protein, carbs and fat with each meal's breakdown, which food groups each meal covers, and each nutrient as a percent of its daily value. Outlines mean planned or not yet met; filled means eaten or met.
 
