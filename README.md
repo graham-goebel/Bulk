@@ -91,9 +91,19 @@ The next-meal card says a meal "is now" for five minutes after it starts, then h
 
 The calendar button next to settings cycles every tab between 1 day, 3 days and the whole week; the number on it shows which. 3 days starts at the selected day. The Calendar and Shopping list switches follow the same setting. On Plan, 3 days and the week show each day as a list (tap a day's heading to go back to that one day). On the Dashboard, the rings add up the days against your goal for all of them, the tiles show daily averages, and the status card turns into a column per day, eaten over planned, with the goal as a dashed line.
 
+## Adding meals and pantry items
+
+**A meal of your own.** Tap **Add a meal** at the bottom of the Plan tab, or **+** next to the date on the Calendar, to add anything you eat outside the six planned meals: a café burrito, a snack at a friend's. Give it a name, a time and its calories and macros, or tap **Fill in from your pantry** to take them from an item's nutrition label (choose how many servings). Tick **I've eaten this** if you already have. Added meals show in the Plan list, the Calendar and the Dashboard, count toward the day's totals, and the day's unlocked meals rebalance around them so the day still reaches your goals. Tap one to edit it; its **⋯** menu marks it eaten, sets a reminder or removes it. From a pantry item's **⋯** menu, **Log as a meal** starts one from that item.
+
+**Add-ons.** To add a pantry item to one of the planned meals (a yogurt with lunch, a banana with breakfast), open the meal and tap **Add from pantry** under **Add-ons**, or use **Add from pantry** in the meal's **⋯** menu, or **Add to a meal** in a pantry item's **⋯** menu. Pick the servings. Add-ons count toward that meal and the day, show under the meal's cards, and are marked eaten with the meal.
+
+**Linking pantry items to recipes.** Open a recipe and tap **Link a pantry item** under **In your pantry**, or open a pantry item and choose recipes under **Recipes**. The recipe then lists the linked items with how much you have. Links are stored in the Pantry database's **Recipes** column, one recipe name per line.
+
+Added meals are rows in Meal Plan in the **Custom** slot, and add-ons are kept in each planned row's **Extras** column (as JSON the app reads, so edit them in the app rather than in Notion). Both sync across your devices.
+
 ## Meal reminders
 
-Tap the bell on the next-meal card, or **Remind me** in a meal's sheet, and choose when to be alerted (at meal time, 10 or 30 minutes before). You can include the rest of the day's meals too. On the Calendar tab, the bell next to Day/3 days/Week does the same for every upcoming meal in view (the day, the 3 days, or the whole week). The app opens a calendar invite with the alert already set; tap **Add** (or **Add All**) and your phone's Calendar handles the reminder, even when the app is closed. The invite is built by the Worker's `/ics` endpoint, which needs no passcode because it only turns the meal name, time and calories it's given into a calendar file.
+Tap the bell on the next-meal card, or **Remind me** in a meal's sheet, and choose when to be alerted (at meal time, 10 or 30 minutes before). You can include the rest of the day's meals too. On the Calendar tab, the bell next to the date does the same for every upcoming meal in view (the day, the 3 days, or the whole week). The app opens a calendar invite with the alert already set; tap **Add** (or **Add All**) and your phone's Calendar handles the reminder, even when the app is closed. The invite is built by the Worker's `/ics` endpoint, which needs no passcode because it only turns the meal name, time and calories it's given into a calendar file.
 
 ## Shake to shuffle
 
@@ -104,6 +114,7 @@ Turn on **Shake to shuffle** in Goals & settings → Settings, and shaking your 
 Stored in Notion and shared across your devices:
 - the meal library (add, edit or hide meals in the Meals database)
 - your weekly plan: which meal is in each slot, its time, and whether it's locked
+- meals you add yourself, pantry add-ons, and which recipes each pantry item is linked to
 
 Kept on each device:
 - calorie and protein goals, default meal times, and the week's start date

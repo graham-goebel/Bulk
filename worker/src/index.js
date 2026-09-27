@@ -9,7 +9,10 @@
 //        Each row's "time" is the wall-clock time (HH:MM) it was planned for, so devices in
 //        different time zones agree; "when" is the same moment as a full date for Notion's calendar.
 //   POST /plan/batch         -> { ok: [keys], failed: [{key, message}] }
-//        body: { creates: [item], updates: [item + id] }  (max 20 items per call)
+//        body: { creates: [item], updates: [item + id], deletes: [{id, key}] }  (max 20 in total)
+//        Planned meals are keyed "YYYY-MM-DD <slot number>"; meals added by hand are "YYYY-MM-DD c<id>"
+//        in the Custom slot, and are the only rows that can be deleted. "extras" is JSON the app keeps
+//        on the row: pantry add-ons for a planned meal, or a custom meal's macros.
 //   GET  /pantry             -> { items: [...] }        what's in the fridge, freezer and pantry
 //   POST /pantry/batch       -> { created: [{ref, id, url}], ok: [ids], failed: [{ref, message}] }
 //        body: { creates: [item + ref], updates: [item + id], deletes: [id] }  (max 20 in total)
@@ -156,6 +159,8 @@ async function queryAll(env, dsId, query) {
 }
 
 const text = (p) => (p && (p.title || p.rich_text) ? (p.title || p.rich_text).map((t) => t.plain_text).join("") : "");
+// Notion caps each rich-text run at 2,000 characters, so longer text goes in as several runs.
+const richText = (s) => { const out = []; for (let i = 0; i < s.length && out.length < 10; i += 2000) out.push({ text: { content: s.slice(i, i + 2000) } }); return out; };
 const num = (p) => (p && typeof p.number === "number" ? p.number : 0);
 const numOrNull = (p) => (p && typeof p.number === "number" ? p.number : null);
 
@@ -215,6 +220,7 @@ async function listPlan(env, from) {
         locked: !!(pr["Locked"] && pr["Locked"].checkbox),
         eaten: !!(pr["Eaten"] && pr["Eaten"].checkbox),
         skipped: !!(pr["Skipped"] && pr["Skipped"].checkbox),
+        extras: text(pr["Extras"]),
       };
     })
     .filter((r) => r.key);
@@ -232,6 +238,7 @@ function toProperties(item) {
     Skipped: { checkbox: item.skipped },
     Key: { rich_text: [{ text: { content: item.key } }] },
     Time: { rich_text: item.time ? [{ text: { content: item.time } }] : [] },
+    Extras: { rich_text: richText(item.extras) },
   };
 }
 
@@ -248,8 +255,12 @@ function cleanItem(raw, needId) {
     eaten: !!raw.eaten,
     skipped: !!raw.skipped && !raw.eaten,
     time: /^\d{2}:\d{2}$/.test(String(raw.time || "")) ? String(raw.time) : "",
+    // JSON the app keeps with the row: pantry add-ons for a planned meal, or a custom meal's macros
+    extras: typeof raw.extras === "string" ? raw.extras.slice(0, 6000) : "",
   };
-  if (!/^\d{4}-\d{2}-\d{2} \d$/.test(item.key) || !item.meal || !SLOTS.includes(item.slot)) return null;
+  // Planned meals are keyed "date slot-number"; meals added by hand are "date c<id>" in the Custom slot.
+  const custom = /^\d{4}-\d{2}-\d{2} c[a-z0-9]{4,20}$/.test(item.key);
+  if (!(custom ? item.slot === "Custom" : /^\d{4}-\d{2}-\d{2} \d$/.test(item.key) && SLOTS.includes(item.slot)) || !item.meal) return null;
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?([+-]\d{2}:\d{2}|Z)$/.test(item.when)) return null;
   if (needId) {
     item.id = String(raw.id || "").replace(/-/g, "");
@@ -261,12 +272,19 @@ function cleanItem(raw, needId) {
 async function writePlan(env, body) {
   const creates = Array.isArray(body.creates) ? body.creates : [];
   const updates = Array.isArray(body.updates) ? body.updates : [];
-  if (creates.length + updates.length > MAX_ITEMS) {
+  const deletes = Array.isArray(body.deletes) ? body.deletes : [];
+  if (creates.length + updates.length + deletes.length > MAX_ITEMS) {
     return { ok: [], failed: [{ key: "", message: `Send at most ${MAX_ITEMS} changes per request.` }] };
   }
+  // Only custom meals are ever deleted; planned slots are kept and changed instead.
+  const delItem = (d) => {
+    const id = String((d && d.id) || "").replace(/-/g, ""), key = String((d && d.key) || "");
+    return /^[0-9a-f]{32}$/i.test(id) && /^\d{4}-\d{2}-\d{2} c[a-z0-9]{4,20}$/.test(key) ? { id, key } : null;
+  };
   const jobs = [
     ...creates.map((c) => ({ kind: "create", item: cleanItem(c, false), key: c && c.key })),
     ...updates.map((u) => ({ kind: "update", item: cleanItem(u, true), key: u && u.key })),
+    ...deletes.map((d) => ({ kind: "delete", item: delItem(d), key: d && d.key })),
   ];
   const ok = [], failed = [];
   let ds = null;
@@ -281,6 +299,8 @@ async function writePlan(env, body) {
       try {
         if (job.kind === "create") {
           await notion(env, "/pages", "POST", { parent: { type: "data_source_id", data_source_id: ds }, properties: toProperties(job.item) });
+        } else if (job.kind === "delete") {
+          await notion(env, `/pages/${job.item.id}`, "PATCH", { in_trash: true });
         } else {
           await notion(env, `/pages/${job.item.id}`, "PATCH", { properties: toProperties(job.item) });
         }
@@ -339,6 +359,7 @@ async function listPantry(env) {
         link: (pr["Link"] && pr["Link"].url) || "",
         image: (pr["Image"] && pr["Image"].url) || "",
         serving: text(pr["Serving size"]).trim(),
+        recipes: text(pr["Recipes"]).split("\n").map((x) => x.trim()).filter(Boolean),
         nutrition: Object.fromEntries(Object.entries(PANTRY_NUTRITION).map(([k, col]) => [k, numOrNull(pr[col])])),
       };
     })
@@ -359,6 +380,7 @@ function cleanPantry(raw, needId) {
     link: webUrl(raw.link),
     image: webUrl(raw.image),
     serving: String(raw.serving || "").trim().slice(0, 60),
+    recipes: (Array.isArray(raw.recipes) ? raw.recipes : []).map((x) => String(x || "").replace(/\s+/g, " ").trim().slice(0, 200)).filter(Boolean).slice(0, 40),
     nutrition: Object.fromEntries(Object.keys(PANTRY_NUTRITION).map((k) => {
       const v = raw.nutrition && raw.nutrition[k];
       const n = v === null || v === undefined || v === "" ? null : +v;
@@ -384,6 +406,7 @@ function pantryProps(it) {
     Link: { url: it.link || null },
     Image: { url: it.image || null },
     "Serving size": { rich_text: it.serving ? [{ text: { content: it.serving } }] : [] },
+    Recipes: { rich_text: richText(it.recipes.join("\n")) },
     ...Object.fromEntries(Object.entries(PANTRY_NUTRITION).map(([k, col]) => [col, { number: it.nutrition[k] }])),
   };
 }
