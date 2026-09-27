@@ -1602,10 +1602,11 @@ function timerText(sec){
   const m=Math.floor(-sec/60);return m<1?"just now":spoken(m)+" ago";
 }
 /* ---------- the day's orb ----------
-   Between meals the dashboard card shows an orb: a round matrix of dots, after the matrix in Dovetail's
-   Thinking loader. It's drawn from what's been eaten today. More food makes the matrix denser, each food
-   group eaten adds its colour, and the more groups and meals, the faster and busier the waves across it.
-   A day with little eaten is a small, grey, slow orb. */
+   Between meals the dashboard card shows an orb drawn from what's been eaten today: a cloud of points on a
+   sphere turning in perspective, after the particles shape in Dovetail's Thinking component. More calories
+   put more points on it, each food group eaten paints a patch of the globe in its colour, and the more groups
+   and meals, the faster it turns and the more its surface twists and ripples. A day with little eaten is a
+   sparse, grey, slowly breathing sphere. */
 const GROUP_HEX=["#e0584f","#1f8fc4","#f0b400","#8fb3e6","#a5703f","#ec8d2f","#2fae68","#e2487e","#7a62d6"]; // same order as GROUPS
 function orbStats(d){
   const ms=mealsOf(d).filter(m=>m.done&&!m.o.skip),ek=ms.reduce((a,m)=>a+m.o.k,0);let mask=0;ms.forEach(m=>{mask|=m.o.gm||0});
@@ -1613,30 +1614,36 @@ function orbStats(d){
   return{meals:ms.length,ek,groups,fill,colors:GROUPS.map((_,j)=>mask&(1<<j)?GROUP_HEX[j]:null).filter(Boolean),
     energy:clamp(groups.length/GROUPS.length*.7+Math.min(1,ms.length/6)*.3,0,1)};
 }
+function fibSphere(n){const pts=[],g=Math.PI*(3-Math.sqrt(5));for(let i=0;i<n;i++){const y=1-(i+.5)/n*2,r=Math.sqrt(1-y*y);pts.push([Math.cos(i*g)*r,y,Math.sin(i*g)*r])}return pts}
+const hexRgb=h=>[1,3,5].map(k=>parseInt(h.slice(k,k+2),16));
 const ORB=(()=>{
   const cv=document.createElement("canvas");cv.className="orb-cv";cv.setAttribute("aria-hidden","true");const ctx=cv.getContext("2d");
-  let st={fill:0,energy:0,colors:[]},cur={fill:0,energy:0},t=0,last=0,raf=0,size=0,dpr=1;
+  let st={fill:0,energy:0,colors:[]},cur={fill:0,energy:0},t=0,yaw=0,last=0,raf=0,size=0,dpr=1,pts=[],pn=0,tint=[],ckey="";
   const alive=()=>cv.isConnected&&cv.offsetParent!==null&&document.visibilityState==="visible";
   function measure(){const r=cv.getBoundingClientRect();dpr=Math.min(2,window.devicePixelRatio||1);const s=Math.round(r.width);if(s&&s!==size){size=s;cv.width=cv.height=Math.round(s*dpr)}}
+  // each point takes the colour of the nearest of the eaten groups' patches, spread evenly over the globe
+  function paint(){
+    const n=90+30*Math.round(17*cur.fill);const key=n+"|"+st.colors.join();if(key===ckey)return;ckey=key;
+    pts=fibSphere(n);pn=n;const cols=(st.colors.length?st.colors:["#8a8a8a"]).map(hexRgb),centres=fibSphere(Math.max(cols.length,1));
+    tint=pts.map(p=>{let b=0,bd=-9;centres.forEach((c,j)=>{const w=c[0]*p[0]+c[1]*p[1]+c[2]*p[2]+.35*Math.sin(p[0]*9+p[2]*7+j);if(w>bd){bd=w;b=j}});return cols[b%cols.length]});
+  }
   function draw(){
-    measure();if(!size)return;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,size,size);
-    const n=Math.round(11+16*cur.fill),gap=size/n,R=size/2,e=cur.energy,cols=st.colors.length?st.colors:["#9a9a9a"];
-    const waves=1+Math.round(e*3),amp=.35+.45*e;
-    for(let gy=0;gy<n;gy++)for(let gx=0;gx<n;gx++){
-      const x=(gx+.5)/n*2-1,y=(gy+.5)/n*2-1,r2=x*x+y*y;if(r2>1)continue;
-      const z=Math.sqrt(1-r2);let v=0;
-      for(let k=0;k<waves;k++){const a=k*2.1+t*.07*(k+1);v+=Math.sin((x*Math.cos(a)+y*Math.sin(a))*(2.2+k*1.3)/Math.max(.35,z*.6+.4)+t*(.8+k*.45))}
-      v/=waves;
-      const c=Math.sin(x*1.7+y*1.3+t*.35)+Math.sin(y*2.3-x*.9-t*.27),ci=Math.floor(((c+2)/4)*cols.length*.999+cols.length*9)%cols.length;
-      const rad=gap*.36*(.45+.55*z)*(1-amp*.5+amp*.5*(v+1));
-      ctx.globalAlpha=.25+.75*z*(.55+.45*(v+1)/2);ctx.fillStyle=cols[ci];
-      ctx.beginPath();ctx.arc(R+x*(R-gap*.5),R+y*(R-gap*.5),Math.max(.6,rad),0,6.2832);ctx.fill();
-    }
-    ctx.globalAlpha=1;
+    measure();if(!size)return;paint();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,size,size);
+    const e=cur.energy,R=size/2*.8,c=size/2,pitch=.38,cp=Math.cos(pitch),sp=Math.sin(pitch),cy=Math.cos(yaw),sy=Math.sin(yaw);
+    const breathe=.5+.5*Math.sin(t*1.2),twist=(.15+1.6*e)*Math.sin(t*.9),rip=.02+.1*e,out=[];
+    for(let i=0;i<pn;i++){let[x,y,z]=pts[i];
+      const tw=twist*y,x0=x;x=x0*Math.cos(tw)-z*Math.sin(tw);z=x0*Math.sin(tw)+z*Math.cos(tw); // the surface twists about the axis
+      const rr=.86+.05*breathe+rip*Math.sin(Math.asin(y)*(3+3*e)-t*2.4+i%7*.3);x*=rr;y*=rr;z*=rr;
+      const x1=x*cy+z*sy,z1=-x*sy+z*cy,y2=y*cp-z1*sp,z2=y*sp+z1*cp,s=1/(1-.24*z2);
+      out.push([c+x1*R*s,c+y2*R*s,z2,tint[i]])}
+    out.sort((a,b)=>a[2]-b[2]);
+    const base=Math.max(.9,size/95);
+    for(const[x,y,z,col]of out){const d=clamp((z+1)/2,0,1);
+      ctx.fillStyle=`rgba(${col[0]},${col[1]},${col[2]},${(.14+.86*d*d).toFixed(3)})`;ctx.beginPath();ctx.arc(x,y,base*(.45+1.05*d),0,6.2832);ctx.fill()}
   }
   function frame(now){raf=0;if(!alive())return;const dt=Math.min(.1,(now-(last||now))/1000);last=now;
     const k=1-Math.exp(-dt*1.5);cur.fill+=(st.fill-cur.fill)*k;cur.energy+=(st.energy-cur.energy)*k;
-    t+=dt*(.25+1.35*cur.energy);draw();raf=requestAnimationFrame(frame)}
+    t+=dt*(.5+1.2*cur.energy);yaw+=dt*(.12+.7*cur.energy);draw();raf=requestAnimationFrame(frame)}
   function start(){if(reduceMotion){cur={...st};requestAnimationFrame(draw);return}if(!raf){last=0;raf=requestAnimationFrame(frame)}}
   document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")start()});
   window.addEventListener("resize",()=>{size=0;if(reduceMotion)draw()});
