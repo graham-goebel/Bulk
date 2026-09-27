@@ -401,37 +401,44 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .wb:hover{box-shadow:0 2px 10px rgba(0,0,0,.1)}
 .wg-now{position:absolute;left:0;right:0;border-top:1.5px solid var(--ink);z-index:2}
 .wg-hint{padding:0 24px;margin:6px 0 0;font-size:.8rem;color:var(--muted)}
-/* next meal: no card. Urgency colours the clock, the timer's accent and the progress line: green while
-   there's time, yellow when it's close or just started, red once it's an hour overdue. */
+/* next meal: a clock, then the meal. Urgency colours only a dot, the state word and the progress hairline:
+   green while there's time, yellow when it's close or just started, red once it's an hour overdue. */
 .next{--a1:#1baf7a;position:relative;display:flex;flex-direction:column;width:100%;margin:10px 0 0;padding:14px 24px 16px;text-align:left;
   color:var(--ink);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .next.u-soon{--a1:#e0a100}
 .next.u-late{--a1:#d6482f}
-.next .top .ic{color:var(--a1)}
 .nx-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.next .timer{display:block;font-size:2.4rem;font-weight:300;letter-spacing:-0.04em;line-height:1;margin:6px 0 6px;font-variant-numeric:tabular-nums}
-.nx-act{display:none;margin-top:14px}
-.nx-eat{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:var(--bg);border-color:var(--ink);padding:10px 18px}
-.nx-eat .ic{width:16px;height:16px}
+.nx-when{display:flex;align-items:center;gap:8px;min-width:0;font-size:.85rem;color:var(--muted)}
+.nx-when .dot{flex:none;width:7px;height:7px;border-radius:50%;background:var(--a1)}
+.next .nm-more{flex:none;width:36px;height:36px;margin:-8px -10px -8px 0;background:none;box-shadow:none;color:var(--muted)}
+.next .nm-more:hover,.next .nm-more[aria-expanded="true"]{background:var(--soft);color:var(--ink)}
+.nx-clock{margin-top:10px}
+.next .timer{display:block;font-size:2.2rem;font-weight:300;letter-spacing:-0.035em;line-height:1;font-variant-numeric:tabular-nums}
+.nx-lbl{display:block;margin-top:6px;font-size:.82rem;color:var(--muted)}.nx-lbl b{font-weight:500;color:var(--a1)}
+.next .prog{display:block;position:relative;height:1px;background:var(--line);margin:16px 0 14px}
+.next .prog i{position:absolute;left:0;top:-.5px;height:2px;background:var(--a1)}
+.next .main{display:block;min-width:0;text-align:left;color:inherit}
+.nx-meal{display:block;font-size:1.05rem;font-weight:500;letter-spacing:-0.01em;line-height:1.3}
+.next .sm{display:block;margin-top:3px;font-size:.85rem;color:var(--muted)}
+.nx-act{display:flex;gap:22px;margin-top:10px}
 .dash-head{display:none}
+.hero{display:none} /* the rings are hidden for now */
 @media (max-width:899px){
   #view-dash .dash-head{display:flex;padding-top:10px}
-  /* the next meal fills the screen below the headings; it sticks under the header while the drawer rises */
-  #view-dash .next{position:sticky;top:56px;z-index:0;height:max(360px,calc(100svh - 390px));margin:0;padding:18px 24px 22px;border:0;justify-content:center}
-  #view-dash .next>*{transform:translateY(calc(var(--dp,0) * -48px)) scale(calc(1 - var(--dp,0) * .06));opacity:calc(1 - var(--dp,0) * .9);transform-origin:50% 0}
-  #view-dash .nx-top{position:absolute;top:18px;left:24px;right:24px}
-  #view-dash .next .big{font-size:1.5rem;margin:0}
-  #view-dash .next .timer{font-size:clamp(4.2rem,22vw,6.5rem);margin:6px 0 10px;letter-spacing:-0.05em}
-  #view-dash .next .sm{font-size:.95rem;white-space:normal}
-  #view-dash .next .prog{margin-top:22px;height:3px}
-  #view-dash .nx-act{display:block}
-  #view-dash .dash-drawer{position:relative;z-index:2;background:var(--bg);border-radius:28px 28px 0 0;margin-top:-28px;padding-top:14px;
-    box-shadow:0 -1px 0 var(--line),0 -14px 34px -12px rgba(0,0,0,.14);min-height:calc(100svh - 120px)}
-  #view-dash .dash-drawer::before{content:"";display:block;width:38px;height:4px;border-radius:2px;background:rgba(0,0,0,.14);margin:0 auto 4px}
+  /* the next meal fills the screen below the heading and sticks under the header; the drawer rises over it */
+  #view-dash .next{position:sticky;top:56px;z-index:0;height:max(360px,calc(100svh - 330px));margin:0;padding:64px 24px 44px;border:0;justify-content:center}
+  #view-dash .next>*{transform:translateY(calc(var(--dp,0) * -40px));opacity:calc(1 - var(--dp,0) * .9)}
+  #view-dash .nx-top{position:absolute;top:20px;left:24px;right:24px}
+  #view-dash .next .timer{font-size:clamp(3.4rem,17vw,4.8rem)}
+  #view-dash .nx-lbl{font-size:.92rem}
+  #view-dash .nx-meal{font-size:1.25rem}
+  #view-dash .next .sm{font-size:.92rem}
+  /* until it starts covering the next meal, the drawer is just more page: no edge, no shadow, no handle */
+  #view-dash .dash-drawer{--dd:0;position:relative;z-index:2;background:var(--bg);margin-top:-28px;padding-top:14px;min-height:calc(100svh - 120px);
+    border-radius:calc(var(--dd) * 28px) calc(var(--dd) * 28px) 0 0;box-shadow:0 -1px 0 rgba(0,0,0,calc(var(--dd) * .08)),0 -14px 34px -12px rgba(0,0,0,calc(var(--dd) * .14))}
+  #view-dash .dash-drawer::before{content:"";display:block;width:38px;height:4px;border-radius:2px;background:rgba(0,0,0,.14);margin:0 auto 4px;opacity:var(--dd)}
 }
-.next .main{display:block;min-width:0;text-align:left;color:inherit}
-.next .nm-more{align-self:start;width:40px;height:40px;margin:-4px -8px 0 0;color:var(--ink);background:none;box-shadow:inset 0 0 0 1px var(--line)}
-.next .nm-more:hover,.next .nm-more[aria-expanded="true"]{background:var(--soft);color:var(--ink)}
+  color:var(--ink);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .rem-opts{display:grid;gap:8px;margin-top:18px}
 .rem-opt{display:flex;justify-content:space-between;align-items:center;width:100%;border:1px solid var(--line);border-radius:14px;padding:13px 16px;font-size:.95rem}
 .rem-opt:hover{border-color:var(--ink)}
@@ -439,12 +446,6 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .rem-all{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:.9rem}
 .rem-all input{width:18px;height:18px;accent-color:var(--ink)}
 
-.next .top{display:flex;align-items:center;gap:6px;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(0,0,0,.6)}
-.next .big{display:block;font-size:1.25rem;font-weight:300;letter-spacing:-0.02em;line-height:1.2;margin:5px 0 2px}
-.next .big b{font-weight:500}
-.next .sm{display:block;font-size:.8rem;color:rgba(0,0,0,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.next .prog{display:block;position:relative;height:2px;border-radius:1px;background:rgba(0,0,0,.08);margin-top:12px;overflow:hidden}
-.next .prog i{position:absolute;inset:0 auto 0 0;background:var(--a1);border-radius:1px;transition:width .4s ease}
 /* wider screens */
 @media (min-width:640px){
   .narrow{max-width:640px}
@@ -470,7 +471,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .pan-side{padding:14px 24px 0;min-width:0}
 .pan-title{margin:0;font-size:2rem;font-weight:500;letter-spacing:-0.04em;line-height:1.05}
 .pan-kicker{margin:4px 0 16px;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
-.pan-search{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:999px;padding:0 16px;min-height:46px}
+.pan-search{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:0 16px;min-height:46px}
 .pan-search svg{width:17px;height:17px;flex:none;color:var(--muted)}
 .pan-search input{flex:1;min-width:0;border:0;background:transparent;font:inherit;color:var(--ink);outline:none}
 .pan-search{padding-right:8px}
@@ -614,7 +615,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   .pan{display:block;position:relative}
   .pan-side{position:absolute;top:10px;left:12px;right:12px;z-index:6;padding:0;display:flex;flex-direction:column;gap:8px;min-width:0}
   .pan-search{background:var(--bg);box-shadow:0 8px 22px rgba(0,0,0,.14)}
-  .pan-fdet[open]{background:var(--bg);border-radius:16px;box-shadow:0 10px 26px rgba(0,0,0,.16);padding:8px 10px 2px;margin-top:2px}
+  .pan-fdet[open]{background:var(--bg);border-radius:12px;box-shadow:0 10px 26px rgba(0,0,0,.16);padding:8px 10px 2px;margin-top:2px}
   .pan-stage{padding:0;min-width:0}
   .pan-canvas{height:var(--pan-h,60vh);min-height:280px;border-radius:0}
   .pan-list{padding:72px 20px calc(110px + env(safe-area-inset-bottom,0px))}
@@ -1529,17 +1530,19 @@ function renderNext(){
   const lbl=diff>0?"Next meal":"",state_=diff>0?inText(diff):late<=5?"is now":`started ${dur(late)} ago`;
   const name=m.custom?m.o.n:m.slot,[hh,mm]=m.time.split(":").map(Number),b=dayDate(d);
   el._at=new Date(b.getFullYear(),b.getMonth(),b.getDate(),hh,mm).getTime();
-  el.innerHTML=`<div class="nx-top"><span class="top"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg>${lbl?`<span>${lbl}</span><span>·</span>`:""}<span class="tm"></span></span>
+  const lbl2=diff>0?"until it starts":late<=5?"It's time":late>60?"since it started · <b>overdue</b>":"since it started";
+  el.innerHTML=`<div class="nx-top"><span class="nx-when"><i class="dot"></i><span class="big"></span></span>
       <button class="more nm-more" aria-haspopup="menu" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="#i-dots"/></svg></button></div>
-    <button class="main"><span class="big"><b></b> <span class="st"></span></span><span class="timer" aria-hidden="true"></span><span class="sm"></span></button>
+    <div class="nx-clock" aria-hidden="true"><span class="timer"></span><span class="nx-lbl">${lbl2}</span></div>
     <span class="prog" aria-hidden="true"><i style="width:${pct}%"></i></span>
-    <div class="nx-act"><button class="btn nx-eat with-ic"><svg class="ic" aria-hidden="true"><use href="#i-ok"/></svg>Mark eaten</button></div>`;
-  el.querySelector(".tm").textContent=fmtTime(m.time)+(isToday(d)?"":" tomorrow");
-  el.querySelector(".big b").textContent=name;
-  el.querySelector(".st").textContent=diff>0?"starts in":late<=5?"is now":"started";
-  el.querySelector(".sm").textContent=`${m.custom?"":m.o.n+" · "}${fmt(m.o.k)} kcal · ${fmt(m.o.p)} g protein`;
+    <button class="main"><span class="nx-meal"></span><span class="sm"></span></button>
+    <div class="nx-act"><button class="txt nx-eat">Mark eaten</button><button class="txt nx-skip">${m.custom?"Remove":"Skip"}</button></div>`;
+  el.querySelector(".big").textContent=`${name} · ${fmtTime(m.time)}${isToday(d)?"":" tomorrow"}`;
+  el.querySelector(".nx-meal").textContent=m.custom?`${fmt(m.o.k)} kcal`:m.o.n;
+  el.querySelector(".sm").textContent=`${m.custom?"":fmt(m.o.k)+" kcal · "}${fmt(m.o.p)} g protein`;
   el.querySelector(".main").setAttribute("aria-label",`${lbl?lbl+": ":""}${name} ${state_}, ${m.o.n} at ${fmtTime(m.time)}. Open recipe.`);
   el.querySelector(".main").onclick=()=>openMeal(d,m);
+  el.querySelector(".nx-skip").onclick=()=>m.custom?removeCustom(d,m.cid):setMissed(d,m.i,true);
   el.querySelector(".nx-eat").onclick=()=>markDone(d,m,true);
   const mb=el.querySelector(".nm-more");mb.setAttribute("aria-label",`${name} actions`);
   mb.onclick=()=>openMenu(mb,`${name} actions`,[["ok","Mark eaten",()=>markDone(d,m,true)],
@@ -1559,8 +1562,9 @@ setInterval(()=>{if((ui.tab==="plan"||ui.tab==="dash")&&document.visibilityState
 // drawer; as they cover it, its content drifts up and fades (--dp, 0 to 1).
 function dashParallax(){
   const n=$("nextMeal"),dr=document.querySelector(".dash-drawer");if(!n||!dr)return;
-  if(ui.tab!=="dash"||wideMQ.matches||n.hidden){n.style.removeProperty("--dp");return}
-  const a=n.getBoundingClientRect(),b=dr.getBoundingClientRect();n.style.setProperty("--dp",clamp((a.bottom-b.top)/Math.max(1,a.height),0,1).toFixed(3));
+  if(ui.tab!=="dash"||wideMQ.matches||n.hidden){n.style.removeProperty("--dp");dr.style.removeProperty("--dd");return}
+  const a=n.getBoundingClientRect(),b=dr.getBoundingClientRect(),over=a.bottom-b.top-28; // it tucks 28px under at rest
+  n.style.setProperty("--dp",clamp(over/Math.max(1,a.height),0,1).toFixed(3));dr.style.setProperty("--dd",clamp(over/60,0,1).toFixed(3));
 }
 {let raf=0;window.addEventListener("scroll",()=>{if(ui.tab==="dash"&&!raf)raf=requestAnimationFrame(()=>{raf=0;dashParallax()})},{passive:true})}
 setInterval(()=>{if((ui.tab==="plan"||ui.tab==="dash")&&document.visibilityState==="visible"){renderNext();renderMeter()}},30000);
@@ -2438,7 +2442,7 @@ function renderPantry(){
   const listMode=ui.pl==="list"||p3Failed;
   $("pCanvas").hidden=listMode;$("pList").hidden=!listMode;$("pMax").hidden=listMode;
   const em=$("pEmpty");em.hidden=!!list.length;
-  em.textContent=pantry.length?"Nothing matches these filters.":"Your pantry is empty. Tap Add item, or check off your grocery list and use Add checked to pantry.";
+  em.textContent=pantry.length?"Nothing matches these filters.":"Your pantry is empty. Tap + in the search box to add an item, or check off your grocery list and use Add checked to pantry.";
   if(listMode){
     const box=$("pList");box.innerHTML="";
     if(!list.length){box.innerHTML=`<p class="pan-msg">${esc(em.textContent)}</p>`}
