@@ -456,6 +456,11 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .st-day .dl-say{margin:4px 0 18px;font-size:1.1rem;line-height:1.42;color:var(--ink)}.st-day .dl-say b{font-weight:500}
 .st-meals li{align-items:center}.st-meals .q{flex:1;text-align:right;color:var(--ink)}.st-meals .st-ic{width:18px;display:flex;justify-content:flex-end}.st-meals .st{width:15px;height:15px}
 .dash-nut{padding:4px 24px 0}
+.dvc{margin:4px 0 14px}.dvc-n{margin:0 0 8px}.dvc-n b{font-size:1.8rem;font-weight:400;letter-spacing:-0.02em}.dvc-n span{margin-left:4px;color:var(--muted);font-size:.9rem}
+.dvc-bar{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}.dvc-bar i{height:10px;border-radius:3px;box-shadow:inset 0 0 0 1px var(--line)}
+.dvc-bar i:nth-child(5){margin-right:6px}.dvc-bar i.g{background:var(--ink);box-shadow:none}.dvc-bar i.n{background:#8a8a8a;box-shadow:none}
+.dvc-lg{display:flex;gap:16px;margin-top:8px;font-size:.8rem;color:var(--muted)}.dvc-lg i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.dvc-lg i.g{background:var(--ink)}.dvc-lg i.n{background:#8a8a8a}
 .gtags{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 14px}
 .gtag{display:inline-flex;align-items:center;gap:6px;padding:5px 11px 5px 9px;border-radius:999px;background:var(--soft);font-size:.82rem;color:var(--ink)}
 .gtag .ic{width:15px;height:15px}.gtag.off{background:none;box-shadow:inset 0 0 0 1px var(--line);color:var(--muted)}
@@ -468,7 +473,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 @media (min-width:900px){#dashWrap .dash-head h2{visibility:hidden}} /* the plan beside it has the heading */
 @media (max-width:899px){
   /* the orb fills the screen below the heading and sticks under the header; the drawer rises over it, and the orb swells */
-  #view-dash .now-card{position:sticky;top:56px;z-index:0;align-items:center;min-height:max(340px,calc(100svh - 420px));margin:0;padding:0 24px 40px}
+  #view-dash .now-card{position:sticky;top:56px;z-index:0;overflow:clip;align-items:center;min-height:max(340px,calc(100svh - 420px));margin:0;padding:0 24px 40px}
   #view-dash .nx-orb{transform:scale(calc(1 + var(--dp,0) * .9));transform-origin:50% 45%;opacity:calc(1 - var(--dp,0) * .35)}
   #view-dash .orb-cv{width:min(300px,74vw)}
   /* until it starts covering the orb, the drawer is just more page: no edge, no shadow, no handle */
@@ -1065,9 +1070,14 @@ function nutRows(nu,scale){return NUTR.map(([k,l,u,dv])=>{const v=nu[k];if(v==nu
   return `<li class="${pct<(scale||0)?"low":""}"><span>${l}</span><span class="q">${fmtN(v)} ${u}</span><span class="pct">${pct}%</span><span class="bar"><i style="width:${Math.min(100,pct)}%"></i></span></li>`}).join("")}
 function mealNutrition(o){
   if(o.skip||(!o.nu&&o.dv==null))return "";
-  return `<h3>Nutrition</h3>${o.dv!=null?`<p class="dv"><b>${o.dv}/10</b> diversity score</p>`:""}${o.g&&o.g.length?`<p class="grps">${o.g.map(esc).join(" · ")}</p>`:""}
-    ${o.nu?`<ul class="nut">${nutRows(o.nu)}</ul>`:""}
-    <p class="fine">Percent of daily value. The diversity score gives a point per food group (up to 5) and up to 5 more for how many of these 11 nutrients reach 15% of daily value. Values are estimates from typical ingredients; brands vary.</p>`;
+  // diversity: ten segments, a point per food group (up to 5) and the rest from nutrients reaching 15% of daily value
+  const gs=o.g||[],gp=Math.min(5,gs.length),np=o.dv!=null?clamp(o.dv-gp,0,5):0;
+  const seg=Array.from({length:10},(_,k)=>`<i class="${k<gp?"g":k<5?"":k-5<np?"n":""}"></i>`).join("");
+  const chart=o.dv!=null?`<div class="dvc" role="img" aria-label="Diversity ${o.dv} of 10: ${gp} of 5 from food groups, ${np} of 5 from nutrients">
+      <p class="dvc-n"><b>${o.dv}</b><span>/10 diversity</span></p><div class="dvc-bar">${seg}</div>
+      <div class="dvc-lg"><span><i class="g"></i>Food groups ${gp}/5</span><span><i class="n"></i>Nutrients ${np}/5</span></div></div>`:"";
+  const tags=gs.length?`<div class="gtags">${gs.map(g=>{const j=GROUPS.indexOf(g);return `<span class="gtag">${j>=0?`<svg class="ic" aria-hidden="true"><use href="#i-${GROUP_ICON[j]}"/></svg>`:""}${esc(g)}</span>`}).join("")}</div>`:"";
+  return `<h3>Nutrition</h3>${chart}${tags}${o.nu?`<ul class="nut">${nutRows(o.nu)}</ul><p class="fine">Percent of daily value, estimated from typical ingredients.</p>`:""}`;
 }
 function timeOf(d,i){const t=state.days[d].times&&state.days[d].times[i];return t||state.times[i]}
 function toHM(m){return `${String(Math.floor(m/60)).padStart(2,"0")}:${String(m%60).padStart(2,"0")}`}
@@ -1091,7 +1101,8 @@ function openMeal(d,m){m.custom?openCustom(d,m.cid):openDetail(d,m.i)}
 function markDone(d,m,v){m.custom?setCustomDone(d,m.cid,v):setDone(d,m.i,v)}
 function setMealTime(d,m,hm){if(m.custom){const x=customOf(d).find(y=>y.id===m.cid);if(x){x.time=hm;save()}}else setTime(d,m.i,hm)}
 function saveCustom(d,x){const list=customOf(d),k=list.findIndex(y=>y.id===x.id);if(k>=0)list[k]=x;else list.push(x);rebalanceDay(d);save();refreshAfterMark(d)}
-function removeCustom(d,id){state.days[d].custom=customOf(d).filter(x=>x.id!==id);rebalanceDay(d);save();refreshAfterMark(d)}
+function removeCustom(d,id){const x=customOf(d).find(y=>y.id===id);state.days[d].custom=customOf(d).filter(y=>y.id!==id);rebalanceDay(d);save();refreshAfterMark(d);
+  if(x)toast(`Removed ${x.n}`,{kind:"removed",key:"custom",ms:6000,action:"Undo",onAction:()=>saveCustom(d,x)})}
 function setCustomDone(d,id,v){const x=customOf(d).find(y=>y.id===id);if(x){x.done=v;save();refreshAfterMark(d)}}
 function addExtra(d,i,x){const dy=state.days[d];if(!Array.isArray(dy.extras))dy.extras=Array.from({length:N},()=>[]);(dy.extras[i]=dy.extras[i]||[]).push(x);rebalanceDay(d,i);save();refreshAfterMark(d)}
 function removeExtra(d,i,id){const dy=state.days[d];if(dy.extras&&dy.extras[i])dy.extras[i]=dy.extras[i].filter(x=>x.id!==id);rebalanceDay(d,i);save();refreshAfterMark(d)}
@@ -1869,7 +1880,7 @@ function renderNext(){
       m.custom?["trash","Remove",()=>removeCustom(d,m.cid)]:["skip","I skipped it",()=>setMissed(d,m.i,true)],["bell","Remind me",()=>openReminder(d,m),diff<=0]])};
   if(diff>0){
     // coming up: one line, the name of the meal in ink
-    el.classList.remove("u-late","now");
+    el.classList.remove("u-late","going");
     el.innerHTML=`<div class="nx-line"><button class="main"><span class="nx-pre"></span> <span class="timer"></span>: <b></b></button>
       <button class="more nm-more" aria-haspopup="menu" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="#i-dots"/></svg></button></div>`;
     el.querySelector(".nx-pre").textContent=`${tmr?"Tomorrow, "+name.toLowerCase():name} in`;el.querySelector(".nx-line b").textContent=m.o.n;
@@ -1877,7 +1888,7 @@ function renderNext(){
     // under way: the sentence, what it is, and the actions
     const meal=m.custom?"it":`<b>${esc(m.o.n)}</b>`,macros=`${fmt(m.o.k)} calories and ${fmt(m.o.p)} g protein`;
     const post=late<=5?`Time to eat${m.custom?"":`: ${meal}`}.`:late>60?`It <b class="late">isn't marked eaten yet</b>. ${m.custom?"It's":`It's ${meal},`} ${macros}.`:`You're having ${meal}, ${macros}.`;
-    el.classList.add("now");el.classList.toggle("u-late",late>60);
+    el.classList.add("going");el.classList.toggle("u-late",late>60);
     el.innerHTML=`<p class="nx-clock"><span class="nx-pre"></span> <span class="timer"></span>.</p>
       <button class="main"><span class="nx-say">${post}</span></button>
       <div class="nx-act"><button class="txt nx-eat">Mark eaten</button><button class="txt nx-skip">${m.custom?"Remove":"Skip"}</button>
@@ -2183,7 +2194,9 @@ function holdSize(){const b=$("sheetBox");if($("sheet").hidden)return;if(!b.styl
   if(!reduceMotion){b.classList.add("swap");clearTimeout(b._sw);b._sw=setTimeout(()=>b.classList.remove("swap"),400)}}
 function backBtn(fn){const c=$("shClose");c.innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-back"/></svg>';c.setAttribute("aria-label","Back");c.onclick=fn}
 function openDetail(d,i){if($("sheet").hidden)$("sheetBox").style.height="";sheetCtx={d,i};sheetFocus=document.activeElement;renderSheet();resetSheet($("sheetBox"));showBg($("sheet"));document.body.style.overflow="hidden";const c=$("shClose");if(c)c.focus()}
-function closeDetail(){hideBg($("sheet"));setTimeout(()=>{if($("sheet").hidden)$("sheetBox").style.height=""},320);document.body.style.overflow="";sheetCtx=null;if(P3)P3.select(null);
+// A sheet can leave something to say as it closes (a new item's draft, with Undo); it runs once.
+let closeGuard=null;
+function closeDetail(){const g=closeGuard;closeGuard=null;if(g)g();hideBg($("sheet"));setTimeout(()=>{if($("sheet").hidden)$("sheetBox").style.height=""},320);document.body.style.overflow="";sheetCtx=null;if(P3)P3.select(null);
   const slot=sheetFocus&&sheetFocus.dataset?sheetFocus.dataset.slot:null;
   if(sheetFocus&&document.contains(sheetFocus))sheetFocus.focus();else if(slot!=null)focusBlk(slot,true)}
 function renderSheet(){
@@ -2316,7 +2329,7 @@ function openCustom(d,id,pre,back){
   if(x){const m=mealsOf(d).find(y=>y.cid===x.id);sheetActs([
     ["ok",x.done?"Unmark eaten":"Mark eaten",()=>{setCustomDone(d,x.id,!x.done);openCustom(d,x.id)}],
     ["bell","Remind me",()=>openReminder(d,m),x.done],
-    ["trash","Remove meal",()=>{closeDetail();removeCustom(d,x.id);toast("Meal removed",{kind:"ok",key:"custom"})}]])}
+    ["trash","Remove meal",()=>{closeDetail();removeCustom(d,x.id)}]])}
   (x||touchUI?$("shClose"):$("cmName")).focus();
 }
 function renderSheetKeep(id){renderSheet();const el=$(id);if(el)el.focus()}
@@ -2385,7 +2398,7 @@ function toast(text,{kind="info",key=text,ms,action,onAction,quiet=0}={}){
   const box=$("toasts");let el=box.querySelector(`[data-key="${CSS.escape(key)}"]`);
   if(!el){el=document.createElement("div");el.dataset.key=key;box.appendChild(el);while(box.children.length>3)box.firstChild.remove();requestAnimationFrame(()=>el.classList.add("in"))}
   el.className="toast "+kind+(el.classList.contains("in")?" in":"");el.setAttribute("role",kind==="error"?"alert":"status");
-  const icon={error:"warn",ok:"ok",info:"syncl"}[kind]||"syncl";
+  const icon={error:"warn",ok:"ok",info:"syncl",removed:"trashl"}[kind]||"syncl";
   el.innerHTML=`<svg class="ic${kind==="info"?" spin":""}" aria-hidden="true"><use href="#i-${icon}"/></svg><span class="msg"></span>`;el.querySelector(".msg").textContent=text;
   if(action){const b=document.createElement("button");b.textContent=action;b.onclick=()=>{dismiss();onAction&&onAction()};el.appendChild(b)}
   const dismiss=()=>{clearTimeout(el._t);el.classList.remove("in");setTimeout(()=>el.remove(),300)};
@@ -2591,6 +2604,12 @@ const CATS=["Produce","Dairy & eggs","Meat & fish","Grains & bread","Cans & jars
 let pantry=[];try{const c=JSON.parse(localStorage.getItem(PANKEY)||"[]");if(Array.isArray(c))pantry=c}catch(e){}
 let P3=null,p3Loading=null,p3Failed=false,pLast=0;
 const pf={q:"",loc:new Set(),cat:new Set(),st:new Set()};
+// Removing a pantry item waits a few seconds for Undo before it's deleted for good.
+function removePantryItem(it){
+  const k=pantry.findIndex(x=>x.id===it.id);if(k<0)return;const[gone]=pantry.splice(k,1);savePantryLocal();renderPantry();
+  let undone=false;const t=setTimeout(()=>{if(!undone)pantryWrite({deletes:[gone.id]})},6000);
+  toast(`Removed ${gone.name}`,{kind:"removed",key:"pdel",ms:6000,action:"Undo",onAction:()=>{undone=true;clearTimeout(t);pantry.splice(Math.min(k,pantry.length),0,gone);savePantryLocal();renderPantry()}});
+}
 function savePantryLocal(){try{localStorage.setItem(PANKEY,JSON.stringify(pantry))}catch(e){}}
 function daysLeft(it){if(!it.expires)return Infinity;return Math.floor((new Date(it.expires+"T00:00:00")-new Date(iso(new Date())+"T00:00:00"))/864e5)}
 const expSoon=it=>daysLeft(it)<=3,lowQ=it=>it.quantity!=null&&it.quantity<=1;
@@ -2887,12 +2906,12 @@ function viewPantryItem(it){
     ["adjust","Edit",()=>editPantryItem(it)],
     ["plus","Add to a meal",()=>openAddToMeal(it)],
     ["cal","Log as a meal",()=>{const a=addonFrom(it,1),m=mac(a);openCustom(pickDay(),null,{n:it.name,k:m.k,p:m.p,c:m.c,f:m.f,pid:it.id})}],
-    ["trash","Remove from pantry",()=>{closeDetail();pantryWrite({deletes:[it.id]})}]]);
+    ["trash","Remove from pantry",()=>{closeDetail();removePantryItem(it)}]]);
   $("shClose").focus();
 }
 function editPantryItem(it,pre){
-  if($("sheet").hidden)sheetFocus=document.activeElement;else holdSize();sheetCtx=null;const isNew=!it;
-  const v=it?{...it}:{name:"",location:"Fridge",category:"Produce",quantity:1,unit:"",expires:"",...(pre&&pre.name?{name:pre.name,...guessPlace(pre.name)}:{})};
+  if($("sheet").hidden)sheetFocus=document.activeElement;else holdSize();sheetCtx=null;closeGuard=null;const isNew=!it;
+  const v=it?{...it}:{name:"",location:"Fridge",category:"Produce",quantity:1,unit:"",expires:"",...(pre&&pre.draft?pre.draft:pre&&pre.name?{name:pre.name,...guessPlace(pre.name)}:{})};
   const opt=(list,sel)=>list.map(o=>`<option${o===sel?" selected":""}>${esc(o)}</option>`).join("");
   $("sheetBox").innerHTML=`
     ${sheetHead("",isNew?"Add to pantry":esc(v.name),{action:{id:"pfSave",label:isNew?"Add":"Save"}})}
@@ -2993,12 +3012,15 @@ function editPantryItem(it,pre){
     c.innerHTML=`<span></span><button aria-label="Unlink"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>`;c.firstChild.textContent=linkLabel(n);
     c.querySelector("button").setAttribute("aria-label",`Unlink ${linkLabel(n)}`);c.querySelector("button").onclick=()=>{recs=recs.filter(x=>x!==n);showRecs()};box.appendChild(c)})};
   showRecs();$("pfRecAdd").onchange=e=>{const n=e.target.value;if(n&&!recs.includes(n)){recs.push(n);showRecs()}e.target.value=""};
-  $("pfSave").onclick=()=>{
-    const name=$("pfName").value.trim();if(!name){$("pfMsg").textContent="Add a name.";$("pfName").focus();return}
-    const d={name,recipes:recs,location:$("pfLoc").value,category:$("pfCat").value,quantity:q.value===""?null:Math.max(0,+q.value),unit:$("pfUnit").value.trim(),expires:$("pfExp").value||"",
+  const collect=()=>({name:$("pfName").value.trim(),recipes:recs,location:$("pfLoc").value,category:$("pfCat").value,quantity:q.value===""?null:Math.max(0,+q.value),unit:$("pfUnit").value.trim(),expires:$("pfExp").value||"",
       link:$("pfLink").value.trim(),image:photo,serving:$("pfServ").value.trim(),
-      nutrition:Object.fromEntries([["servings"],...PNUT].map(([k])=>{const x=$("pfN_"+k).value;return [k,x===""?null:Math.max(0,+x)]}))};
-    if(isNew){closeDetail();pantryWrite({creates:[{...d,ref:"r"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}]})}
+      nutrition:Object.fromEntries([["servings"],...PNUT].map(([k])=>{const x=$("pfN_"+k).value;return [k,x===""?null:Math.max(0,+x)]}))});
+  // closing a new item with something typed in discards it, with a moment to take that back
+  if(isNew)closeGuard=()=>{const d=collect();if(d.name||d.link||d.unit||d.expires||d.serving||d.recipes.length||Object.values(d.nutrition).some(x=>x!=null))
+    toast(`Discarded ${d.name?`“${d.name}”`:"the new item"}`,{kind:"removed",key:"pdraft",ms:6000,action:"Undo",onAction:()=>editPantryItem(null,{draft:d})})};
+  $("pfSave").onclick=()=>{
+    const d=collect(),name=d.name;if(!name){$("pfMsg").textContent="Add a name.";$("pfName").focus();return}
+    if(isNew){closeGuard=null;closeDetail();pantryWrite({creates:[{...d,ref:"r"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}]})}
     else{pantryWrite({updates:[{...d,id:it.id}]});viewPantryItem({...it,...d})}
   };
   (touchUI?$("shClose"):$("pfName")).focus();
