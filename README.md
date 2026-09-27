@@ -63,7 +63,7 @@ To install it like an app: on iPhone or iPad, tap Share, then **Add to Home Scre
 
 ## Pantry
 
-The **Pantry** tab shows what's in your fridge, freezer and pantry as a 3D gallery built with three.js (bundled in `web/vendor/three`, so nothing loads from a CDN). Items float in a slowly turning sphere; drag to spin it, pinch or scroll to zoom, and tap an item to see its details: quantity, expiry, nutrition per serving and linked recipes. To change anything, choose **Edit** in the item's **⋯** menu. **Shelves** stacks everything on a fridge, freezer and pantry unit, and **List** is a plain list. The search box shows how many items you have; its filter button opens location, category and status filters, and **+** adds an item.
+The **Pantry** tab shows what's in your fridge, freezer and pantry as a 3D gallery built with three.js (bundled in `web/vendor/three`, so nothing loads from a CDN). Items float in a slowly turning sphere; drag to spin it, pinch or scroll to zoom, and tap an item to see its details: quantity, expiry, nutrition per serving and linked recipes. To change anything, choose **Edit** in the item's **⋯** menu. Items expiring within three days, expired or running low are tagged in the list and the item view, and the filters always offer **Expiring soon** and **Running low**. **Shelves** stacks everything on a fridge, freezer and pantry unit, and **List** is a plain list. The search box shows how many items you have; its filter button opens location, category and status filters, and **+** adds an item.
 
 Items live in the **Pantry** database in Notion (`PANTRY_DB` in `worker/wrangler.toml`). On the Grocery tab, check off what you bought and tap **Add checked to pantry**; items you already have get their quantity increased. Without a Notion connection the pantry is kept on the device.
 
@@ -101,6 +101,8 @@ The calendar button next to settings cycles every tab between 1 day, 3 days and 
 
 **Linking pantry items to recipes.** Open a recipe and tap **Link a pantry item** under **In your pantry**, or open a pantry item and choose recipes under **Recipes**. The recipe then lists the linked items with how much you have. Links are stored in the Pantry database's **Recipes** column, one recipe name per line.
 
+**Per ingredient.** Each ingredient in a recipe has a pantry button. **Use from pantry** links an item to that ingredient (the recipe shows "In pantry" with how much you have, and the grocery list tags it). **Replace with…** swaps the ingredient for a pantry item: the recipe shows the item "instead of" the original, and the grocery list lists the item in its place. These are stored in the item's **Recipes** column as `Recipe › Ingredient` (or `Recipe › Ingredient › replace`).
+
 Added meals are rows in Meal Plan in the **Custom** slot, and add-ons are kept in each planned row's **Extras** column (as JSON the app reads, so edit them in the app rather than in Notion). Both sync across your devices.
 
 ## Meal reminders
@@ -133,6 +135,11 @@ The built-in values are estimates from typical USDA ingredient data, so labels o
 ## Cleaning up old weeks
 
 Every week adds 42 rows to Meal Plan. They're kept as history by default. To tidy them automatically, set `KEEP_WEEKS` in `worker/wrangler.toml` (for example `"8"`) and deploy the Worker again. Once a day it moves up to 40 rows older than that many weeks to Notion's trash, where they can be restored for 30 days. The app only reads rows from the current week start on, so this never touches the plan you're using.
+
+## Small things
+
+- The sixth meal is called **Evening snack** in the app. Notion keeps its original name, Before bed, in the Slot columns, and the app translates between them.
+- On a phone, drag any sheet down from its top to close it.
 
 ## Status messages
 

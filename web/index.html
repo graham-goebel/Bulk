@@ -112,13 +112,14 @@ main{max-width:960px;margin:0 auto;padding-bottom:calc(100px + env(safe-area-ins
 .dial .unit{position:relative;max-width:74%;text-align:center;line-height:1.25;font-size:10px;color:var(--muted);letter-spacing:0;margin-top:3px}
 .ring .rd{display:flex;flex-direction:column;align-items:center;gap:1px;margin-top:8px;font-family:var(--mono);font-size:10.5px;line-height:1.3;color:var(--muted);white-space:nowrap}
 .ring .rd b{font-weight:500;font-size:12px;color:var(--ink)}
-.dayline{margin:14px 24px 0;padding:18px 18px 16px;border-radius:20px;border:1px solid var(--line)}
-.dl-top{display:flex;align-items:center;gap:12px;margin-bottom:18px}
-.dl-badge{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:50%;box-shadow:inset 0 0 0 1.25px currentColor;color:var(--muted)}
+.dayline{margin:14px 24px 0;padding:16px 16px 14px;border-radius:20px;border:1px solid var(--line)}
+.dayline>.t,.tile .t{display:block;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.dl-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 0 14px}
+.dl-badge{flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;box-shadow:inset 0 0 0 1.25px currentColor;color:var(--muted)}
 .dl-badge .ic{width:18px;height:18px}
 .dl-badge.ok{color:#1baf7a}.dl-badge.warn{color:#d6452f}
 .dl-tx{display:flex;flex-direction:column;min-width:0}
-.dl-st{font-size:1.3rem;font-weight:500;letter-spacing:-0.025em;line-height:1.2}
+.dl-st{font-size:1.4rem;font-weight:500;letter-spacing:-0.03em;line-height:1.15}
 .dl-sub{margin-top:2px;font-size:.82rem;color:var(--muted)}
 .dl-bar{position:relative;height:2px;margin:8px 8px;border-radius:1px;background:rgba(0,0,0,.12)}
 .dl-el{position:absolute;left:0;top:0;bottom:0;border-radius:1px;background:var(--ink)}
@@ -148,31 +149,24 @@ main{max-width:960px;margin:0 auto;padding-bottom:calc(100px + env(safe-area-ins
 .rc-gl{position:absolute;right:0;margin-bottom:3px;font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--bg);padding-left:4px;z-index:1}
 .rc-l{font-family:var(--mono)}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 24px 22px}
-.tile{display:block;width:100%;text-align:left;border:1px solid var(--line);border-radius:20px;padding:14px 16px 15px;min-width:0}
+.tile{display:flex;flex-direction:column;width:100%;text-align:left;border:1px solid var(--line);border-radius:20px;padding:16px 16px 14px;min-width:0}
 button.tile:hover{outline:1px solid var(--line)}
-.tile .t{display:block;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.tile .v{display:block;font-family:var(--mono);font-size:1.45rem;font-weight:500;letter-spacing:-0.04em;margin:6px 0 1px;line-height:1.1}
-.tile .v small{font-size:.8rem;color:var(--muted);letter-spacing:0;margin-left:3px}
-.tile .c{display:block;font-size:.78rem;color:var(--muted);line-height:1.35;overflow:hidden;text-overflow:ellipsis}
+
+.tile .v{display:block;font-size:1.4rem;font-weight:500;letter-spacing:-0.03em;margin:6px 0 0;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .v small{font-size:.78rem;font-weight:400;color:var(--muted);letter-spacing:0;margin-left:4px}
+.tile .tz{display:flex;flex-direction:column;justify-content:center;height:52px;margin:10px 0 8px}
+.tile .c{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-top:auto;font-size:.78rem;color:var(--muted);line-height:1.35;overflow:hidden}
+.tile .c .sw{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px;vertical-align:0}
 .tile .c b{font-family:var(--mono);font-weight:500;color:var(--ink)}.tile .nw{white-space:nowrap;font-family:var(--mono)}
-.tile .sc{position:relative;display:block;height:14px;margin:-4px 0 6px;font-family:var(--mono);font-size:10px;color:var(--muted)}
+.tile .sc{position:relative;display:block;height:14px;margin:6px 0 0;font-size:10px;color:var(--muted)}
 .tile .sc span{position:absolute;top:0}.tile .sc span+span{transform:translateX(-100%)}
-.tile .stack{display:flex;gap:2px;height:12px;margin:14px 0 10px}.tile .stack i{height:100%;border-radius:3px;min-width:3px}
-.tile .leg{display:grid;grid-template-columns:1fr auto auto;gap:3px 10px;font-size:.74rem;color:var(--muted);align-items:center}
-.tile .leg>span{display:flex;align-items:center;gap:6px;min-width:0}.tile .leg>span i{width:8px;height:8px;border-radius:2px;flex:none}
-.tile .leg b{font-family:var(--mono);font-weight:500;color:var(--ink);text-align:right}.tile .leg em{font-style:normal;font-family:var(--mono);text-align:right;min-width:3ch}
-.tile .th{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.tile .th .v{font-size:1.1rem;margin:0;white-space:nowrap}
-.tile .segs{position:relative;display:block;height:12px;margin:14px 0 9px}
+.tile .stack{display:flex;gap:2px;height:12px}.tile .stack i{height:100%;border-radius:3px;min-width:3px}
+.tile .segs{position:relative;display:block;height:12px}
 .tile .segs .fill{display:flex;gap:2px;height:100%}.tile .segs .fill i{border-radius:3px;box-shadow:inset 0 0 0 1px #eb6834}.tile .segs .fill i.on{background:#eb6834}
 .tile .segs .goal{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;border-radius:1px;background:var(--ink)}
-.tile .bubs{display:flex;justify-content:space-between;align-items:flex-end;gap:6px;margin-top:10px}
-.tile .bub{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.72rem;color:var(--muted);min-width:0;white-space:nowrap}
-.tile .bb{height:44px;display:flex;align-items:flex-end;justify-content:center}
-.tile .bub i{border-radius:50%}.tile .bub b{color:var(--ink);font-weight:500}
 .tile .mp,.mk-p{background:rgb(42 120 214 / .16);box-shadow:inset 0 0 0 1px #2a78d6}.tile .mc,.mk-c{background:rgba(0,0,0,.07);box-shadow:inset 0 0 0 1px rgba(0,0,0,.55)}.tile .mf,.mk-f{box-shadow:inset 0 0 0 1px rgba(0,0,0,.3)}
-.tile .grid9{display:grid;grid-template-columns:repeat(3,10px);gap:6px;margin:12px 0 8px}.tile .grid9 i{height:10px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.3)}.tile .grid9 i.on{background:var(--ink);box-shadow:none}
-.tile .caps{display:flex;gap:5px;height:34px;margin:12px 0 8px}.tile .caps i{position:relative;flex:1;max-width:6px;border-radius:5px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.22);overflow:hidden}
+.tile .grid9{display:grid;grid-template-columns:repeat(9,1fr);gap:4px;max-width:150px}.tile .grid9 i{aspect-ratio:1;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.3)}.tile .grid9 i.on{background:var(--ink);box-shadow:none}
+.tile .caps{display:flex;gap:5px;height:40px}.tile .caps i{position:relative;flex:1;max-width:6px;border-radius:5px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.22);overflow:hidden}
 .tile .caps b{position:absolute;left:0;right:0;bottom:0;border-radius:5px;background:var(--ink)}.tile .caps i.low b{background:rgba(0,0,0,.25)}
 .plan-main{border-top:1px solid var(--line)}
 .g-tabs{display:flex;gap:4px;margin-top:14px;padding:4px;border-radius:14px;background:var(--soft)}
@@ -237,6 +231,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .seg button[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--ink)}
 .cal-title{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 24px 0}
 .cal-title .ct-t{min-width:0}
+.plan-head{padding-bottom:4px}.plan-head .seg{flex:none;gap:18px}
 .cal-title h2{margin:0;font-size:1.35rem;font-weight:400;letter-spacing:-0.02em}
 .cal-title .ct-t span{display:block;margin-top:2px;font-size:.85rem;color:var(--muted)}
 .ct-btns{display:flex;gap:0;flex:none;margin-right:-10px}
@@ -282,6 +277,12 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .ing li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:.92rem}
 .ing .q{color:var(--muted)}
 .ing .gf{font-size:.72rem;color:var(--muted);margin-left:6px}
+.ing li.ingr{align-items:center}
+.ingr .in{flex:1;min-width:0;display:flex;flex-direction:column}
+.ingr .lk{font-size:.74rem;color:#1a8f5f}.ingr.rep .lk{color:var(--muted)}
+.ing-lk{flex:none;width:30px;height:30px;margin:-4px -6px -4px 0;border-radius:50%;display:grid;place-items:center;color:rgba(0,0,0,.35)}
+.ing-lk .ic{width:16px;height:16px}.ing-lk.on{color:#1a8f5f}
+@media (hover:hover){.ing-lk:hover{color:var(--ink);background:var(--soft)}}
 .dv{margin:0 0 2px;font-size:.95rem}.dv b{font-weight:500}
 .grps{margin:0 0 8px;font-size:.84rem;color:var(--muted)}
 .nut{list-style:none;margin:0;padding:0}
@@ -504,6 +505,9 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .pv-facts dd,.pv-nut dd{margin:0;text-align:right}
 .pv-nut{margin-top:0}.pv-nut dd{font-family:var(--mono);font-weight:500}.pv-nut small{font-weight:400;color:var(--muted)}
 .na{color:var(--muted)}
+.tag{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:999px;font-size:.7rem;line-height:1.5;vertical-align:1px;color:var(--muted);box-shadow:inset 0 0 0 1px var(--line);white-space:nowrap}
+.tag.warn{color:#b23a2a;box-shadow:inset 0 0 0 1px rgba(178,58,42,.45)}
+.tags{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:10px}.tags .tag{margin:0;font-size:.78rem;padding:3px 10px}
 .chip.ro{padding:5px 12px}
 .pf-photo{grid-column:1/-1;display:flex;align-items:center;gap:14px;min-height:0}
 .pf-photo .main{width:132px;height:132px;flex:none;border-radius:14px;display:grid;place-items:center;
@@ -626,7 +630,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   <section id="view-plan" class="narrow" aria-label="Plan">
    <div class="plan-side" id="dashMountPlan"></div>
    <div class="plan-main">
-    <div class="seg seg-row" role="group" aria-label="Plan view" id="planSeg"><button data-pv="cards" aria-pressed="true">Cards</button><button data-pv="list" aria-pressed="false">List</button></div>
+    <div class="cal-title plan-head"><div class="ct-t"><h2 id="planDate"></h2><span id="planSum"></span></div><div class="seg" role="group" aria-label="Plan view" id="planSeg"><button data-pv="cards" aria-pressed="true">Cards</button><button data-pv="list" aria-pressed="false">List</button></div></div>
     <div id="slots"></div>
     <div id="planAdded"></div>
     <div id="planList" hidden></div>
@@ -777,7 +781,7 @@ const SLOTS = [
     {n:"Pork & sweet potato", d:"6 oz pork tenderloin, buttered sweet potato, salad with olive oil dressing", k:690,p:48,c:41,f:35},
     {n:"Shrimp coconut curry", d:"6 oz shrimp, coconut milk, vegetables, 1 cup rice", k:650,p:43,c:59,f:26}
   ]},
-  {name:"Before bed", opts:[
+  {name:"Evening snack", opts:[
     {n:"Cottage cheese & honey", d:"1 cup 4% cottage cheese, a drizzle of honey", k:284,p:25,c:25,f:10},
     {n:"Peanut butter banana toast", d:"1 slice GF toast, 2 tbsp peanut butter, a banana", k:385,p:10,c:51,f:18},
     {n:"Chocolate yogurt pudding", d:"1 cup Greek yogurt stirred with cocoa and maple syrup", k:284,p:21,c:24,f:11},
@@ -871,6 +875,9 @@ const GROUPS=["Meat & poultry","Fish & seafood","Eggs","Dairy","Legumes & soy","
 const groupMask=g=>(g||[]).reduce((a,x)=>{const j=GROUPS.indexOf(x);return j<0?a:a|(1<<j)},0);
 const bits=m=>{let c=0;while(m){c+=m&1;m>>=1}return c};
 const SLOT_NAMES=SLOTS.map(s=>s.name);
+// Notion still calls the last slot "Before bed"; the app shows "Evening snack" and translates at the edges.
+const NOTION_SLOTS=SLOT_NAMES.map(n=>n==="Evening snack"?"Before bed":n);
+const slotIndex=n=>{const i=SLOT_NAMES.indexOf(n);return i>=0?i:NOTION_SLOTS.indexOf(n)};
 const HAS_SKIP=SLOTS.map(s=>s.opts.some(o=>o.skip));
 const BASE_ORDER=SLOTS.map(s=>s.opts.map(o=>o.n));
 let libSig="";
@@ -1151,6 +1158,10 @@ function updatePlan(except=-1,smooth=true){
   // 3 days and the week show each day as a list; cards are for choosing one day's meals
   const multi=ui.span>1,list=multi||ui.pv==="list";
   $("planSeg").hidden=multi;$("planActs").hidden=multi;
+  // the date row, as on the calendar: the day (or range) and its totals, with Cards / List on the right
+  {const ds=spanDays(),md=d=>dayDate(d).toLocaleDateString("en-US",{month:"short",day:"numeric"}),t=ds.map(totals).reduce((a,x)=>({k:a.k+x.k,p:a.p+x.p}),{k:0,p:0});
+    $("planDate").textContent=multi?`${md(ds[0])} to ${md(ds[ds.length-1])}`:longDate(ui.day);
+    $("planSum").textContent=multi?`${fmt(t.k/ds.length)} kcal, ${fmt(t.p/ds.length)} g protein a day`:`${fmt(t.k)} kcal, ${fmt(t.p)} g protein`}
   $("slots").hidden=list;$("planList").hidden=!list;$("planAdded").hidden=list;
   if(list){$("planList").innerHTML="";if(multi)spanDays().forEach(d=>renderDay($("planList"),d,true));else renderDay($("planList"))}
   else{const box=$("planAdded");box.innerHTML="";const added=mealsOf(ui.day).filter(m=>m.custom);
@@ -1220,7 +1231,7 @@ function dayStat(d){
   return{d,ms,t,done,nMiss,ek,ep,today,past,future,nm,due,gap,expected,kind,text,sub};
 }
 const DL_ICON={ok:"ok",warn:"warn",info:"clock"};
-function dlHead(kind,text,sub){return `<div class="dl-top"><span class="dl-badge ${kind}"><svg class="ic" aria-hidden="true"><use href="#i-${DL_ICON[kind]}"/></svg></span><span class="dl-tx"><span class="dl-st">${text}</span>${sub?`<span class="dl-sub">${sub}</span>`:""}</span></div>`}
+function dlHead(kind,text,sub){return `<span class="t">Overview</span><div class="dl-top"><span class="dl-tx"><span class="dl-st">${text}</span>${sub?`<span class="dl-sub">${sub}</span>`:""}</span><span class="dl-badge ${kind}"><svg class="ic" aria-hidden="true"><use href="#i-${DL_ICON[kind]}"/></svg></span></div>`}
 // One day: each meal on a timeline (eaten, skipped, due, to come) and the part of the day that's gone by.
 function renderDayline(s){
   const el=$("dayline"),{ms,today,past,nm,due}=s;if(!ms.length){el.hidden=true;return}
@@ -1284,22 +1295,21 @@ function renderMeter(){
   // Macros: each macro's share of the energy, as one 100% bar with a legend of grams and percent
   const split=[["mp","Protein",t.p,t.p*4],["mc","Carbs",t.c,t.c*4],["mf","Fat",t.f,t.f*9]];
   const stack=`<span class="stack" aria-hidden="true">${split.map(([c,,,kc])=>`<i class="${c}" style="width:${pc(kc/mk)}"></i>`).join("")}</span>`;
-  const legend=`<span class="leg">${split.map(([c,l,g,kc])=>`<span><i class="${c}"></i>${l}</span><b>${fmt(g)} g</b><em>${Math.round(kc/mk*100)}%</em>`).join("")}</span>`;
+  const macCap=split.map(([c,l,,kc])=>`<span class="nw" title="${l}"><i class="sw ${c}"></i>${Math.round(kc/mk*100)}% ${l[0]}</span>`).join(" · ");
   // Nutrients: a capsule per nutrient, filled up to its share of the daily value
   const caps=dn.has?`<span class="caps" aria-hidden="true">${NUTR.map(([k,l,,dv])=>{const r=dn.sum[k]/dv;return `<i class="${r<1?"low":""}" title="${l} ${Math.round(r*100)}%"><b style="height:${pc(Math.max(.08,Math.min(1,r)))}"></b></i>`}).join("")}</span>`:"";
-  $("tiles").innerHTML=`
-    <button class="tile" data-modal="planned"><span class="th"><span class="t">Planned</span><span class="v">${fmt(t.k)}</span></span>
-      <span class="segs" aria-hidden="true"><span class="fill" style="width:${pc(tk/scale)}">${segs}</span><i class="goal" style="left:${pc(gk/scale)}"></i></span>
-      <span class="sc" aria-hidden="true"><span>0</span><span style="left:${pc(gk/scale)}">${fmt(gk)}</span></span>
-      <span class="c"><b>${pct1(t.k/state.target)}</b> of goal · <span class="nw">Δ ${sgn(diff)}</span>${multi?"<br>kcal a day":""}</span></button>
-    <button class="tile" data-modal="macros"><span class="th"><span class="t">Macros${multi?" a day":""}</span></span>
-      ${stack}${legend}</button>
-    ${dn.mask?`<button class="tile" data-modal="variety"><span class="th"><span class="t">Variety</span><span class="v">${dn.groups.length}<small>/${GROUPS.length}</small></span></span>
-      <span class="grid9" aria-hidden="true">${GROUPS.map(g=>`<i class="${dn.groups.includes(g)?"on":""}" title="${g}"></i>`).join("")}</span>
-      <span class="c"><b>${pct1(dn.groups.length/GROUPS.length)}</b> ${miss.length?`· no ${miss.slice(0,2).join(", ").toLowerCase()}`:"coverage"}</span></button>`:""}
-    ${dn.has?`<button class="tile" data-modal="nutrients"><span class="th"><span class="t">Nutrients</span><span class="v">${NUTR.length-low.length}<small>/${NUTR.length}</small></span></span>
-      ${caps}
-      <span class="c">${low.length?`Low: ${low.slice(0,2).join(", ")}`:`≥ 100% DV${multi?" on average":""}`}</span></button>`:""}`;
+  // every panel: title, one primary value with its unit, a chart of the same height, a caption at the bottom
+  const tile=(key,title,val,unit,chart,cap)=>`<button class="tile" data-modal="${key}"><span class="t">${title}</span><span class="v">${val}<small>${unit}</small></span><span class="tz">${chart}</span><span class="c">${cap}</span></button>`;
+  $("tiles").innerHTML=
+    tile("planned","Planned",fmt(t.k),multi?"kcal a day":"kcal",
+      `<span class="segs" aria-hidden="true"><span class="fill" style="width:${pc(tk/scale)}">${segs}</span><i class="goal" style="left:${pc(gk/scale)}"></i></span><span class="sc" aria-hidden="true"><span>0</span><span style="left:${pc(gk/scale)}">${fmt(gk)}</span></span>`,
+      `<b>${pct1(t.k/state.target)}</b> of goal · <span class="nw">Δ ${sgn(diff)}</span>`)+
+    tile("macros","Macros",fmt(t.p),multi?"g protein a day":"g protein",stack,macCap)+
+    (dn.mask?tile("variety","Variety",dn.groups.length,`/${GROUPS.length} food groups`,
+      `<span class="grid9" aria-hidden="true">${GROUPS.map(g=>`<i class="${dn.groups.includes(g)?"on":""}" title="${g}"></i>`).join("")}</span>`,
+      miss.length?`No ${miss.slice(0,2).join(", ").toLowerCase()}`:"Every food group"):"")+
+    (dn.has?tile("nutrients","Nutrients",NUTR.length-low.length,`/${NUTR.length} at daily value`,caps,
+      low.length?`Low: ${low.slice(0,2).join(", ")}`:`All at 100%${multi?" on average":""}`):"");
   $("tiles").querySelectorAll("[data-modal]").forEach(b=>b.onclick=()=>TILE_MODALS[b.dataset.modal]());
 }
 const TILE_MODALS={planned:openPlannedDetail,macros:openMacrosDetail,variety:openVarietyDetail,nutrients:openNutrientsDetail};
@@ -1390,7 +1400,7 @@ function nutChart(sum){
   return `<figure class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Percent of daily value for ${rows.length} nutrients; ${rows.filter(o=>o.r>=1).length} reach 100%.">${g}${bars}</svg>${legend([["k-met","100% or more"],["k-low","Under 100%"],["k-ref","Daily value"]])}</figure>`;
 }
 function spanSub(){return ui.span>1?scopeLabel():longDate(ui.day)}
-const slotShort=["Brk","AM","Lun","PM","Din","Bed"];
+const slotShort=["Brk","AM","Lun","PM","Din","Eve"];
 function openPlannedDetail(){
   const days=spanDays(),t=rangeTotals(days),diff=t.k-state.target,multi=days.length>1;
   const rows=multi?days.map(d=>`<li><span>${esc(longDate(d))}</span><span class="q">${fmt(totals(d).k)} kcal</span></li>`).join("")
@@ -1676,9 +1686,11 @@ function qtyText(q,u){
 }
 function buildList(){
   const map=new Map(),other=new Map();const ds=spanDays();
+  // an ingredient replaced by a pantry item is listed under that item's name; one linked to a pantry item you have is tagged
+  const sub=(recipe,n)=>{const l=ingLink(recipe,n);return l?{n:l.replace?l.p.name:n,have:!l.replace&&+l.p.quantity>0}:{n,have:false}};
   ds.forEach(d=>SLOTS.forEach((s,i)=>{const o=s.opts[state.days[d].picks[i]];if(o.skip)return;
-    if(ING[o.n])ING[o.n].forEach(([n,q,u,sec,gf])=>{const key=n+"|"+u;const e=map.get(key)||{n,u,sec,gf:!!gf,q:0};e.q+=q;map.set(key,e)});
-    else (o.ing||[]).forEach(l=>other.set(l,(other.get(l)||0)+1));}));
+    if(ING[o.n])ING[o.n].forEach(([n0,q,u,sec,gf])=>{const{n,have}=sub(o.n,n0),key=n+"|"+u;const e=map.get(key)||{n,u,sec,gf:!!gf&&n===n0,q:0,have};e.q+=q;e.have=e.have&&have;map.set(key,e)});
+    else (o.ing||[]).forEach(l=>{const clean=l.replace(/\s*\(certified GF\)/i,""),r=sub(o.n,clean),n=r.n===clean?l:r.n;other.set(n,(other.get(n)||0)+1)});}));
   const groups=SECTIONS.map(([k,label])=>({label,items:[...map.values()].filter(e=>e.sec===k).sort((a,b)=>a.n.localeCompare(b.n)).map(e=>({...e,text:qtyText(e.q,e.u)}))})).filter(g=>g.items.length);
   if(other.size)groups.push({label:"From your Notion meals",items:[...other].map(([l,c])=>({n:l.replace(/\s*\(certified GF\)/i,""),gf:/certified GF/i.test(l),text:c>1?`×${c}`:""}))});
   return groups;
@@ -1695,6 +1707,7 @@ function renderShop(){
       cb.onchange=()=>{const s=new Set(state.checked);cb.checked?s.add(it.n):s.delete(it.n);state.checked=[...s];lab.classList.toggle("done",cb.checked);save()};
       const nm=document.createElement("span");nm.className="nm";nm.textContent=it.n;
       if(it.gf){const x=document.createElement("span");x.className="gf";x.textContent="check GF label";nm.appendChild(x)}
+      if(it.have){const x=document.createElement("span");x.className="gf have";x.textContent="in pantry";nm.appendChild(x)}
       const q=document.createElement("span");q.className="q";q.textContent=it.text;
       lab.append(cb,nm,q);sec.appendChild(lab);
     });
@@ -1785,11 +1798,15 @@ function closeDetail(){hideBg($("sheet"));document.body.style.overflow="";sheetC
 function renderSheet(){
   const{d,i}=sheetCtx;const o=SLOTS[i].opts[state.days[d].picks[i]];const locked=state.days[d].locked[i];
   const box=$("sheetBox");const t=timeOf(d,i),overridden=t!==state.times[i];
-  const ing=(o.ing&&o.ing.length)?o.ing.map(x=>{const gf=/certified GF/i.test(x);return `<li><span>${esc(x.replace(/\s*\(certified GF\)/i,""))}${gf?'<span class="gf">check GF label</span>':""}</span></li>`}).join("")
-    :(ING[o.n]||[]).map(([n,q,u,,gf])=>`<li><span>${n}${gf?'<span class="gf">check GF label</span>':""}</span><span class="q">${rq(q,u)}</span></li>`).join("");
+  // each ingredient: its pantry link or replacement, and a button to set one
+  const ingRow=(name,gf,qty,k)=>{const l=ingLink(o.n,name),r=l&&l.replace;
+    return `<li class="ingr${r?" rep":""}"><span class="in"><span>${esc(r?l.p.name:name)}${gf&&!r?'<span class="gf">check GF label</span>':""}</span>${l?`<span class="lk">${r?`instead of ${esc(name)}`:`In pantry${qtyLabel(l.p)?` · ${esc(qtyLabel(l.p))}`:""}`}</span>`:""}</span>${qty?`<span class="q">${qty}</span>`:""}<button class="ing-lk${l?" on":""}" data-ing="${k}" aria-label="Pantry options for ${esc(name)}"><svg class="ic" aria-hidden="true"><use href="#i-pantry"/></svg></button></li>`};
+  const ingNames=[];
+  const ing=(o.ing&&o.ing.length)?o.ing.map((x,k)=>{const gf=/certified GF/i.test(x),n=x.replace(/\s*\(certified GF\)/i,"");ingNames.push(n);return ingRow(n,gf,"",k)}).join("")
+    :(ING[o.n]||[]).map(([n,q,u,,gf],k)=>{ingNames.push(n);return ingRow(n,gf,rq(q,u),k)}).join("");
   const steps=((o.steps&&o.steps.length)?o.steps:(STEPS[o.n]||[])).map(x=>`<li>${esc(x)}</li>`).join("");
   const ex=o.skip?[]:exOf(d,i),xs=exSum(ex),tk=o.k+xs.k,tp=o.p+xs.p,tc=o.c+xs.c,tf=o.f+xs.f;
-  const linked=o.skip?[]:pantry.filter(p=>(p.recipes||[]).includes(o.n));
+  const linked=o.skip?[]:pantry.filter(p=>(p.recipes||[]).some(line=>parseLink(line).recipe===o.n));
   const addons=o.skip?"":`<h3>Add-ons</h3>${ex.length?`<ul class="ing addons">${ex.map(x=>`<li><span>${esc(x.n)}${x.q!==1?` <span class="q2">× ${+x.q.toFixed(2)}</span>`:""}</span><span class="q">${fmt(mac(x).k)} kcal</span><button class="x-rm" data-x="${x.id}" aria-label="Remove ${esc(x.n)}"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></li>`).join("")}</ul>`:`<p class="hint">Add something from your pantry to this meal, like a yogurt or a piece of fruit.</p>`}
     <button class="txt with-ic sh-add" id="shAddX"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>Add from pantry</button>`;
   const inPantry=o.skip?"":`<h3>In your pantry</h3>${linked.length?`<ul class="ing linked">${linked.map(p=>`<li><button class="lk-open" data-p="${esc(p.id)}"><span>${esc(p.name)}</span><span class="q">${esc(qtyLabel(p)||p.location)}</span></button><button class="x-rm" data-unlink="${esc(p.id)}" aria-label="Unlink ${esc(p.name)}"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></li>`).join("")}</ul>`:`<p class="hint">Link the pantry items this recipe uses to see what you have on hand.</p>`}
@@ -1823,13 +1840,36 @@ function renderSheet(){
   box.querySelectorAll("[data-x]").forEach(b=>b.onclick=()=>{removeExtra(d,i,b.dataset.x);renderSheetKeep("shAddX")});
   box.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{const p=pantry.find(x=>x.id===b.dataset.p);if(p)openPantryItem(p)});
   box.querySelectorAll("[data-unlink]").forEach(b=>b.onclick=()=>{const p=pantry.find(x=>x.id===b.dataset.unlink);if(!p)return;
-    pantryWrite({updates:[{id:p.id,recipes:(p.recipes||[]).filter(n=>n!==o.n)}]});renderSheetKeep("shLinkP")});
+    pantryWrite({updates:[{id:p.id,recipes:(p.recipes||[]).filter(line=>parseLink(line).recipe!==o.n)}]});renderSheetKeep("shLinkP")});
+  box.querySelectorAll("[data-ing]").forEach(b=>b.onclick=()=>{const name=ingNames[+b.dataset.ing],l=ingLink(o.n,name);
+    openMenu(b,`${name} options`,[
+      ["pantry",l&&!l.replace?"Use a different pantry item":"Use from pantry",()=>pickForIngredient(d,i,name,false)],
+      ["sync",l&&l.replace?"Replace with something else":"Replace with…",()=>pickForIngredient(d,i,name,true)],
+      l&&["x",l.replace?"Undo replacement":"Remove pantry link",()=>{setIngLink(o.n,name,null);renderSheetKeep("shAddX")}]])});
 }
 // Back from a picker to the meal it was opened from, keeping the sheet open.
 function backToMeal(d,i){sheetCtx={d,i};renderSheet();resetSheet($("sheetBox"));showBg($("sheet"));const c=$("shClose");if(c)c.focus()}
 // A searchable list of pantry items in the sheet. With servings, a stepper sets how many servings the pick is for.
-function openPantryPicker({eyebrow,title,servings,onPick,back}){
-  sheetCtx=null;let q=1,query="";
+// Pantry links are kept in the item's Recipes list: "Recipe" for the whole recipe, "Recipe › Ingredient"
+// when it supplies one ingredient, and "Recipe › Ingredient › replace" when it stands in for that ingredient.
+const LSEP=" › ";
+function parseLink(line){const [recipe,ing,mode]=String(line).split(LSEP);return{recipe,ing:ing||"",replace:mode==="replace"}}
+function linkLabel(line){const l=parseLink(line);return l.ing?(l.replace?`${l.recipe}: replaces ${l.ing}`:`${l.recipe}: ${l.ing}`):l.recipe}
+function ingLink(recipe,ing){for(const p of pantry)for(const line of (p.recipes||[])){const l=parseLink(line);if(l.recipe===recipe&&l.ing===ing)return{...l,p}}return null}
+// One pantry item per ingredient: clear any other item's link for it, then add this one (or none).
+function setIngLink(recipe,ing,item,replace){
+  const ups=[];pantry.forEach(p=>{const r=(p.recipes||[]).filter(line=>{const l=parseLink(line);return !(l.recipe===recipe&&l.ing===ing)});
+    if(item&&p.id===item.id)r.push([recipe,ing,...(replace?["replace"]:[])].join(LSEP));
+    if(r.length!==(p.recipes||[]).length||item&&p.id===item.id)ups.push({id:p.id,recipes:r})});
+  if(ups.length)pantryWrite({updates:ups});
+}
+function pickForIngredient(d,i,name,replace){
+  const o=SLOTS[i].opts[state.days[d].picks[i]];
+  openPantryPicker({eyebrow:`${o.n} · ${name}`,title:replace?"Replace with":"Use from pantry",query:replace?"":name.replace(/^[\d.\/¼½¾⅓⅔\s]+(cups?|tbsp|tsp|oz|lbs?|g)?\s*/i,"").split(/[ ,(]/)[0],back:()=>backToMeal(d,i),
+    onPick:it=>{setIngLink(o.n,name,it,replace);backToMeal(d,i);toast(replace?`${it.name} replaces ${name}`:`${name}: using ${it.name}`,{kind:"ok",key:"ing"})}});
+}
+function openPantryPicker({eyebrow,title,servings,onPick,back,query:q0}){
+  sheetCtx=null;let q=1,query=q0||"";
   $("sheetBox").innerHTML=`${sheetHead(esc(eyebrow),esc(title))}
     ${servings?`<div class="pk-q"><span>Servings</span><span class="qty"><button class="sq" id="pkMinus" aria-label="Half a serving less">−</button><output id="pkQ">1</output><button class="sq" id="pkPlus" aria-label="Half a serving more">+</button></span></div>`:""}
     <label class="pan-search pk-s"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><input type="search" id="pkSearch" placeholder="Search your pantry" aria-label="Search your pantry"></label>
@@ -1844,7 +1884,7 @@ function openPantryPicker({eyebrow,title,servings,onPick,back}){
       b.innerHTML=`<span class="nm"></span><span class="mt"></span>`;b.querySelector(".nm").textContent=it.name;b.querySelector(".mt").textContent=[kc,qtyLabel(it)].filter(Boolean).join(" · ");
       b.onclick=()=>onPick(it,q);box.appendChild(b)})};
   if(servings){const out=$("pkQ"),upd=v=>{q=clamp(Math.round(v*2)/2,0.5,20);out.textContent=+q.toFixed(1);list()};$("pkMinus").onclick=()=>upd(q-0.5);$("pkPlus").onclick=()=>upd(q+0.5)}
-  $("pkSearch").addEventListener("input",e=>{query=e.target.value;list()});
+  $("pkSearch").value=query;$("pkSearch").addEventListener("input",e=>{query=e.target.value;list()});
   list();if(notionOn())pantryLoad(false).then(list);$("pkSearch").focus();
 }
 const addonFrom=(it,q)=>{const n=it.nutrition||{};return{id:uid(),pid:it.id,n:it.name,q,k:num(n.calories),p:num(n.protein),c:num(n.carbs),f:num(n.fat)}};
@@ -1919,8 +1959,7 @@ $("spanBtn").onclick=()=>{setSpan(ui.span===1?3:ui.span===3?7:1);saveUi();render
 function renderHead(){
   renderSpanBtn();renderPlBtn();let t;
   if(ui.tab==="dash")t="Dashboard";
-  else if(ui.tab==="plan"){const dd=dayDate(ui.day),tmr=iso(dd)===iso(new Date(Date.now()+864e5)),yst=iso(dd)===iso(new Date(Date.now()-864e5));
-    t=ui.span===7?"This week":ui.span===3?"3 days":isToday(ui.day)?"Today":tmr?"Tomorrow":yst?"Yesterday":wk(ui.day,"long")}
+  else if(ui.tab==="plan")t="Plan";
   else if(ui.tab==="cal")t="Calendar";
   else if(ui.tab==="shop")t="Grocery";
   else t="Pantry";
@@ -1991,7 +2030,7 @@ function cleanNu(x){if(!x||typeof x!=="object")return null;const nu={};let any=f
   NUTR.forEach(([k])=>{const v=x[k];nu[k]=typeof v==="number"&&isFinite(v)?v:null;if(nu[k]!=null)any=true});return any?nu:null}
 async function nLoadLibrary(){
   const data=await apiRead("/meals");
-  const lib=((data&&data.meals)||[]).map(m=>({slot:SLOT_NAMES.indexOf(m.slot),n:String(m.name||"").trim(),d:String(m.description||""),k:+m.calories||0,p:+m.protein||0,c:+m.carbs||0,f:+m.fat||0,
+  const lib=((data&&data.meals)||[]).map(m=>({slot:slotIndex(m.slot),n:String(m.name||"").trim(),d:String(m.description||""),k:+m.calories||0,p:+m.protein||0,c:+m.carbs||0,f:+m.fat||0,
     ing:Array.isArray(m.ingredients)?m.ingredients:[],steps:Array.isArray(m.steps)?m.steps:[],hide:!!m.hide,url:typeof m.url==="string"?m.url:"",
     nu:cleanNu(m.nutrients),g:Array.isArray(m.groups)?m.groups.filter(x=>GROUPS.includes(x)):[],dv:typeof m.diversity==="number"&&isFinite(m.diversity)?m.diversity:null})).filter(m=>m.n&&m.slot>=0);
   if(!lib.length)return false;
@@ -2018,7 +2057,7 @@ function rowVal(r){const t=String(r.time||"").trim(),has=/^\d{2}:\d{2}$/.test(t)
   return{meal:String(r.meal||"").trim(),when:has?`${String(r.key||"").slice(0,10)} ${t}`:localStamp(r.when),locked:!!r.locked,eaten:!!r.eaten,skipped:!!r.skipped&&!r.eaten,extras:String(r.extras||""),hasTime:has}}
 const sameV=(a,b)=>!!a&&!!b&&a.meal===b.meal&&a.when===b.when&&a.locked===b.locked&&!!a.eaten===!!b.eaten&&!!a.skipped===!!b.skipped&&(a.extras||"")===(b.extras||"");
 const snapOf=v=>({meal:v.meal,when:v.when,locked:v.locked,eaten:!!v.eaten,skipped:!!v.skipped,extras:v.extras||""});
-function itemOf(d,i,v,id){const it={key:keyOf(d,i),meal:v.meal,when:whenISO(d,i),time:timeOf(d,i),slot:SLOTS[i].name,calories:v.k,protein:v.p,locked:v.locked,eaten:!!v.eaten,skipped:!!v.skipped,extras:v.extras};if(id)it.id=id;return it}
+function itemOf(d,i,v,id){const it={key:keyOf(d,i),meal:v.meal,when:whenISO(d,i),time:timeOf(d,i),slot:NOTION_SLOTS[i],calories:v.k,protein:v.p,locked:v.locked,eaten:!!v.eaten,skipped:!!v.skipped,extras:v.extras};if(id)it.id=id;return it}
 function itemOfC(d,x,v,id){const it={key:ckey(d,x),meal:v.meal,when:whenAt(d,x.time),time:x.time,slot:"Custom",calories:v.k,protein:v.p,locked:false,eaten:!!v.eaten,skipped:false,extras:v.extras};if(id)it.id=id;return it}
 const STOP=["bad_passcode","origin_not_allowed","server_not_configured","notion_token","notion_access"];
 function nError(e,partial){
@@ -2159,6 +2198,9 @@ function savePantryLocal(){try{localStorage.setItem(PANKEY,JSON.stringify(pantry
 function daysLeft(it){if(!it.expires)return Infinity;return Math.floor((new Date(it.expires+"T00:00:00")-new Date(iso(new Date())+"T00:00:00"))/864e5)}
 const expSoon=it=>daysLeft(it)<=3,lowQ=it=>it.quantity!=null&&it.quantity<=1;
 function qtyLabel(it){return it.quantity==null?"":`${+(+it.quantity).toFixed(2)}${it.unit?" "+it.unit:""}`}
+// Status tags for an item: expired or expiring within 3 days, and running low.
+function statusTags(it){const t=[],d=daysLeft(it);if(d<0)t.push(["Expired","warn"]);else if(d<=3)t.push(["Expiring soon","warn"]);if(lowQ(it))t.push(["Running low",""]);return t}
+const tagHtml=t=>t.map(([l,c])=>`<span class="tag ${c}">${l}</span>`).join("");
 function expLabel(it){const d=daysLeft(it);if(d===Infinity)return "";return d<0?`expired ${-d} day${d===-1?"":"s"} ago`:d===0?"expires today":d===1?"expires tomorrow":`expires in ${d} days`}
 // Best guess at where a food lives and what kind it is, from its name.
 function guessPlace(name,sec){
@@ -2325,10 +2367,10 @@ async function pantryWrite(ch){
 }
 function renderPantryFilters(){
   const box=$("pFilters");box.innerHTML="";
-  const group=(title,set,opts,count)=>{
+  const group=(title,set,opts,count,always)=>{
     const g=document.createElement("div");g.className="pan-group";g.innerHTML=`<h3>${title}</h3>`;
     const row=document.createElement("div");row.className="pan-opts";
-    opts.forEach(o=>{const n=count(o);if(!n&&!set.has(o))return;
+    opts.forEach(o=>{const n=count(o);if(!n&&!set.has(o)&&!always)return;
       const b=document.createElement("button");b.className="pan-opt";b.setAttribute("aria-pressed",set.has(o));
       b.innerHTML=`<span></span><span class="n">${n}</span>`;b.firstChild.textContent=o;
       b.onclick=()=>{set.has(o)?set.delete(o):set.add(o);renderPantry()};row.appendChild(b)});
@@ -2336,7 +2378,7 @@ function renderPantryFilters(){
   };
   group("Location",pf.loc,LOCS,o=>pantry.filter(it=>it.location===o).length);
   group("Category",pf.cat,CATS,o=>pantry.filter(it=>it.category===o).length);
-  group("Status",pf.st,["Expiring soon","Running low"],o=>pantry.filter(o==="Expiring soon"?expSoon:lowQ).length);
+  group("Status",pf.st,["Expiring soon","Running low"],o=>pantry.filter(o==="Expiring soon"?expSoon:lowQ).length,true);
 }
 function renderPantry(){
   if(ui.tab!=="pantry")return;
@@ -2359,7 +2401,7 @@ function renderPantry(){
       its.forEach(it=>{const b=document.createElement("button");b.className="pl-row"+(it.image?" img":"");
         b.innerHTML=(it.image?`<img class="th" alt="">`:"")+`<span class="nm"></span><span class="q"></span><span class="mt"></span>`;
         if(it.image&&notionOn())photoThumb(it.image).then(u=>{const im=b.querySelector(".th");if(im)im.src=u}).catch(()=>{});
-        b.querySelector(".nm").textContent=it.name;b.querySelector(".q").textContent=qtyLabel(it);
+        b.querySelector(".nm").textContent=it.name;b.querySelector(".nm").insertAdjacentHTML("beforeend",tagHtml(statusTags(it)));b.querySelector(".q").textContent=qtyLabel(it);
         const mt=b.querySelector(".mt");mt.textContent=[it.category,nutSummary(it)].filter(Boolean).join(" · ");const ex=expLabel(it);
         if(ex){const s=document.createElement("span");s.className=expSoon(it)?"exp":"";s.textContent=` · ${ex}`;mt.appendChild(s)}
         b.onclick=()=>openPantryItem(it);box.appendChild(b)});
@@ -2423,14 +2465,15 @@ function viewPantryItem(it){
   const facts=[["Quantity",esc(qtyLabel(it))||dash],["Expires",exp],["Serving size",esc(it.serving||"")||dash],["Servings",n.servings!=null?`${+n.servings} <span class="na">per container</span>`:dash]];
   const recs=it.recipes||[];
   $("sheetBox").innerHTML=`
-    ${sheetHead(esc(it.location)+", "+esc(it.category),esc(it.name),{more:"shMore"})}
+    ${sheetHead("Pantry item",esc(it.name),{more:"shMore"})}
+    <div class="tags pv-tags">${tagHtml([[esc(it.location),"ro"],[esc(it.category),"ro"],...statusTags(it)])}</div>
     ${it.image?`<div class="pv-photo" id="pvPhoto"></div>`:""}
     <dl class="pv-facts">${facts.map(([k,v])=>`<div><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl>
     <h3>Nutrition per serving</h3>
     ${rows.length?`<dl class="pv-nut">${rows.map(([k,l,u])=>`<div><dt>${l}</dt><dd>${+(+n[k]).toFixed(1)}${u?` <small>${u}</small>`:` <small>kcal</small>`}</dd></div>`).join("")}</dl>`
       :`<p class="hint">No nutrition facts yet. Choose Edit in the ⋯ menu to add them.</p>`}
     <h3>Recipes</h3>
-    ${recs.length?`<div class="chips">${recs.map(r=>`<span class="chip ro">${esc(r)}</span>`).join("")}</div>`:`<p class="hint">Not linked to any recipes.</p>`}
+    ${recs.length?`<div class="chips">${recs.map(r=>`<span class="chip ro">${esc(linkLabel(r))}</span>`).join("")}</div>`:`<p class="hint">Not linked to any recipes.</p>`}
     ${it.link?`<p style="margin-top:18px"><a class="txt with-ic" href="${esc(it.link)}" target="_blank" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-ext"/></svg>Open store page</a></p>`:""}`;
   showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";
   $("shClose").onclick=closeDetail;$("shClose").setAttribute("aria-label","Close");
@@ -2543,8 +2586,8 @@ function editPantryItem(it){
   // recipes this item is linked to
   let recs=[...(v.recipes||[])];
   const showRecs=()=>{const box=$("pfRecs");box.innerHTML="";recs.forEach(n=>{const c=document.createElement("span");c.className="chip";
-    c.innerHTML=`<span></span><button aria-label="Unlink"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>`;c.firstChild.textContent=n;
-    c.querySelector("button").setAttribute("aria-label",`Unlink ${n}`);c.querySelector("button").onclick=()=>{recs=recs.filter(x=>x!==n);showRecs()};box.appendChild(c)})};
+    c.innerHTML=`<span></span><button aria-label="Unlink"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>`;c.firstChild.textContent=linkLabel(n);
+    c.querySelector("button").setAttribute("aria-label",`Unlink ${linkLabel(n)}`);c.querySelector("button").onclick=()=>{recs=recs.filter(x=>x!==n);showRecs()};box.appendChild(c)})};
   showRecs();$("pfRecAdd").onchange=e=>{const n=e.target.value;if(n&&!recs.includes(n)){recs.push(n);showRecs()}e.target.value=""};
   $("pfSave").onclick=()=>{
     const name=$("pfName").value.trim();if(!name){$("pfMsg").textContent="Add a name.";$("pfName").focus();return}
@@ -2592,6 +2635,25 @@ $("toPantry").onclick=()=>{
   pantryWrite({creates,updates});$("shopMsg").textContent=`Added ${n} item${n===1?"":"s"} to your pantry.`;
 };
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&ui.tab==="pantry")pantryLoad(false);if(P3){document.visibilityState==="visible"&&ui.tab==="pantry"&&ui.pl!=="list"?P3.start():P3.stop()}});
+
+/* ---------- swipe a sheet down to dismiss it (touch screens) ----------
+   Starts only when the sheet (or the panel under the finger) is scrolled to the top, and the drag is mostly
+   downward. Past about a third of the sheet, or a quick flick, closes it; otherwise it springs back. */
+function swipeDismiss(bg,close){
+  const sh=bg.querySelector(".sheet");let y0=null,x0=0,dy=0,t0=0,drag=false;
+  const scrolled=t=>{for(let el=t;el&&el!==bg;el=el.parentElement)if(el.scrollTop>0&&el.scrollHeight>el.clientHeight+1)return true;return false};
+  sh.addEventListener("touchstart",e=>{y0=null;if(e.touches.length!==1||scrolled(e.target)||/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))return;
+    y0=e.touches[0].clientY;x0=e.touches[0].clientX;t0=Date.now();dy=0;drag=false},{passive:true});
+  sh.addEventListener("touchmove",e=>{if(y0==null)return;const t=e.touches[0];dy=t.clientY-y0;
+    if(!drag){if(dy>8&&dy>Math.abs(t.clientX-x0))drag=true;else{if(dy<-6||Math.abs(t.clientX-x0)>12)y0=null;return}}
+    e.preventDefault();const d=Math.max(0,dy);sh.style.transition="none";sh.style.transform=`translateY(${d}px)`;
+    bg.style.background=`rgba(0,0,0,${(.38*(1-Math.min(1,d/sh.offsetHeight))).toFixed(3)})`},{passive:false});
+  const end=()=>{if(y0==null)return;y0=null;if(!drag)return;drag=false;const v=dy/Math.max(1,Date.now()-t0);
+    if(dy>Math.min(140,sh.offsetHeight*.3)||(v>.6&&dy>30)){close();setTimeout(()=>{sh.style.transform="";sh.style.transition="";bg.style.background=""},320)}
+    else{sh.style.transition="transform .2s ease";sh.style.transform="";bg.style.background="";setTimeout(()=>{sh.style.transition=""},220)}};
+  sh.addEventListener("touchend",end);sh.addEventListener("touchcancel",end);
+}
+swipeDismiss($("sheet"),()=>closeDetail());swipeDismiss($("infoBg"),()=>closeInfo());swipeDismiss($("goals"),()=>closeGoals());
 
 /* ---------- shake to shuffle ---------- */
 const SHAKEKEY="gf-gain-planner-shake";
