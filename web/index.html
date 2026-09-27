@@ -221,6 +221,8 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .card .m span{white-space:nowrap}
 .card .m b{font-weight:500;color:var(--ink)}
 .card.skip{background:none;box-shadow:inset 0 0 0 1px var(--line)}
+.card.skip{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.card.skip .sk{width:26px;height:26px;margin-bottom:10px}
 .actions{display:flex;flex-wrap:wrap;gap:10px 22px;padding:30px 24px 0}
 .plan-acts{display:contents}.plan-acts[hidden]{display:none}
 #copyAll.armed{background:var(--soft)}
@@ -341,7 +343,8 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .steps li{padding:5px 0 5px 4px;font-size:.92rem}
 .steps li::marker{color:var(--muted)}
 .sh-acts{position:sticky;bottom:0;z-index:2;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain;margin:28px -24px 0;
-  padding:12px 24px calc(14px + env(safe-area-inset-bottom,0px));background:var(--bg);box-shadow:0 -1px 0 var(--line)}
+  padding:12px 24px 12px;background:var(--bg);box-shadow:0 -1px 0 var(--line)}
+@media (min-width:700px){.sh-acts{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}}
 .sh-acts::-webkit-scrollbar{display:none}
 .sh-acts .act{flex:none;display:flex;align-items:center;gap:7px;height:38px;padding:0 15px 0 13px;border:1px solid var(--line);border-radius:19px;font-size:.9rem;white-space:nowrap;color:var(--ink);background:var(--bg)}
 .sh-acts .act .ic{width:17px;height:17px}
@@ -435,6 +438,12 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .now-card .dayline .dl-say{margin-top:4px;font-size:1rem;color:var(--ink)}
 .now-card .next:not([hidden])+.dayline .dl-say{color:var(--muted)}
 .now-card .next:not([hidden])+.dayline .dl-say b{color:var(--ink)}
+.nx-orb{display:flex;justify-content:center;margin:6px 0 4px}
+.orb-cv{display:block;width:min(200px,60%);aspect-ratio:1}
+.orb-say{margin:14px 0 0;font-size:1rem;line-height:1.45;color:var(--muted)}.orb-say b{font-weight:500;color:var(--ink)}
+.nx-line{display:flex;align-items:center;gap:10px;margin-top:12px}
+.nx-line .main{flex:1;font-size:.95rem;line-height:1.4;color:var(--muted)}.nx-line .main b{font-weight:500;color:var(--ink)}
+.nx-line .nm-more{margin:-8px -10px -8px 0}
 .dash-nut{padding:4px 24px 0}.dash-nut .dn-h{margin-top:8px}
 .dash-head{display:none}
 .hero{display:none} /* the rings are hidden for now */
@@ -449,6 +458,9 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   #view-dash .next[hidden]+.dayline{margin-top:auto}
   #view-dash .nx-clock{font-size:clamp(1.9rem,8.6vw,2.5rem);line-height:1.18;letter-spacing:-0.03em}
   #view-dash .nx-say{font-size:1.15rem;letter-spacing:-0.01em;margin-top:12px}
+  #view-dash .orb-cv{width:min(300px,76vw)}
+  #view-dash .orb-say{font-size:1.2rem;line-height:1.4;letter-spacing:-0.01em;margin-top:20px}
+  #view-dash .nx-line .main{font-size:1.02rem}
   #view-dash .now-card .dayline .dl-say{font-size:1.05rem}
   #view-dash .next[hidden]+.dayline .dl-say{font-size:1.45rem;line-height:1.3;letter-spacing:-0.02em}
   /* until it starts covering the card, the drawer is just more page: no edge, no shadow, no handle */
@@ -1015,7 +1027,7 @@ function rebalanceDay(d,fixed=-1,shuffle=false){
     c+=shuffle?Math.random()*70:(oi!==day.picks[si]?10:0);
     return c;
   }));
-  // Variety: each food group missing from the day costs as much as being 15 kcal off target.
+  // Variety: each food group missing from the day costs as much as being 15 calories off target.
   const useVar=SLOTS.some(s=>s.opts.some(o=>o.gm));let bm=0;
   SLOTS.forEach((s,i)=>{if(!out(i)&&(day.locked[i]||i===fixed))bm|=s.opts[day.picks[i]].gm||0});
   let best=null,bestScore=Infinity;const ch=[];
@@ -1121,7 +1133,7 @@ SLOTS.forEach((s,i)=>{
   track.setAttribute("aria-label",`${s.name} options. Left and right arrow keys choose.`);
   s.opts.forEach((o,oi)=>{
     const c=document.createElement("article");c.className="card"+(o.skip?" skip":"");
-    c.innerHTML=`<svg class="ic lk" aria-hidden="true"><use href="#i-lock"/></svg><h3>${esc(o.n)}</h3><p class="d">${esc(o.d)}</p>`+(o.skip?"":`<div class="m"><span><b>${fmt(o.k)}</b> kcal</span><span><b>${fmt(o.p)} g</b> protein</span>${o.dv!=null?`<span><b>${o.dv}</b>/10 diversity</span>`:""}</div>`);
+    c.innerHTML=`<svg class="ic lk" aria-hidden="true"><use href="#i-lock"/></svg>${o.skip?`<svg class="ic sk" aria-hidden="true"><use href="#i-skipl"/></svg>`:""}<h3>${esc(o.n)}</h3><p class="d">${esc(o.d)}</p>`+(o.skip?"":`<div class="m"><span><b>${fmt(o.k)}</b> calories</span><span><b>${fmt(o.p)} g</b> protein</span>${o.dv!=null?`<span><b>${o.dv}</b>/10 diversity</span>`:""}</div>`);
     c.addEventListener("click",()=>{if(state.days[ui.day].picks[i]!==oi){if(!state.days[ui.day].locked[i])choose(i,oi)}else if(!o.skip)openDetail(ui.day,i)});
     track.appendChild(c);
   });
@@ -1210,7 +1222,7 @@ function updatePlan(except=-1,smooth=true){
     x.more.setAttribute("aria-label",`Options for ${s.name}`+(E&&!sk?", eaten":M&&!sk?", skipped":L?", locked":""));
     x.label.textContent=fmtTime(timeOf(ui.day,i));
     const ex=sk?[]:exOf(ui.day,i);x.xl.hidden=!ex.length;
-    if(ex.length){x.xl.innerHTML=`<svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg><span></span><b>${fmt(exSum(ex).k)} kcal</b>`;x.xl.querySelector("span").textContent=ex.map(y=>y.n).join(", ");x.xl.setAttribute("aria-label",`Add-ons for ${s.name}: ${ex.map(y=>y.n).join(", ")}`)}
+    if(ex.length){x.xl.innerHTML=`<svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg><span></span><b>${fmt(exSum(ex).k)} calories</b>`;x.xl.querySelector("span").textContent=ex.map(y=>y.n).join(", ");x.xl.setAttribute("aria-label",`Add-ons for ${s.name}: ${ex.map(y=>y.n).join(", ")}`)}
     x.cards.forEach((el,oi)=>{el.classList.toggle("sel",oi===day.picks[i]);el.classList.toggle("is-locked",oi===day.picks[i]&&L&&!E&&!M&&!sk)});
     if(i!==except)scrollToPick(i,smooth);
   });
@@ -1287,10 +1299,10 @@ function dayStat(d){
   const last=ms.length?Math.max(...ms.map(m=>mins(m.time))):0,over=past||today&&nm>last;
   let kind="info",text,sub="",gap=Math.max(0,expected-ek);
   if(!ms.length){text="No meals planned";gap=0}
-  else if(future){text=`${ms.length} meals planned`;sub=`${fmt(t.k)} kcal, first at ${fmtTime(ms[0].time)}`}
+  else if(future){text=`${ms.length} meals planned`;sub=`${fmt(t.k)} calories, first at ${fmtTime(ms[0].time)}`}
   else if(today&&!ms.some(due)&&!ek){text="Day hasn't started";sub=`First meal at ${fmtTime(ms[0].time)}`}
-  else if(gap<=100){kind="ok";text=over?(ek>=state.target-100?"Goal met":"Day done"):"On track";sub=`${fmt(ek)} of ${fmt(over?t.k:expected)} kcal ${over?"eaten":"due so far"}`}
-  else{kind="warn";text=past?`${fmt(gap)} kcal short`:`Behind by ${fmt(gap)} kcal`;sub=`${fmt(ek)} of ${fmt(expected)} kcal due by now`}
+  else if(gap<=100){kind="ok";text=over?(ek>=state.target-100?"Goal met":"Day done"):"On track";sub=`${fmt(ek)} of ${fmt(over?t.k:expected)} calories ${over?"eaten":"due so far"}`}
+  else{kind="warn";text=past?`${fmt(gap)} calories short`:`Behind by ${fmt(gap)} calories`;sub=`${fmt(ek)} of ${fmt(expected)} calories due by now`}
   return{d,ms,t,done,nMiss,ek,ep,today,past,future,nm,due,gap,expected,kind,text,sub};
 }
 const DL_ICON={ok:"okl",warn:"warnl",info:"clockl"};
@@ -1306,15 +1318,15 @@ function daySentence(s,quiet){
   const goal=state.target,next=s.ms.find(m=>!m.done&&!m.missed&&(!s.today||mins(m.time)+60>=s.nm)),nm=m=>m.custom?m.o.n:m.slot.toLowerCase();
   if(!s.ms.length)return "Nothing is planned for this day yet.";
   const nx=next&&!quiet?` ${s.future||s.kind==="info"?"It starts with":"Next up is"} ${nm(next)} at ${fmtTime(next.time)}.`:"";
-  if(s.future)return `${B(fmt(s.t.k)+" kcal")} and ${B(fmt(s.t.p)+" g protein")} are planned across ${s.ms.length} meals.${nx}`;
-  if(s.kind==="info")return `Your day hasn't started yet. ${B(fmt(s.t.k)+" kcal")} are planned against your ${fmt(goal)} kcal goal.${nx}`;
+  if(s.future)return `${B(fmt(s.t.k)+" calories")} and ${B(fmt(s.t.p)+" g protein")} are planned across ${s.ms.length} meals.${nx}`;
+  if(s.kind==="info")return `Your day hasn't started yet. ${B(fmt(s.t.k)+" calories")} are planned against your ${fmt(goal)}-calorie goal.${nx}`;
   if(s.kind==="ok"){
-    if(s.past||!next)return s.ek>=goal-100?`You ate ${B(fmt(s.ek)+" kcal")}. Goal met, nice work.`:`You finished at ${B(fmt(s.ek)+" kcal")}, ${B(fmt(goal-s.ek)+" kcal")} short of your goal.`;
-    return `You've had ${B(fmt(s.ek)+" kcal")} so far, right on pace, with ${B(fmt(Math.max(0,goal-s.ek))+" kcal")} to go.${nx}`;
+    if(s.past||!next)return s.ek>=goal-100?`You ate ${B(fmt(s.ek)+" calories")}. Goal met, nice work.`:`You finished at ${B(fmt(s.ek)+" calories")}, ${B(fmt(goal-s.ek)+" calories")} short of your goal.`;
+    return `You've had ${B(fmt(s.ek)+" calories")} so far, right on pace, with ${B(fmt(Math.max(0,goal-s.ek))+" calories")} to go.${nx}`;
   }
-  if(s.past)return `You ate ${B(fmt(s.ek)+" kcal")}, ${B(fmt(s.gap)+" kcal")} short of the plan.`;
+  if(s.past)return `You ate ${B(fmt(s.ek)+" calories")}, ${B(fmt(s.gap)+" calories")} short of the plan.`;
   const late=s.ms.filter(m=>!m.done&&!m.missed&&mins(m.time)<=s.nm).pop(); // the latest meal that's come and gone unmarked
-  return `You're ${B(fmt(s.gap)+" kcal")} behind: ${fmt(s.ek)} eaten of the ${fmt(s.expected)} due by now.${quiet?"":late?` ${late.custom?late.o.n:late.slot} at ${fmtTime(late.time)} isn't marked eaten yet.`:next&&next.o.k>=s.gap*.8?(quiet?"":` Having ${nm(next)} would about close the gap.`):nx}`;
+  return `You're ${B(fmt(s.gap)+" calories")} behind: ${fmt(s.ek)} eaten of the ${fmt(s.expected)} due by now.${quiet?"":late?` ${late.custom?late.o.n:late.slot} at ${fmtTime(late.time)} isn't marked eaten yet.`:next&&next.o.k>=s.gap*.8?(quiet?"":` Having ${nm(next)} would about close the gap.`):nx}`;
 }
 // One day: each meal on a timeline (eaten, skipped, due, to come) and the part of the day that's gone by.
 function renderDayline(s){
@@ -1335,15 +1347,15 @@ function renderRangeline(st){
   const el=$("dayline"),run=st.filter(s=>s.kind!=="info"),gap=run.reduce((a,s)=>a+s.gap,0),okN=run.filter(s=>s.kind==="ok").length;
   const eaten=st.reduce((a,s)=>a+s.ek,0),planned=st.reduce((a,s)=>a+s.t.k,0),n=st.length;
   let kind="info",text,sub;
-  if(!run.length){text=`${fmt(Math.round(planned/n/10)*10)} kcal a day planned`;sub=`${n} days from ${wk(st[0].d,"long")}`}
-  else{kind=gap<=100*run.length?"ok":"warn";text=kind==="ok"?"On track":`Behind by ${fmt(gap)} kcal`;sub=`${okN} of ${run.length} day${run.length>1?"s":""} on track · ${fmt(eaten)} kcal eaten`}
+  if(!run.length){text=`${fmt(Math.round(planned/n/10)*10)} calories a day planned`;sub=`${n} days from ${wk(st[0].d,"long")}`}
+  else{kind=gap<=100*run.length?"ok":"warn";text=kind==="ok"?"On track":`Behind by ${fmt(gap)} calories`;sub=`${okN} of ${run.length} day${run.length>1?"s":""} on track · ${fmt(eaten)} calories eaten`}
   const scale=Math.max(state.target,...st.map(s=>s.t.k))*1.08,pc=v=>(Math.min(1,v)*100).toFixed(1)+"%";
   const cols=st.map(s=>`<button class="rc ${s.kind}${s.today?" today":""}" data-d="${s.d}" aria-label="${esc(longDate(s.d))}: ${esc(s.text)}"><span class="rc-bar"><i class="pl" style="height:${pc(s.t.k/scale)}"></i><i class="ek" style="height:${pc(s.ek/scale)}"></i></span><span class="rc-l">${wk(s.d)}</span><span class="rc-dot"></span></button>`).join("");
   el.className="dayline range "+kind;
   const gb=`calc(var(--lb) + (100% - var(--lb)) * ${Math.min(1,state.target/scale).toFixed(3)})`;
-  const togo=n-run.length,say=!run.length?`${n} days are planned, averaging ${B(fmt(planned/n)+" kcal")} a day.`
-    :kind==="ok"?`So far you're on track: ${B(fmt(eaten)+" kcal")} eaten over ${run.length} day${run.length>1?"s":""}${togo?`, with ${togo} to go`:""}.`
-    :`You're ${B(fmt(gap)+" kcal")} behind over ${run.length} day${run.length>1?"s":""}; ${okN} of them ${okN===1?"was":"were"} on track.`;
+  const togo=n-run.length,say=!run.length?`${n} days are planned, averaging ${B(fmt(planned/n)+" calories")} a day.`
+    :kind==="ok"?`So far you're on track: ${B(fmt(eaten)+" calories")} eaten over ${run.length} day${run.length>1?"s":""}${togo?`, with ${togo} to go`:""}.`
+    :`You're ${B(fmt(gap)+" calories")} behind over ${run.length} day${run.length>1?"s":""}; ${okN} of them ${okN===1?"was":"were"} on track.`;
   el.innerHTML=dlHead(kind,say,spanLabel())
     +`<div class="rc-row"><span class="rc-goal" style="bottom:${gb}" aria-hidden="true"></span><span class="rc-gl" style="bottom:${gb}" aria-hidden="true">${fmt(state.target)}</span>${cols}</div>`;
   el.querySelectorAll(".rc").forEach(b=>b.onclick=()=>{ui.day=+b.dataset.d;setSpan(1);saveUi();renderAll(false)});
@@ -1362,12 +1374,12 @@ function renderMeter(){
   const ring=(planned,eaten,val,unit,c,rd)=>`<div class="ring">${ringSvg(planned,eaten,val,unit,c.hex)}<span class="rd">${rd}</span></div>`;
   const mealsP=nMeals?(nMeals-nMiss)/nMeals:1,mealsE=nMeals?nDone/nMeals:0,left=nMeals-nDone-nMiss;
   $("rings").innerHTML=
-    ring(tk/gk,showEaten?ek/gk:0,fmt(showEaten?ek:tk),`/ ${fmt(gk)} kcal`,RING.k,showEaten?`<b>${pct1(ek/gk)}</b>${sgn(ek-gk)}`:`<b>${pct1(tk/gk)}</b>planned`)+
+    ring(tk/gk,showEaten?ek/gk:0,fmt(showEaten?ek:tk),`/ ${fmt(gk)} calories`,RING.k,showEaten?`<b>${pct1(ek/gk)}</b>${sgn(ek-gk)}`:`<b>${pct1(tk/gk)}</b>planned`)+
     ring(tp/gp,showEaten?ep/gp:0,fmt(showEaten?ep:tp),`/ ${fmt(gp)} g protein`,RING.p,showEaten?`<b>${pct1(ep/gp)}</b>${sgn(ep-gp)} g`:`<b>${pct1(tp/gp)}</b>planned`)+
     ring(mealsP,showEaten?mealsE:0,showEaten?`${nDone}/${nMeals}`:String(nMeals),showEaten?"meals eaten":"meals planned",RING.m,showEaten?`<b>${pct1(mealsE)}</b>${nMiss?`${nMiss} skipped`:`${left} left`}`:`<b>n = ${nMeals}</b>${n>1?`${n} days`:"today"}`);
   meterData=[{p:tk/gk,e:showEaten?ek/gk:0,rgb:RING.k.rgb},{p:tp/gp,e:showEaten?ep/gp:0,rgb:RING.p.rgb},{p:mealsP,e:showEaten?mealsE:0,rgb:RING.m.rgb}];
   if(dashFx)dashFx.update(meterData);
-  $("rings").setAttribute("aria-label",`${fmt(ek)} of ${fmt(gk)} kcal eaten, ${fmt(ep)} of ${fmt(gp)} g protein, ${nDone} of ${nMeals} meals${multi?` over ${n} days`:""}`);
+  $("rings").setAttribute("aria-label",`${fmt(ek)} of ${fmt(gk)} calories eaten, ${fmt(ep)} of ${fmt(gp)} g protein, ${nDone} of ${nMeals} meals${multi?` over ${n} days`:""}`);
   multi?renderRangeline(st):renderDayline(st[0]);
   // tiles: a small abstract picture of each number; over several days they show the daily average
   const t=rangeTotals(days),diff=t.k-state.target,dn=rangeNutrition(days);
@@ -1375,8 +1387,8 @@ function renderMeter(){
   const miss=GROUPS.filter(g=>!dn.groups.includes(g));
   const pc=v=>Math.max(0,Math.min(100,v*100)).toFixed(1)+"%",mk=t.p*4+t.c*4+t.f*9||1,scale=Math.max(gk,tk)||1;
   // Planned: each meal (or each day) a segment sized by its calories, solid once eaten; the tick is the goal
-  const segs=multi?st.map(s=>`<i class="${s.past?"on":""}" style="flex:${s.t.k||1}" title="${wk(s.d)}: ${fmt(s.t.k)} kcal"></i>`).join("")
-    :st[0].ms.filter(m=>!m.missed).map(m=>`<i class="${m.done?"on":""}" style="flex:${m.o.k}" title="${esc(m.slot)}: ${fmt(m.o.k)} kcal"></i>`).join("");
+  const segs=multi?st.map(s=>`<i class="${s.past?"on":""}" style="flex:${s.t.k||1}" title="${wk(s.d)}: ${fmt(s.t.k)} calories"></i>`).join("")
+    :st[0].ms.filter(m=>!m.missed).map(m=>`<i class="${m.done?"on":""}" style="flex:${m.o.k}" title="${esc(m.slot)}: ${fmt(m.o.k)} calories"></i>`).join("");
   // Macros: each macro's share of the energy, as one 100% bar with a legend of grams and percent
   const split=[["mp","Protein",t.p,t.p*4],["mc","Carbs",t.c,t.c*4],["mf","Fat",t.f,t.f*9]];
   const stack=`<span class="stack" aria-hidden="true">${split.map(([c,,,kc])=>`<i class="${c}" style="width:${pc(kc/mk)}"></i>`).join("")}</span>`;
@@ -1386,7 +1398,7 @@ function renderMeter(){
   const tile=(key,title,say,chart)=>`<button class="tile" data-modal="${key}"><span class="t">${title}</span><span class="say">${say}</span><span class="tz">${chart}</span></button>`;
   const top=split.reduce((a,x)=>x[3]>a[3]?x:a),ad=multi?" a day":"",lowN=dn.has?NUTR.filter(([k,,,dv])=>dn.sum[k]<dv).map(([,l])=>l):[];
   $("tiles").innerHTML=
-    tile("planned","Planned",`${B(fmt(t.k)+" kcal")} planned${ad}, ${Math.abs(diff)<=100?"right at your goal":diff>0?`${fmt(diff)} over your goal`:`${fmt(-diff)} under your goal`}.`,
+    tile("planned","Planned",`${B(fmt(t.k)+" calories")} planned${ad}, ${Math.abs(diff)<=100?"right at your goal":diff>0?`${fmt(diff)} over your goal`:`${fmt(-diff)} under your goal`}.`,
       `<span class="segs" aria-hidden="true"><span class="fill" style="width:${pc(tk/scale)}">${segs}</span><i class="goal" style="left:${pc(gk/scale)}"></i></span><span class="sc" aria-hidden="true"><span>0</span><span style="left:${pc(gk/scale)}">${fmt(gk)}</span></span>`)+
     tile("macros","Macros",`${B(fmt(t.p)+" g protein")}${ad}, ${t.p>=state.protein?"above":"below"} your ${state.protein} g goal. Most calories come from ${top[1].toLowerCase()}.`,stack)+
     (dn.mask?tile("variety","Variety",`${B(`${dn.groups.length} of ${GROUPS.length}`)} food groups${miss.length?`; no ${listOf(miss.map(x=>x.toLowerCase()))} yet`:", every one"}.`,
@@ -1436,7 +1448,7 @@ function cumChart(d){
   const run=(list,end)=>{let c=0,p=`M${X(x0)},${Y(0)}`;list.forEach(m=>{p+=` H${X(mins(m.time))} V${Y(c+=m.o.k)}`});return p+` H${X(end)}`};
   const eaten=ms.filter(m=>m.done),endE=today?clamp(nm,x0,x1):past?x1:(eaten.length?mins(eaten[eaten.length-1].time):x0);
   let c=0;const dots=ms.map(m=>{c+=m.o.k;const x=X(mins(m.time)),y=Y(c);
-    return `<circle cx="${x}" cy="${y}" r="3.5" class="${m.done?"on":"pl"}">${tip(`${m.custom?m.o.n:m.slot} · ${fmtTime(m.time)} · ${fmt(m.o.k)} kcal · running total ${fmt(c)}`)}</circle>`}).join("");
+    return `<circle cx="${x}" cy="${y}" r="3.5" class="${m.done?"on":"pl"}">${tip(`${m.custom?m.o.n:m.slot} · ${fmtTime(m.time)} · ${fmt(m.o.k)} calories · running total ${fmt(c)}`)}</circle>`}).join("");
   const goal=`<line class="goal" x1="${L}" x2="${W-R}" y1="${Y(state.target)}" y2="${Y(state.target)}"/><text class="ink" x="${W-R}" y="${Y(state.target)-5}" text-anchor="end">Goal ${fmt(state.target)}</text>`;
   const nowL=today&&nm>=x0&&nm<=x1?`<line class="now" x1="${X(nm)}" x2="${X(nm)}" y1="${T-6}" y2="${H-B}"/>`:"";
   return `<figure class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Running total of calories through the day: ${fmt(tot)} planned, ${fmt(eaten.reduce((a,m)=>a+m.o.k,0))} eaten, goal ${fmt(state.target)}.">
@@ -1448,20 +1460,20 @@ function dayBars(days){
   const W=CH_W,H=190,L=34,R=8,T=16,B=24,st=days.map(dayStat),mx=Math.max(state.target,...st.map(s=>s.t.k))*1.05,step=niceStep(mx/4),ymax=Math.ceil(mx/step)*step;
   const Y=v=>+(T+(1-v/ymax)*(H-T-B)).toFixed(1),cw=(W-L-R)/days.length,bw=Math.min(22,cw*.55);
   let g="";for(let v=0;v<=ymax+1e-6;v+=step)g+=`<line class="gl" x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L-6}" y="${Y(v)+3}" text-anchor="end">${kfmt(v)}</text>`;
-  const bars=st.map((s,k)=>{const x=+(L+cw*k+(cw-bw)/2).toFixed(1),lab=`${longDate(s.d)} · ${fmt(s.t.k)} kcal planned, ${fmt(s.ek)} eaten`;
+  const bars=st.map((s,k)=>{const x=+(L+cw*k+(cw-bw)/2).toFixed(1),lab=`${longDate(s.d)} · ${fmt(s.t.k)} calories planned, ${fmt(s.ek)} eaten`;
     return `<g>${tip(lab)}<rect class="b-pl" x="${x}" y="${Y(s.t.k)}" width="${bw}" height="${(Y(0)-Y(s.t.k)).toFixed(1)}" rx="3"/>${s.ek?`<rect class="b-on" x="${x}" y="${Y(s.ek)}" width="${bw}" height="${(Y(0)-Y(s.ek)).toFixed(1)}" rx="3"/>`:""}
       <text x="${(x+bw/2).toFixed(1)}" y="${H-6}" text-anchor="middle"${s.today?' class="ink"':""}>${wk(s.d)}</text></g>`}).join("");
   const goal=`<line class="goal" x1="${L}" x2="${W-R}" y1="${Y(state.target)}" y2="${Y(state.target)}"/><text class="ink" x="${W-R}" y="${Y(state.target)-5}" text-anchor="end">Goal ${fmt(state.target)}</text>`;
-  return `<figure class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Calories by day, planned and eaten, against the ${fmt(state.target)} kcal goal.">${g}${bars}${goal}</svg>${legend([["k-bpl","Planned"],["k-bon","Eaten"],["k-goal","Goal"]])}</figure>`;
+  return `<figure class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Calories by day, planned and eaten, against the ${fmt(state.target)}-calorie goal.">${g}${bars}${goal}</svg>${legend([["k-bpl","Planned"],["k-bon","Eaten"],["k-goal","Goal"]])}</figure>`;
 }
 const MAC=[["p","Protein",4,"mk-p"],["c","Carbs",4,"mk-c"],["f","Fat",9,"mk-f"]];
 // Energy split: a thin donut of protein, carbs and fat by calories, with grams and percent beside it.
 function macroDonut(t){
   const kc=MAC.map(([k,,e])=>t[k]*e),sum=kc.reduce((a,b)=>a+b,0)||1,r=46,C=2*Math.PI*r,gap=3;let off=0;
   const cols={p:PR,c:"rgba(0,0,0,.55)",f:"rgba(0,0,0,.28)"};
-  const arcs=MAC.map(([k,l],j)=>{const len=Math.max(0,kc[j]/sum*C-gap),a=`<circle cx="60" cy="60" r="${r}" fill="none" stroke="${cols[k]}" stroke-width="6" stroke-dasharray="${len.toFixed(1)} ${C.toFixed(1)}" stroke-dashoffset="${(-off).toFixed(1)}" transform="rotate(-90 60 60)">${tip(`${l}: ${fmt(t[k])} g, ${fmt(kc[j])} kcal, ${Math.round(kc[j]/sum*100)}%`)}</circle>`;off+=kc[j]/sum*C;return a}).join("");
+  const arcs=MAC.map(([k,l],j)=>{const len=Math.max(0,kc[j]/sum*C-gap),a=`<circle cx="60" cy="60" r="${r}" fill="none" stroke="${cols[k]}" stroke-width="6" stroke-dasharray="${len.toFixed(1)} ${C.toFixed(1)}" stroke-dashoffset="${(-off).toFixed(1)}" transform="rotate(-90 60 60)">${tip(`${l}: ${fmt(t[k])} g, ${fmt(kc[j])} calories, ${Math.round(kc[j]/sum*100)}%`)}</circle>`;off+=kc[j]/sum*C;return a}).join("");
   return `<figure class="chart donut"><svg viewBox="0 0 120 120" role="img" aria-label="Energy split: ${MAC.map(([k,l],j)=>`${l} ${Math.round(kc[j]/sum*100)}%`).join(", ")}.">${arcs}
-    <text x="60" y="58" text-anchor="middle" class="big">${fmt(sum)}</text><text x="60" y="73" text-anchor="middle">kcal</text></svg>
+    <text x="60" y="58" text-anchor="middle" class="big">${fmt(sum)}</text><text x="60" y="73" text-anchor="middle">calories</text></svg>
     <table class="dn-t">${MAC.map(([k,l,,cls],j)=>`<tr><th><i class="${cls}"></i>${l}</th><td>${fmt(t[k])} g</td><td>${Math.round(kc[j]/sum*100)}%</td></tr>`).join("")}</table></figure>`;
 }
 // Calories by macro for each meal (or day), as stacked bars on one scale.
@@ -1488,9 +1500,9 @@ function spanSub(){return ui.span>1?scopeLabel():isToday(ui.day)?"":longDate(ui.
 const slotShort=["Brk","AM","Lun","PM","Din","Eve"];
 function openPlannedDetail(){
   const days=spanDays(),t=rangeTotals(days),diff=t.k-state.target,multi=days.length>1;
-  const rows=multi?days.map(d=>`<li><span>${esc(longDate(d))}</span><span class="q">${fmt(totals(d).k)} kcal</span></li>`).join("")
-    :mealsOf(ui.day).filter(m=>!m.o.skip).map(m=>`<li><span>${esc(m.custom?m.o.n:`${m.slot}: ${m.o.n}`)}</span><span class="q">${fmt(m.o.k)} kcal</span></li>`).join("");
-  tileModal("Planned calories",spanSub(),`<p class="sh-d">${fmt(t.k)} kcal ${multi?"a day on average":"planned"}, ${Math.abs(diff)<=100?"on target":diff>0?`${fmt(diff)} over your ${fmt(state.target)} kcal goal`:`${fmt(-diff)} short of your ${fmt(state.target)} kcal goal`}.</p>
+  const rows=multi?days.map(d=>`<li><span>${esc(longDate(d))}</span><span class="q">${fmt(totals(d).k)} calories</span></li>`).join("")
+    :mealsOf(ui.day).filter(m=>!m.o.skip).map(m=>`<li><span>${esc(m.custom?m.o.n:`${m.slot}: ${m.o.n}`)}</span><span class="q">${fmt(m.o.k)} calories</span></li>`).join("");
+  tileModal("Planned calories",spanSub(),`<p class="sh-d">${fmt(t.k)} calories ${multi?"a day on average":"planned"}, ${Math.abs(diff)<=100?"on target":diff>0?`${fmt(diff)} over your ${fmt(state.target)}-calorie goal`:`${fmt(-diff)} short of your ${fmt(state.target)}-calorie goal`}.</p>
     ${multi?dayBars(days):cumChart(ui.day)}<h3>${multi?"By day":"By meal"}</h3><ul class="ing">${rows}</ul>`);
 }
 function openMacrosDetail(){
@@ -1518,7 +1530,7 @@ function openNutrientsDetail(){
 function reminderEvent(d,m,alert){
   const o=m.o;
   return{u:`${iso(dayDate(d))}-${mealKey(m)}`,t:`${m.custom?o.n:`${m.slot}: ${o.n}`}`,d:iso(dayDate(d)).replace(/-/g,"")+"T"+m.time.replace(":",""),m:30,
-    n:`${fmt(o.k)} kcal · ${fmt(o.p)} g protein${o.d?" — "+o.d:""}`,a:alert};
+    n:`${fmt(o.k)} calories · ${fmt(o.p)} g protein${o.d?" — "+o.d:""}`,a:alert};
 }
 function openCalendarFile(events){
   const json=JSON.stringify(events);
@@ -1589,14 +1601,77 @@ function timerText(sec){
   if(sec>0)return sec<60?"less than a minute":spoken(Math.ceil(sec/60));
   const m=Math.floor(-sec/60);return m<1?"just now":spoken(m)+" ago";
 }
+/* ---------- the day's orb ----------
+   Between meals the dashboard card shows an orb: a round matrix of dots, after the matrix in Dovetail's
+   Thinking loader. It's drawn from what's been eaten today. More food makes the matrix denser, each food
+   group eaten adds its colour, and the more groups and meals, the faster and busier the waves across it.
+   A day with little eaten is a small, grey, slow orb. */
+const GROUP_HEX=["#e0584f","#1f8fc4","#f0b400","#8fb3e6","#a5703f","#ec8d2f","#2fae68","#e2487e","#7a62d6"]; // same order as GROUPS
+function orbStats(d){
+  const ms=mealsOf(d).filter(m=>m.done&&!m.o.skip),ek=ms.reduce((a,m)=>a+m.o.k,0);let mask=0;ms.forEach(m=>{mask|=m.o.gm||0});
+  const groups=GROUPS.filter((_,j)=>mask&(1<<j)),fill=clamp(ek/state.target,0,1);
+  return{meals:ms.length,ek,groups,fill,colors:GROUPS.map((_,j)=>mask&(1<<j)?GROUP_HEX[j]:null).filter(Boolean),
+    energy:clamp(groups.length/GROUPS.length*.7+Math.min(1,ms.length/6)*.3,0,1)};
+}
+const ORB=(()=>{
+  const cv=document.createElement("canvas");cv.className="orb-cv";cv.setAttribute("aria-hidden","true");const ctx=cv.getContext("2d");
+  let st={fill:0,energy:0,colors:[]},cur={fill:0,energy:0},t=0,last=0,raf=0,size=0,dpr=1;
+  const alive=()=>cv.isConnected&&cv.offsetParent!==null&&document.visibilityState==="visible";
+  function measure(){const r=cv.getBoundingClientRect();dpr=Math.min(2,window.devicePixelRatio||1);const s=Math.round(r.width);if(s&&s!==size){size=s;cv.width=cv.height=Math.round(s*dpr)}}
+  function draw(){
+    measure();if(!size)return;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,size,size);
+    const n=Math.round(11+16*cur.fill),gap=size/n,R=size/2,e=cur.energy,cols=st.colors.length?st.colors:["#9a9a9a"];
+    const waves=1+Math.round(e*3),amp=.35+.45*e;
+    for(let gy=0;gy<n;gy++)for(let gx=0;gx<n;gx++){
+      const x=(gx+.5)/n*2-1,y=(gy+.5)/n*2-1,r2=x*x+y*y;if(r2>1)continue;
+      const z=Math.sqrt(1-r2);let v=0;
+      for(let k=0;k<waves;k++){const a=k*2.1+t*.07*(k+1);v+=Math.sin((x*Math.cos(a)+y*Math.sin(a))*(2.2+k*1.3)/Math.max(.35,z*.6+.4)+t*(.8+k*.45))}
+      v/=waves;
+      const c=Math.sin(x*1.7+y*1.3+t*.35)+Math.sin(y*2.3-x*.9-t*.27),ci=Math.floor(((c+2)/4)*cols.length*.999+cols.length*9)%cols.length;
+      const rad=gap*.36*(.45+.55*z)*(1-amp*.5+amp*.5*(v+1));
+      ctx.globalAlpha=.25+.75*z*(.55+.45*(v+1)/2);ctx.fillStyle=cols[ci];
+      ctx.beginPath();ctx.arc(R+x*(R-gap*.5),R+y*(R-gap*.5),Math.max(.6,rad),0,6.2832);ctx.fill();
+    }
+    ctx.globalAlpha=1;
+  }
+  function frame(now){raf=0;if(!alive())return;const dt=Math.min(.1,(now-(last||now))/1000);last=now;
+    const k=1-Math.exp(-dt*1.5);cur.fill+=(st.fill-cur.fill)*k;cur.energy+=(st.energy-cur.energy)*k;
+    t+=dt*(.25+1.35*cur.energy);draw();raf=requestAnimationFrame(frame)}
+  function start(){if(reduceMotion){cur={...st};requestAnimationFrame(draw);return}if(!raf){last=0;raf=requestAnimationFrame(frame)}}
+  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")start()});
+  window.addEventListener("resize",()=>{size=0;if(reduceMotion)draw()});
+  return{cv,set(s){st=s;if(!cur.init){cur={fill:s.fill,energy:s.energy,init:1}}start()},start};
+})();
+function orbSay(o){
+  if(!o.meals)return "Nothing eaten yet today.";
+  return `${o.meals} meal${o.meals>1?"s":""} and ${B(fmt(o.ek)+" calories")} so far, from ${B(`${o.groups.length} of ${GROUPS.length}`)} food groups${o.groups.length?`: ${listOf(o.groups.map(g=>g.toLowerCase()))}`:""}.`;
+}
 // The next meal, said as a sentence: "Lunch starts in 44 minutes." or "Lunch started 1 hour and 36 minutes ago."
 function renderNext(){
-  const el=$("nextMeal"),n=nextMeal();
+  const el=$("nextMeal"),n=nextMeal(),td=[...Array(D).keys()].find(isToday);
+  // between meals (or once the day's done) the card shows today's orb, with the next meal as one line under it
+  if((!n||n.diff>0)&&td!=null){
+    const o=orbStats(td);el.classList.add("orb-mode");el.classList.remove("u-late");
+    el.innerHTML=`<div class="nx-orb"></div><p class="orb-say">${orbSay(o)}</p>${n?`<div class="nx-line"><button class="main"><span class="nx-pre"></span> <span class="timer"></span>: <b></b></button>
+      <button class="more nm-more" aria-haspopup="menu" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="#i-dots"/></svg></button></div>`:""}`;
+    el.querySelector(".nx-orb").appendChild(ORB.cv);ORB.set(o);
+    if(n){const{d,m}=n,name=m.custom?m.o.n:m.slot,[h1,m1]=m.time.split(":").map(Number),b=dayDate(d);
+      el._at=new Date(b.getFullYear(),b.getMonth(),b.getDate(),h1,m1).getTime();
+      el.querySelector(".nx-pre").textContent=`${isToday(d)?"":"Tomorrow, "}${isToday(d)?name:name.toLowerCase()} in`;el.querySelector(".nx-line b").textContent=m.o.n;
+      el.querySelector(".main").onclick=()=>openMeal(d,m);el.querySelector(".main").setAttribute("aria-label",`${name} at ${fmtTime(m.time)}: ${m.o.n}. Open recipe.`);
+      const mb=el.querySelector(".nm-more");mb.setAttribute("aria-label",`${name} actions`);
+      mb.onclick=()=>openMenu(mb,`${name} actions`,[["ok","Mark eaten",()=>markDone(d,m,true)],
+        !m.custom&&["sparkle","Suggest another",()=>shuffleMeal(d,m.i)],!m.custom&&["swap","I ate something else",()=>ateInstead(d,m.i)],
+        m.custom?["trash","Remove",()=>removeCustom(d,m.cid)]:["skip","I skipped it",()=>setMissed(d,m.i,true)],["bell","Remind me",()=>openReminder(d,m)]])}
+    else el._at=0;
+    el.hidden=false;tickNext();dashParallax();return;
+  }
+  el.classList.remove("orb-mode");
   if(!n){el.hidden=true;el._at=0;dashParallax();return}
   const{d,m,diff,late}=n;
   const name=m.custom?m.o.n:m.slot,[hh,mm]=m.time.split(":").map(Number),b=dayDate(d);
   el._at=new Date(b.getFullYear(),b.getMonth(),b.getDate(),hh,mm).getTime();
-  const tmr=!isToday(d),who=(tmr?"Tomorrow, ":"")+(m.custom?m.o.n:tmr?m.slot.toLowerCase():m.slot),meal=m.custom?"it":`<b>${esc(m.o.n)}</b>`,macros=`${fmt(m.o.k)} kcal and ${fmt(m.o.p)} g protein`;
+  const tmr=!isToday(d),who=(tmr?"Tomorrow, ":"")+(m.custom?m.o.n:tmr?m.slot.toLowerCase():m.slot),meal=m.custom?"it":`<b>${esc(m.o.n)}</b>`,macros=`${fmt(m.o.k)} calories and ${fmt(m.o.p)} g protein`;
   const pre=diff>0?`${who} starts in`:`${who} started`;
   const post=diff>0?`At ${fmtTime(m.time)} you're having ${meal}, ${macros}.`
     :late<=5?`Time to eat${m.custom?"":`: ${meal}`}.`
@@ -1714,7 +1789,7 @@ function focusBlk(i,doFocus){const b=document.querySelector(`.blk[data-slot="${i
 // One meal as a list row: time and meal type on the left, the meal and its macros on the right.
 function agendaRow(d,m){
   const b=document.createElement("button");b.className="ag"+(m.o.skip?" skipped":"")+(m.custom?" added":"");
-  b.innerHTML=`<span class="tm"><span></span><span class="sl"></span></span><span><span class="n"></span><span class="d"></span>${m.o.skip?"":`<span class="m"><b>${fmt(m.o.k)}</b> kcal &nbsp; <b>${fmt(m.o.p)} g</b> protein &nbsp; ${fmt(m.o.c)} g carbs &nbsp; ${fmt(m.o.f)} g fat</span>`}</span>`;
+  b.innerHTML=`<span class="tm"><span></span><span class="sl"></span></span><span><span class="n"></span><span class="d"></span>${m.o.skip?"":`<span class="m"><b>${fmt(m.o.k)}</b> calories &nbsp; <b>${fmt(m.o.p)} g</b> protein &nbsp; ${fmt(m.o.c)} g carbs &nbsp; ${fmt(m.o.f)} g fat</span>`}</span>`;
   b.querySelector(".tm span").textContent=fmtTime(m.time);
   b.querySelector(".sl").textContent=m.slot;b.classList.toggle("missed",m.missed);b.classList.toggle("eaten",m.done);
   b.querySelector(".n").textContent=m.o.skip?"Skipped":m.o.n;
@@ -1727,7 +1802,7 @@ function addMealBtn(d){const b=document.createElement("button");b.className="add
 function renderDay(body,d=ui.day,head=false){
   const list=document.createElement("div");list.className="agenda narrow";
   if(head){const t=totals(d),h=document.createElement("button");h.className="ag-day"+(isToday(d)?" today":"");
-    h.innerHTML=`<span class="n"></span><span class="m">${fmt(t.k)} kcal · ${fmt(t.p)} g protein</span>`;h.querySelector(".n").textContent=isToday(d)?`Today, ${shortDate(d)}`:longDate(d);
+    h.innerHTML=`<span class="n"></span><span class="m">${fmt(t.k)} calories · ${fmt(t.p)} g protein</span>`;h.querySelector(".n").textContent=isToday(d)?`Today, ${shortDate(d)}`:longDate(d);
     h.setAttribute("aria-label",`Show only ${longDate(d)}`);h.onclick=()=>{ui.day=d;setSpan(1);saveUi();renderAll(false)};list.appendChild(h)}
   mealsOf(d).forEach(m=>list.appendChild(agendaRow(d,m)));
   body.appendChild(list);if(head)return;
@@ -1743,8 +1818,8 @@ function renderWeek(body,n=D){
   for(const d of days){
     const t=totals(d);sk+=t.k;sp+=t.p;
     const h=document.createElement("button");h.className="wg-h"+(isToday(d)?" today":"")+(d===ui.day?" sel":"");
-    h.innerHTML=`<b>${wk(d)} ${dayDate(d).getDate()}</b><span>${fmt(t.k)} kcal</span>${few?"":`<span>${fmt(t.p)} g protein</span>`}`;
-    h.setAttribute("aria-label",`${longDate(d)}, ${fmt(t.k)} kcal. Open day view.`);
+    h.innerHTML=`<b>${wk(d)} ${dayDate(d).getDate()}</b><span>${fmt(t.k)} calories</span>${few?"":`<span>${fmt(t.p)} g protein</span>`}`;
+    h.setAttribute("aria-label",`${longDate(d)}, ${fmt(t.k)} calories. Open day view.`);
     h.onclick=()=>{ui.day=d;setSpan(1);saveUi();renderAll(false)};
     g.appendChild(h);
   }
@@ -1760,7 +1835,7 @@ function renderWeek(body,n=D){
       const b=document.createElement("button");b.className="wb"+(m.half?" half"+(m.lane?" r":""):"")+(m.locked?" locked":"")+(m.done?" eaten":"")+(m.missed?" missed":"");
       b.style.top=topOf(m.mm);b.style.height=BH+"px";
       b.innerHTML=`<span class="n"></span>`;b.querySelector(".n").textContent=m.o.n;
-      b.title=`${m.slot}: ${m.o.n}, ${fmt(m.o.k)} kcal`;
+      b.title=`${m.slot}: ${m.o.n}, ${fmt(m.o.k)} calories`;
       b.setAttribute("aria-label",`${shortDate(d)}, ${fmtTime(m.time)} ${m.slot}: ${m.o.n}. Open recipe.`);
       b.onclick=()=>openMeal(d,m);col.appendChild(b);
     });
@@ -1774,7 +1849,7 @@ function renderWeek(body,n=D){
   if(few)return;
   requestAnimationFrame(()=>{const sc=wrap.querySelector(".wg-h.today")||wrap.querySelector(".wg-h.sel");if(sc&&wrap.scrollWidth>wrap.clientWidth)wrap.scrollLeft=Math.max(0,sc.offsetLeft-60)});
   const s=document.createElement("div");s.className="wsum";
-  s.innerHTML=`<span>Average <b>${fmt(sk/D)}</b> kcal a day</span><span><b>${fmt(sp/D)} g</b> protein a day</span>`;
+  s.innerHTML=`<span>Average <b>${fmt(sk/D)}</b> calories a day</span><span><b>${fmt(sp/D)} g</b> protein a day</span>`;
   body.appendChild(s);
   const f=document.createElement("div");f.className="foot";
   const btn=document.createElement("button");btn.className="pdf with-ic";btn.innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-down"/></svg>Download week PDF';btn.hidden=!canPdf();
@@ -1854,7 +1929,7 @@ function weekPdf(){
   const{jsPDF}=window.jspdf;const doc=new jsPDF({unit:"pt",format:"letter",orientation:"landscape"});
   const W=doc.internal.pageSize.getWidth(),M=36,lc=78,cw=(W-2*M-lc)/D;let y=M+14;
   doc.setFont("helvetica","normal");doc.setTextColor(20);doc.setFontSize(18);doc.text("Weekly meal plan",M,y);
-  doc.setFontSize(9);doc.setTextColor(130);doc.text(`${shortDate(0)} to ${shortDate(6)}. Goal ${fmt(state.target)} kcal and ${state.protein} g protein a day.`,M,y+14);y+=36;
+  doc.setFontSize(9);doc.setTextColor(130);doc.text(`${shortDate(0)} to ${shortDate(6)}. Goal ${fmt(state.target)} calories and ${state.protein} g protein a day.`,M,y+14);y+=36;
   doc.setFontSize(9);doc.setTextColor(20);
   for(let d=0;d<D;d++)doc.text(shortDate(d),M+lc+d*cw+4,y);
   y+=6;doc.setDrawColor(20);doc.line(M,y,W-M,y);y+=12;
@@ -1865,11 +1940,11 @@ function weekPdf(){
     doc.setFontSize(8.5);doc.setTextColor(20);doc.text(SLOTS[i].name,M,y+10);
     cells.forEach((c,d)=>{const x=M+lc+d*cw+4;doc.setFontSize(7.5);doc.setTextColor(130);doc.text(c.t,x,y);
       doc.setFontSize(8.5);doc.setTextColor(c.o.skip?150:20);doc.text(c.txt,x,y+10.5);
-      if(!c.o.skip){doc.setTextColor(130);doc.setFontSize(7.5);doc.text(`${c.o.k} kcal, ${c.o.p} g protein`,x,y+10.5+c.txt.length*10.5)}});
+      if(!c.o.skip){doc.setTextColor(130);doc.setFontSize(7.5);doc.text(`${c.o.k} calories, ${c.o.p} g protein`,x,y+10.5+c.txt.length*10.5)}});
     y+=Math.max(26,lines*10.5)+8;doc.setDrawColor(225);doc.line(M,y-8,W-M,y-8);y+=4;
   });
   doc.setFontSize(8.5);doc.setTextColor(20);doc.text("Day total",M,y);
-  for(let d=0;d<D;d++){const t=totals(d);doc.text(`${fmt(t.k)} kcal`,M+lc+d*cw+4,y);doc.setTextColor(130);doc.text(`${fmt(t.p)} g protein`,M+lc+d*cw+4,y+11);doc.setTextColor(20)}
+  for(let d=0;d<D;d++){const t=totals(d);doc.text(`${fmt(t.k)} calories`,M+lc+d*cw+4,y);doc.setTextColor(130);doc.text(`${fmt(t.p)} g protein`,M+lc+d*cw+4,y+11);doc.setTextColor(20)}
   return doc.output("blob");
 }
 function canPdf(){return !!window.jspdf}
@@ -1918,14 +1993,14 @@ function renderSheet(){
     :(ING[o.n]||[]).map(([n,q,u,,gf],k)=>{ingNames.push(n);return ingRow(n,gf,rq(q,u),k)}).join("");
   const steps=((o.steps&&o.steps.length)?o.steps:(STEPS[o.n]||[])).map(x=>`<li>${esc(x)}</li>`).join("");
   const ex=o.skip?[]:exOf(d,i),xs=exSum(ex),tk=o.k+xs.k,tp=o.p+xs.p,tc=o.c+xs.c,tf=o.f+xs.f;
-  const addons=o.skip?"":`<h3>Add-ons</h3>${ex.length?`<ul class="ing addons">${ex.map(x=>`<li><span>${esc(x.n)}${x.q!==1?` <span class="q2">× ${+x.q.toFixed(2)}</span>`:""}</span><span class="q">${fmt(mac(x).k)} kcal</span><button class="x-rm" data-x="${x.id}" aria-label="Remove ${esc(x.n)}"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></li>`).join("")}</ul>`:`<p class="hint">Add something from your pantry to this meal, like a yogurt or a piece of fruit.</p>`}
+  const addons=o.skip?"":`<h3>Add-ons</h3>${ex.length?`<ul class="ing addons">${ex.map(x=>`<li><span>${esc(x.n)}${x.q!==1?` <span class="q2">× ${+x.q.toFixed(2)}</span>`:""}</span><span class="q">${fmt(mac(x).k)} calories</span><button class="x-rm" data-x="${x.id}" aria-label="Remove ${esc(x.n)}"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></li>`).join("")}</ul>`:`<p class="hint">Add something from your pantry to this meal, like a yogurt or a piece of fruit.</p>`}
     <button class="txt with-ic sh-add" id="shAddX"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>Add from pantry</button>`;
   box.innerHTML=`
     ${sheetHead([isToday(d)?"":shortDate(d),isDone(d,i)?"Eaten":isMissed(d,i)?"Skipped":""].filter(Boolean).join(" · "),o.skip?"Skipped":esc(o.n))}
     <p class="sh-d">${esc(o.d)}</p>
     ${o.skip?"":`<h3>Ingredients</h3><ul class="ing">${ing}</ul><h3>Steps</h3><ol class="steps">${steps}</ol>`}
     ${o.skip?"":`<h3 class="sh-sep">Details</h3>`}
-    ${o.skip?"":`<div class="sh-m"><span><b>${fmt(tk)}</b> kcal</span><span><b>${fmt(tp)} g</b> protein</span><span><b>${fmt(tc)} g</b> carbs</span><span><b>${fmt(tf)} g</b> fat</span></div>${ex.length?`<p class="fine">Includes ${fmt(xs.k)} kcal and ${fmt(xs.p)} g protein from add-ons.</p>`:""}`}
+    ${o.skip?"":`<div class="sh-m"><span><b>${fmt(tk)}</b> calories</span><span><b>${fmt(tp)} g</b> protein</span><span><b>${fmt(tc)} g</b> carbs</span><span><b>${fmt(tf)} g</b> fat</span></div>${ex.length?`<p class="fine">Includes ${fmt(xs.k)} calories and ${fmt(xs.p)} g protein from add-ons.</p>`:""}`}
     <div class="sh-time"><label for="shTime">Time</label><input type="time" id="shTime" step="300" value="${t}">
       <button class="txt" id="shAll">Use this time every day</button>
       ${overridden?`<button class="txt" id="shReset">Reset to ${fmtTime(state.times[i])}</button>`:""}
@@ -1987,7 +2062,7 @@ function openPantryPicker({eyebrow,title,servings,onPick,back,query:q0}){
     const its=pantry.filter(it=>!t||it.name.toLowerCase().includes(t)).sort((a,b)=>a.name.localeCompare(b.name));
     if(!its.length){box.innerHTML=`<p class="hint">${pantry.length?"Nothing in your pantry matches.":"Your pantry is empty. Add items on the Pantry tab, or check off your grocery list and add them from there."}</p>`;return}
     its.forEach(it=>{const b=document.createElement("button");b.className="pk-row";b.setAttribute("role","listitem");
-      const n=it.nutrition||{},kc=n.calories!=null?`${fmt(n.calories*q)} kcal${n.protein!=null?` · ${fmtN(n.protein*q)} g protein`:""}`:"No nutrition info";
+      const n=it.nutrition||{},kc=n.calories!=null?`${fmt(n.calories*q)} calories${n.protein!=null?` · ${fmtN(n.protein*q)} g protein`:""}`:"No nutrition info";
       b.innerHTML=`<span class="nm"></span><span class="mt"></span>`;b.querySelector(".nm").textContent=it.name;b.querySelector(".mt").textContent=[kc,qtyLabel(it)].filter(Boolean).join(" · ");
       b.onclick=()=>onPick(it,q);box.appendChild(b)})};
   if(servings){const out=$("pkQ"),upd=v=>{q=clamp(Math.round(v*2)/2,0.5,20);out.textContent=+q.toFixed(1);list()};$("pkMinus").onclick=()=>upd(q-0.5);$("pkPlus").onclick=()=>upd(q+0.5)}
@@ -2438,7 +2513,7 @@ async function readLabel(bitmap,progress){
   cx.putImageData(im,0,0);
   const{data}=await ocrWorker.recognize(cv);return data.text||"";
 }
-function nutSummary(it){const n=it.nutrition||{};return n.calories!=null?`${fmt(n.calories)} kcal${n.protein!=null?` · ${+n.protein} g protein`:""} per serving`:""}
+function nutSummary(it){const n=it.nutrition||{};return n.calories!=null?`${fmt(n.calories)} calories${n.protein!=null?` · ${+n.protein} g protein`:""} per serving`:""}
 function filteredPantry(){
   const q=pf.q.trim().toLowerCase();
   return pantry.filter(it=>(!q||it.name.toLowerCase().includes(q)||it.category.toLowerCase().includes(q))
@@ -2589,7 +2664,7 @@ function viewPantryItem(it){
     ${it.image?`<div class="pv-photo" id="pvPhoto"></div>`:""}
     <dl class="pv-facts">${facts.map(([k,v])=>`<div><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl>
     <h3>Nutrition per serving</h3>
-    ${rows.length?`<dl class="pv-nut">${rows.map(([k,l,u])=>`<div><dt>${l}</dt><dd>${+(+n[k]).toFixed(1)}${u?` <small>${u}</small>`:` <small>kcal</small>`}</dd></div>`).join("")}</dl>`
+    ${rows.length?`<dl class="pv-nut">${rows.map(([k,l,u])=>`<div><dt>${l}</dt><dd>${+(+n[k]).toFixed(1)}${u?` <small>${u}</small>`:` <small>calories</small>`}</dd></div>`).join("")}</dl>`
       :`<p class="hint">None yet.</p>`}
     <h3>Recipes</h3>
     ${recs.length?`<div class="chips">${recs.map(r=>`<span class="chip ro">${esc(linkLabel(r))}</span>`).join("")}</div>`:`<p class="hint">Not linked to any recipes.</p>`}
