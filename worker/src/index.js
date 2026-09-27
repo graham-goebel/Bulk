@@ -194,6 +194,7 @@ async function listMeals(env) {
         hide: !!(pr["Hide from planner"] && pr["Hide from planner"].checkbox),
         nutrients: Object.fromEntries(Object.entries(NUTRIENTS).map(([k, col]) => [k, numOrNull(pr[col])])),
         groups: pr["Food groups"] && Array.isArray(pr["Food groups"].multi_select) ? pr["Food groups"].multi_select.map((o) => o.name) : [],
+        prep: numOrNull(pr["Prep (min)"]), // optional; the app estimates from the steps when it's empty
         diversity: pr["Diversity score"] && pr["Diversity score"].formula && typeof pr["Diversity score"].formula.number === "number"
           ? pr["Diversity score"].formula.number : null,
       };

@@ -453,6 +453,11 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .nx-line .nm-more{margin:-8px -10px -8px 0}
 .orb-say{margin:0;font-size:.92rem;line-height:1.45;color:var(--muted)}.orb-say b{font-weight:500;color:var(--ink)}
 .next:not([hidden])+.orb-say{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.nx-go{color:var(--ink);font-weight:500}
+.nudge{display:flex;align-items:flex-start;gap:10px;width:100%;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);text-align:left;font-size:.92rem;line-height:1.45;color:var(--muted);flex-wrap:wrap}
+.nudge .ic{flex:none;width:17px;height:17px;margin-top:2px;color:var(--ink)}.nudge>span:first-of-type{flex:1;min-width:0}.nudge b{font-weight:500;color:var(--ink)}
+.nudge.in>*{animation:swapIn .35s ease-out both}
+.nd-dots{display:flex;gap:4px;width:100%;padding-left:27px}.nd-dots i{width:5px;height:5px;border-radius:50%;background:var(--line)}.nd-dots i.on{background:var(--ink)}
 .st-day .dl-say{margin:4px 0 18px;font-size:1.1rem;line-height:1.42;color:var(--ink)}.st-day .dl-say b{font-weight:500}
 .st-meals li{align-items:center}.st-meals .q{flex:1;text-align:right;color:var(--ink)}.st-meals .st-ic{width:18px;display:flex;justify-content:flex-end}.st-meals .st{width:15px;height:15px}
 .dash-nut{padding:4px 24px 0}
@@ -756,7 +761,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   <div class="now-card" id="nowCard"><div class="nx-orb" id="orbBox"></div></div>
   <div class="dash-drawer">
     <div class="hero" id="hero"><div class="rings" id="rings" aria-live="polite"></div></div>
-    <div class="now-tile" id="nowTile"><div class="next" id="nextMeal" hidden></div><p class="orb-say" id="orbSay"></p></div>
+    <div class="now-tile" id="nowTile"><div class="next" id="nextMeal" hidden></div><p class="orb-say" id="orbSay"></p><button class="nudge" id="pantryNudge" hidden></button></div>
     <div class="dayline" id="dayline" hidden></div>
     <div class="tiles" id="tiles"></div>
     <div class="dash-nut" id="dashNut" hidden></div>
@@ -967,7 +972,7 @@ function applyLib(lib){
     const list=lib.filter(m=>m.slot===i&&!m.hide);if(!list.length)return;
     list.sort((a,b)=>{const ia=BASE_ORDER[i].indexOf(a.n),ib=BASE_ORDER[i].indexOf(b.n);return (ia<0?999:ia)-(ib<0?999:ib)||a.n.localeCompare(b.n)});
     const seen=new Set();
-    s.opts=list.filter(m=>{if(seen.has(m.n))return false;seen.add(m.n);return true}).map(m=>({n:m.n,d:m.d,k:m.k,p:m.p,c:m.c,f:m.f,ing:m.ing,steps:m.steps,url:m.url,nu:m.nu||null,g:m.g||[],dv:typeof m.dv==="number"?m.dv:null,gm:groupMask(m.g)}));
+    s.opts=list.filter(m=>{if(seen.has(m.n))return false;seen.add(m.n);return true}).map(m=>({n:m.n,d:m.d,k:m.k,p:m.p,c:m.c,f:m.f,ing:m.ing,steps:m.steps,url:m.url,nu:m.nu||null,g:m.g||[],dv:typeof m.dv==="number"?m.dv:null,pt:m.pt||null,gm:groupMask(m.g)}));
     if(HAS_SKIP[i])s.opts.push(SKIP);
   });
 }
@@ -1865,12 +1870,67 @@ function openOrbDetail(){
   tileModal("The orb",o.span===1?(o.live?"Today":longDate(o.last)):scopeLabel(),`<ul class="ing orb-rows">${rows.map(([k,v])=>`<li><span>${k}</span><span class="q">${v}</span></li>`).join("")}</ul>
     <p class="fine">A picture of how varied and steady your eating is, not a measure of your microbiome.</p>`);
 }
+/* ---------- prep time ----------
+   Minutes to make a recipe: the "Prep (min)" column in Notion when it's filled in, otherwise estimated from the
+   steps. Each step's stated time counts at its longest ("12 to 15 minutes" is 15), a step without one counts 3
+   minutes of handling, and when the oven or a pot is doing the work other steps happen alongside, so the total is
+   the longest step or 70% of the sum, whichever is more. Rounded up to 5 minutes. */
+function prepOf(o){
+  if(!o||o.skip)return 0;if(o.pt)return o.pt;if(o._pt!=null)return o._pt;
+  const steps=(o.steps&&o.steps.length)?o.steps:(STEPS[o.n]||[]);
+  let sum=0,longest=0;steps.forEach(st=>{const t=String(st).toLowerCase();let m=0;
+    for(const x of t.matchAll(/(\d+(?:\.\d+)?)(?:\s*(?:to|-|–)\s*(\d+(?:\.\d+)?))?\s*(minutes?|mins?|hours?|hrs?)\b/g)){const v=+(x[2]||x[1])*(/^h/.test(x[3])?60:1);m=Math.max(m,v)}
+    // a batch note ("cook a batch for the week") or a chill that's optional doesn't hold up the meal
+    if(/if you like|optional|for the week/.test(t))m=Math.min(m,5);
+    // steps that name no time but take one
+    if(!m&&/^(serve|top|fill|slice|garnish|drizzle|spoon|enjoy)/.test(t))m=2;
+    if(!m)m=/\bcook the rice|\brice\b.*cook/.test(t)?20:/\bpasta\b/.test(t)?12:/\b(bake|roast)\b/.test(t)?25:/\b(cook|boil|simmer)\b.*\b(quinoa|potato)/.test(t)?15:/\b(sear|brown|simmer|boil)\b/.test(t)?8:0;
+    const v=m||3;sum+=v;longest=Math.max(longest,v)});
+  const est=steps.length?Math.max(longest,Math.round(sum*.7)):0;
+  return o._pt=est?Math.max(5,Math.ceil(est/5)*5):0;
+}
+const PREP_LEAD=5; // prep reminders only for meals that take longer than this
+
+/* ---------- pantry nudges ----------
+   Items running low or expiring soon, one at a time on the dashboard, each with meals that would use it:
+   ones already planned in the next day first, then other recipes that list it or are linked to it. */
+const FOOD_STOP=new Set(["fresh","large","small","frozen","whole","plain","greek","organic","sliced","diced","chopped","cooked","dried","ground","free","gluten","style","brand","each","with","and","the"]);
+const foodWords=n=>String(n).toLowerCase().replace(/[^a-z ]/g," ").split(/\s+/).filter(w=>w.length>=4&&!FOOD_STOP.has(w)).map(w=>w.replace(/(es|s)$/,""));
+function usesItem(o,it){
+  if(!o||o.skip)return false;if((it.recipes||[]).some(line=>parseLink(line).recipe===o.n))return true;
+  const iw=foodWords(it.name);if(!iw.length)return false;
+  return foodsOf(o).some(f=>foodWords(f).some(w=>iw.includes(w)))||iw.some(w=>foodWords(o.n).includes(w));
+}
+function pantryNudges(){
+  const td=[...Array(D).keys()].find(isToday);
+  const items=pantry.filter(it=>expSoon(it)&&daysLeft(it)>=0||lowQ(it)).sort((a,b)=>daysLeft(a)-daysLeft(b));
+  return items.slice(0,6).map(it=>{
+    const soon=td!=null?[td,td+1].filter(d=>d<D).flatMap(d=>mealsOf(d).filter(m=>!m.custom&&!m.done&&!m.missed&&usesItem(m.o,it)).map(m=>({d,m}))):[];
+    const other=[];SLOTS.forEach(sl=>sl.opts.forEach(o=>{if(other.length<2&&usesItem(o,it)&&!soon.some(x=>x.m.o.n===o.n))other.push(o.n)}));
+    const exp=expSoon(it)&&daysLeft(it)>=0,what=exp?expLabel(it):"is running low",nm=`<b>${esc(it.name)}</b> ${what}`;
+    let use="";
+    if(soon.length){const x=soon[0];use=` It's in ${isToday(x.d)?"":"tomorrow's "}${esc(x.m.slot.toLowerCase())}${isToday(x.d)?" today":""}: <b>${esc(x.m.o.n)}</b>.`}
+    else if(other.length){const ns=other.map(n=>`<b>${esc(n)}</b>`);use=exp?` Use it in ${listOf(ns)}.`:` ${listOf(ns)} ${other.length>1?"use":"uses"} it; add it to your grocery list.`}
+    else if(!exp)use=" Add it to your grocery list.";
+    return{it,html:nm+"."+use};
+  });
+}
+let nudgeK=0,nudgeT=0;
+function renderNudge(){
+  const el=$("pantryNudge");if(!el)return;const ns=pantryNudges();clearInterval(nudgeT);
+  if(!ns.length){el.hidden=true;return}el.hidden=false;
+  const show=()=>{const n=ns[nudgeK%ns.length];el.classList.remove("in");void el.offsetWidth;
+    el.innerHTML=`<svg class="ic" aria-hidden="true"><use href="#i-${expSoon(n.it)&&daysLeft(n.it)>=0?"clockl":"low"}"/></svg><span>${n.html}</span>${ns.length>1?`<span class="nd-dots" aria-hidden="true">${ns.map((_,k)=>`<i class="${k===nudgeK%ns.length?"on":""}"></i>`).join("")}</span>`:""}`;
+    el.classList.add("in");el.onclick=()=>openPantryItem(n.it)};
+  show();if(ns.length>1&&!reduceMotion)nudgeT=setInterval(()=>{if(ui.tab!=="dash"&&!wideMQ.matches)return;nudgeK++;show()},7000);
+}
+
 // The dashboard: the orb alone on the base plane, and the words in the first card of the drawer: the next meal
 // ("Lunch in 44 minutes" or, once it's started, "Lunch started 1 hour and 36 minutes ago" with its actions), then
 // a line about what the orb is showing.
 function renderNext(){
   const el=$("nextMeal"),n=nextMeal(),o=orbStats();
-  $("orbBox").appendChild(ORB.cv);ORB.set(o);$("orbSay").innerHTML=orbSay(o);
+  $("orbBox").appendChild(ORB.cv);ORB.set(o);$("orbSay").innerHTML=orbSay(o);renderNudge();
   if(!n){el.hidden=true;el._at=0;dashParallax();return}
   const{d,m,diff,late}=n,name=m.custom?m.o.n:m.slot,[h1,m1]=m.time.split(":").map(Number),b=dayDate(d),tmr=!isToday(d);
   el._at=new Date(b.getFullYear(),b.getMonth(),b.getDate(),h1,m1).getTime();
@@ -1878,12 +1938,23 @@ function renderNext(){
     mb.onclick=()=>openMenu(mb,`${name} actions`,[["ok","Mark eaten",()=>markDone(d,m,true)],
       !m.custom&&["sparkle","Suggest another",()=>openSuggest(d,m.i)],!m.custom&&["swap","I ate something else",()=>ateInstead(d,m.i)],
       m.custom?["trash","Remove",()=>removeCustom(d,m.cid)]:["skip","I skipped it",()=>setMissed(d,m.i,true)],["bell","Remind me",()=>openReminder(d,m),diff<=0]])};
+  const pt=prepOf(m.o),lead=pt>PREP_LEAD?pt:0,low=m.custom?name:(tmr?"tomorrow's "+name.toLowerCase():name.toLowerCase());
   if(diff>0){
-    // coming up: one line, the name of the meal in ink
+    // coming up: one line, the name of the meal in ink. If it takes a while to make, the line counts down to when
+    // to start making it instead, and once that's passed, says to start now.
     el.classList.remove("u-late","going");
-    el.innerHTML=`<div class="nx-line"><button class="main"><span class="nx-pre"></span> <span class="timer"></span>: <b></b></button>
-      <button class="more nm-more" aria-haspopup="menu" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="#i-dots"/></svg></button></div>`;
-    el.querySelector(".nx-pre").textContent=`${tmr?"Tomorrow, "+name.toLowerCase():name} in`;el.querySelector(".nx-line b").textContent=m.o.n;
+    const btn=`<button class="more nm-more" aria-haspopup="menu" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="#i-dots"/></svg></button>`;
+    if(lead&&diff<=lead){
+      el.innerHTML=`<div class="nx-line"><button class="main"><span class="nx-go">Time to start ${esc(low)}.</span> <b></b> takes about ${lead} minutes, for ${fmtTime(m.time)}.</button>${btn}</div>`;el._at=0;
+    }else if(lead&&diff<=lead+60){
+      el._at-=lead*60000;
+      el.innerHTML=`<div class="nx-line"><button class="main"><span class="nx-pre"></span> <span class="timer"></span>: <b></b> takes about ${lead} minutes, for ${fmtTime(m.time)}.</button>${btn}</div>`;
+      el.querySelector(".nx-pre").textContent=`Start ${low} in`;
+    }else{
+      el.innerHTML=`<div class="nx-line"><button class="main"><span class="nx-pre"></span> <span class="timer"></span>: <b></b></button>${btn}</div>`;
+      el.querySelector(".nx-pre").textContent=`${tmr?"Tomorrow, "+name.toLowerCase():name} in`;
+    }
+    el.querySelector(".nx-line b").textContent=m.o.n;
   }else{
     // under way: the sentence, what it is, and the actions
     const meal=m.custom?"it":`<b>${esc(m.o.n)}</b>`,macros=`${fmt(m.o.k)} calories and ${fmt(m.o.p)} g protein`;
@@ -2217,7 +2288,7 @@ function renderSheet(){
     <p class="sh-d">${esc(o.d)}</p>
     ${o.skip?"":`<h3>Ingredients</h3><ul class="ing">${ing}</ul><h3>Steps</h3><ol class="steps">${steps}</ol>`}
     ${o.skip?"":`<h3 class="sh-sep">Details</h3>`}
-    ${o.skip?"":`<div class="sh-m"><span><b>${fmt(tk)}</b> calories</span><span><b>${fmt(tp)} g</b> protein</span><span><b>${fmt(tc)} g</b> carbs</span><span><b>${fmt(tf)} g</b> fat</span></div>${ex.length?`<p class="fine">Includes ${fmt(xs.k)} calories and ${fmt(xs.p)} g protein from add-ons.</p>`:""}`}
+    ${o.skip?"":`<div class="sh-m"><span><b>${fmt(tk)}</b> calories</span><span><b>${fmt(tp)} g</b> protein</span><span><b>${fmt(tc)} g</b> carbs</span><span><b>${fmt(tf)} g</b> fat</span>${prepOf(o)?`<span><b>${prepOf(o)}</b> min to make${o.pt?"":" (estimate)"}</span>`:""}</div>${ex.length?`<p class="fine">Includes ${fmt(xs.k)} calories and ${fmt(xs.p)} g protein from add-ons.</p>`:""}`}
     <div class="sh-time"><label for="shTime">Time</label><input type="time" id="shTime" step="300" value="${t}">
       <button class="txt" id="shAll">Use this time every day</button>
       ${overridden?`<button class="txt" id="shReset">Reset to ${fmtTime(state.times[i])}</button>`:""}
@@ -2441,7 +2512,7 @@ async function nLoadLibrary(){
   const data=await apiRead("/meals");
   const lib=((data&&data.meals)||[]).map(m=>({slot:slotIndex(m.slot),n:String(m.name||"").trim(),d:String(m.description||""),k:+m.calories||0,p:+m.protein||0,c:+m.carbs||0,f:+m.fat||0,
     ing:Array.isArray(m.ingredients)?m.ingredients:[],steps:Array.isArray(m.steps)?m.steps:[],hide:!!m.hide,url:typeof m.url==="string"?m.url:"",
-    nu:cleanNu(m.nutrients),g:Array.isArray(m.groups)?m.groups.filter(x=>GROUPS.includes(x)):[],dv:typeof m.diversity==="number"&&isFinite(m.diversity)?m.diversity:null})).filter(m=>m.n&&m.slot>=0);
+    nu:cleanNu(m.nutrients),g:Array.isArray(m.groups)?m.groups.filter(x=>GROUPS.includes(x)):[],dv:typeof m.diversity==="number"&&isFinite(m.diversity)?m.diversity:null,pt:typeof m.prep==="number"&&m.prep>0?Math.round(m.prep):null})).filter(m=>m.n&&m.slot>=0);
   if(!lib.length)return false;
   const sig=JSON.stringify(lib);if(sig===libSig)return false;
   libSig=sig;try{localStorage.setItem(LIBKEY,sig)}catch(e){}
