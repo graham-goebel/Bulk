@@ -117,7 +117,7 @@ main{max-width:960px;margin:0 auto;padding-bottom:calc(100px + env(safe-area-ins
 .dl-say{margin:8px 0 18px;font-size:1.22rem;line-height:1.42;letter-spacing:-0.015em;color:var(--ink)}
 .dl-say b,.tile .say b{font-weight:500}
 .tile .say{display:block;margin-top:6px;font-size:1rem;line-height:1.35;color:var(--ink)}.tile .say .sub{display:block;margin-top:4px;font-size:.85rem;color:var(--muted)}
-.tile .say{font-size:.9rem;color:var(--muted)}.tile .say b{font-size:2.1rem;font-weight:400;letter-spacing:-0.035em;line-height:1.05;color:var(--ink);margin-right:4px}
+.tile .say{font-size:.9rem;color:var(--muted)}.tile .say b{display:block;font-size:2.1rem;font-weight:400;letter-spacing:-0.035em;line-height:1.05;color:var(--ink);margin-bottom:4px}
 .dl-badge{flex:none;display:grid;place-items:center;width:34px;height:34px;color:var(--muted)}
 .dl-badge .ic{width:24px;height:24px}
 .dl-tx{display:flex;flex-direction:column;min-width:0}
@@ -126,7 +126,7 @@ main{max-width:960px;margin:0 auto;padding-bottom:calc(100px + env(safe-area-ins
 .dl-bar{position:relative;height:2px;margin:8px 8px;border-radius:1px;background:rgba(0,0,0,.12)}
 .dl-el{position:absolute;left:0;top:0;bottom:0;border-radius:1px;background:var(--ink)}
 .dl-bar .mk{position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--bg);box-shadow:inset 0 0 0 1.25px rgba(0,0,0,.3),0 0 0 3px var(--bg)}
-.dl-bar .mk.on{background:radial-gradient(circle,var(--ink) 0 3.5px,var(--bg) 4px);box-shadow:inset 0 0 0 1.25px var(--ink),0 0 0 3px var(--bg)}
+.dl-bar .mk.on{background:var(--ink);box-shadow:0 0 0 3px var(--bg)}
 .dl-bar .mk.due{box-shadow:inset 0 0 0 1.25px var(--ink),0 0 0 3px var(--bg)}
 .dl-bar .mk.miss{width:8px;height:8px;margin:-4px 0 0 -4px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.35),0 0 0 3px var(--bg)}
 .dl-now{position:absolute;top:-9px;bottom:-9px;width:2px;margin-left:-1px;border-radius:1px;background:var(--ink)}
@@ -470,7 +470,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .dh-goal{margin:0 0 12px;font-size:.95rem;color:var(--muted)}
 .day-hero .dayline{margin:0;padding:0;border:0;border-radius:0}
 .day-hero .dl-say{margin:0 0 22px;font-size:clamp(1.8rem,7.4vw,2.2rem);line-height:1.2;letter-spacing:-0.03em;color:var(--ink)}
-.dl-scroll{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;margin:0 -24px;padding:26px 24px 2px}.dl-scroll::-webkit-scrollbar{display:none}
+.dl-scroll{-webkit-mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent);mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent);overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;margin:0 -24px;padding:26px 24px 2px}.dl-scroll::-webkit-scrollbar{display:none}
 .dl-track{position:relative;min-width:100%}
 .chart-in .dl-scroll{animation:chartFade .45s ease-out both}.chart-in .dl-el{animation:drawX .7s cubic-bezier(.2,.8,.2,1) both;transform-origin:0 50%}
 .chart-in .dl-bar .mk{animation:popIn .4s cubic-bezier(.2,.9,.3,1.3) both}
@@ -481,7 +481,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .mk-l{position:absolute;top:-26px;transform:translateX(-50%);font-size:.72rem;color:var(--muted);white-space:nowrap;pointer-events:none}.day-hero .dl-say b{font-weight:500}
 .dh-focus{margin:18px 0 0;font-size:.95rem;line-height:1.45;color:var(--muted)}.dh-focus b{font-weight:500;color:var(--ink);margin-right:6px}
 .st-day .dl-say{margin:4px 0 18px;font-size:1.1rem;line-height:1.42;color:var(--ink)}.st-day .dl-say b{font-weight:500}
-.st-meals li{align-items:center}.st-meals .q{flex:1;text-align:right;color:var(--ink)}.st-meals .st-ic{width:18px;display:flex;justify-content:flex-end}.st-meals .st{width:15px;height:15px}
+.st-meals li{display:grid;grid-template-columns:minmax(0,40%) 1fr 22px;align-items:center;gap:12px}.st-meals li>span:first-child{color:var(--muted)}.st-meals .q{text-align:left;color:var(--ink)}.st-meals .st-ic{width:18px;display:flex;justify-content:flex-end}.st-meals .st{width:15px;height:15px}
 .dash-nut{padding:10px 24px 0}
 .dvc{margin:4px 0 14px}.dvc-n{margin:0 0 8px}.dvc-n b{font-size:1.8rem;font-weight:400;letter-spacing:-0.02em}.dvc-n span{margin-left:4px;color:var(--muted);font-size:.9rem}
 .dvc-bar{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}.dvc-bar i{height:10px;border-radius:3px;box-shadow:inset 0 0 0 1px var(--line)}
@@ -1224,8 +1224,10 @@ function openSuggest(d,i){
   holdSize();sheetCtx=null;
   const s=SLOTS[i],cur=state.days[d].picks[i],co=s.opts[cur],t=totals(d);
   const opts=s.opts.map((o,oi)=>({o,oi})).filter(x=>x.oi!==cur&&!x.o.skip).map(x=>({...x,gap:Math.abs(t.k-co.k+x.o.k-state.target)})).sort((a,b)=>a.gap-b.gap);
+  // after the best fit comes the quickest to make
+  if(opts.length>2){const rest=opts.slice(1),f=rest.reduce((a,x)=>prepOf(x.o)<prepOf(a.o)?x:a,rest[0]);if(prepOf(f.o)<prepOf(opts[0].o)){opts.splice(opts.indexOf(f),1);opts.splice(1,0,{...f,fast:true})}}
   $("sheetBox").innerHTML=`${sheetHead(co.skip?esc(s.name):`Instead of ${esc(co.n)}`,"Suggestions")}
-    <div class="pk-list">${opts.map((x,k)=>`<button class="pk-row sg-row" data-oi="${x.oi}"><span class="nm">${esc(x.o.n)}${k===0&&opts.length>1?` <span class="sg-best">Best fit for today's goal</span>`:""}</span><span class="mt">${fmt(x.o.k)} calories · ${fmt(x.o.p)} g protein</span>${x.o.d?`<span class="mt">${esc(x.o.d)}</span>`:""}</button>`).join("")||`<p class="hint">No other options for ${esc(s.name.toLowerCase())}.</p>`}</div>`;
+    <div class="pk-list">${opts.map((x,k)=>`<button class="pk-row sg-row" data-oi="${x.oi}"><span class="nm">${esc(x.o.n)}${k===0&&opts.length>1?` <span class="sg-best">Best fit for today's goal</span>`:x.fast?` <span class="sg-best">Fastest</span>`:""}</span><span class="mt">${fmt(x.o.k)} calories · ${fmt(x.o.p)} g protein${prepOf(x.o)?` · ${prepOf(x.o)} min`:""}</span>${x.o.d?`<span class="mt">${esc(x.o.d)}</span>`:""}</button>`).join("")||`<p class="hint">No other options for ${esc(s.name.toLowerCase())}.</p>`}</div>`;
   showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";
   if(fromMeal)backBtn(()=>backToMeal(d,i));else $("shClose").onclick=closeDetail;
   $("sheetBox").querySelectorAll(".sg-row").forEach(b=>b.onclick=()=>{const oi=+b.dataset.oi,o=s.opts[oi];
@@ -1459,7 +1461,7 @@ function dlTop(kind){const t=$("ncTop"),k=kind||"info",lbl=k==="ok"?"On track":k
 // The day's status, in a sheet: the sentence, the timeline (or the days' columns) and each meal as it stands.
 function openStatus(){
   const src=$("dayline"),multi=ui.span>1;
-  const meals=multi?"":mealsOf(ui.day).map(m=>`<li><span>${esc(m.custom?m.o.n:m.slot)} <span class="q2">${fmtTime(m.time)}</span></span><span class="q">${m.o.skip?"Skipped":esc(m.o.n)}</span><span class="st-ic">${stIcon(m)}</span></li>`).join("");
+  const meals=multi?"":mealsOf(ui.day).map(m=>`<li><span>${esc(m.custom?"Added":m.slot)}</span><span class="q">${m.o.skip?"Skipped":esc(m.o.n)}</span><span class="st-ic">${stIcon(m)}</span></li>`).join("");
   tileModal(spanLabel(),"",`<div class="st-day">${src.innerHTML||`<p class="dl-say">${multi?"Nothing planned yet.":"Nothing is planned for this day yet."}</p>`}</div>${meals?`<h3>Meals</h3><ul class="ing st-meals">${meals}</ul>`:""}`);
   bindDots($("infoBox"),ui.day);$("infoBox").querySelectorAll(".rc").forEach(b=>b.onclick=()=>openDayOverview(+b.dataset.d));
 }
@@ -1479,13 +1481,30 @@ function daySentence(s,quiet){
   const late=s.ms.filter(m=>!m.done&&!m.missed&&mins(m.time)<=s.nm).pop(); // the latest meal that's come and gone unmarked
   return `You're ${B(fmt(s.gap)+" calories")} behind: ${fmt(s.ek)} eaten of the ${fmt(s.expected)} due by now.${quiet?"":late?` ${late.custom?late.o.n:late.slot} at ${fmtTime(late.time)} isn't marked eaten yet.`:next&&next.o.k>=s.gap*.8?(quiet?"":` Having ${nm(next)} would about close the gap.`):nx}`;
 }
+// The dashboard's hero sentence for one day: what to do next, in plain words, rather than the numbers (the tiles
+// and the timeline have those).
+function heroSentence(s){
+  const goal=state.target,ms=s.ms,cap=t=>t.charAt(0).toUpperCase()+t.slice(1),day=s.today?"today":wk(s.d,"long");
+  const nm=m=>m.custom?m.o.n:/snack/i.test(m.slot)?"a snack":m.slot.toLowerCase(),at=m=>`${nm(m)} at ${fmtTime(m.time)}`;
+  if(!ms.length)return `Nothing's planned for ${day} yet.`;
+  if(s.future)return `${cap(wk(s.d,"long"))} is all set: ${ms.length} meals, starting with ${at(ms[0])}.`;
+  if(s.past)return s.ek>=goal-100?`You hit your goal on ${wk(s.d,"long")}. Nice work.`:s.ek>=goal*.85?`${cap(wk(s.d,"long"))} came up a little short, nothing a good next day won't fix.`:`${cap(wk(s.d,"long"))} came up short. Worth making the next day count.`;
+  const rem=ms.filter(m=>!m.done&&!m.missed&&mins(m.time)+60>s.nm),late=ms.filter(m=>!m.done&&!m.missed&&mins(m.time)+60<=s.nm);
+  if(s.kind==="info")return `Your day starts with ${at(ms[0])}. Everything's lined up to reach your goal.`;
+  if(late.length){const l=late[late.length-1];return `${cap(l.custom?l.o.n:l.slot.toLowerCase())} hasn't been marked yet. If you had it, mark it eaten; if not, ${rem.length?`make ${nm(rem[0])} a little bigger`:"a snack before bed will help"}.`}
+  if(s.kind==="ok"){
+    if(!rem.length)return s.ek>=goal-100?"That's the day done, and your goal is met. Nice work.":"That's the day done, a little under your goal. Tomorrow picks it up.";
+    return `You're right on pace. Keep it going with ${at(rem[0])}${rem[1]?`, then ${at(rem[1])}`:""}.`;
+  }
+  return rem.length?`You're a little behind. Don't skip ${nm(rem[0])}${rem[1]?` or ${nm(rem[1])}`:""}; ${rem.length>1?"they'll":"it'll"} close most of the gap.`:"You're a little behind. A snack before bed would help close the gap.";
+}
 // One day: each meal on a timeline (eaten, skipped, due, to come) and the part of the day that's gone by.
 // A day's meals on a timeline, 72px an hour so it runs past the screen and scrolls sideways; each dot opens its meal.
 function timelineHTML(s){
   const{ms,today,past,nm,due}=s,times=ms.map(m=>mins(m.time)),t0=Math.min(...times)-30,t1=Math.max(...times)+30,pos=v=>clamp((v-t0)/(t1-t0),0,1)*100;
   const nowP=today?pos(nm):past?100:0,W=Math.round((t1-t0)/60*72);
   const marks=ms.map(m=>{const st=m.done?"on":m.missed?"miss":due(m)?"due":"",x=pos(mins(m.time)).toFixed(1);
-    return `<button class="mk ${st}" style="left:${x}%" data-key="${mealKey(m)}" aria-label="${esc(m.custom?m.o.n:m.slot)} at ${fmtTime(m.time)}${m.done?", eaten":m.missed?", skipped":due(m)?", not marked":""}. Open details."></button><span class="mk-l" style="left:${x}%">${esc(m.custom?m.o.n:m.slot)}</span>`}).join("");
+    return `<button class="mk ${st}" style="left:${x}%" data-key="${mealKey(m)}" aria-label="${esc(m.custom?m.o.n:m.slot)} at ${fmtTime(m.time)}${m.done?", eaten":m.missed?", skipped":due(m)?", not marked":""}. Open details."></button><span class="mk-l" style="left:${x}%">${esc(m.custom?m.o.n:/snack/i.test(m.slot)?"Snack":m.slot)}</span>`}).join("");
   let ticks="";for(let h=Math.ceil(t0/60);h*60<=t1;h++){const x=pos(h*60);ticks+=`<i class="mj" style="left:${x.toFixed(1)}%"></i>${x<3||x>97?"":`<span style="left:${x.toFixed(1)}%">${hh(h*60)}</span>`}`}
   return{W,nowP,html:`<div class="dl-scroll"><div class="dl-track" style="width:${W}px">
     <div class="dl-bar"><span class="dl-el" style="width:${nowP.toFixed(1)}%"></span>${today&&nm>=t0&&nm<=t1?`<span class="dl-now" style="left:${nowP.toFixed(1)}%"></span>`:""}${marks}</div>
@@ -1496,7 +1515,7 @@ function renderDayline(s){
   const el=$("dayline"),{ms}=s,key="d"+s.d;if(!ms.length){el.innerHTML=`<p class="dl-say">Nothing is planned for this day yet.</p>`;dlTop(null);el._key=key;return}
   if(el._d!==s.d)el._moved=false;const prev=el.querySelector(".dl-scroll"),keep=prev&&el._moved?prev.scrollLeft:null;el._d=s.d;
   const tl=timelineHTML(s);el.className="dayline "+s.kind;
-  el.innerHTML=dlHead(s.kind,daySentence(s,true))+tl.html;chartIn(el,key);
+  el.innerHTML=dlHead(s.kind,heroSentence(s))+tl.html;chartIn(el,key);
   bindDots(el,s.d);
   const sc=el.querySelector(".dl-scroll");["pointerdown","wheel","touchstart"].forEach(ev=>sc.addEventListener(ev,()=>{el._moved=true},{passive:true}));scrollToNow(sc,tl,keep);
   el.setAttribute("aria-label",el.querySelector(".dl-say").textContent); // shown in the status sheet
@@ -1507,8 +1526,8 @@ function chartIn(el,key){if(el._key!==key&&el._key!=null&&!reduceMotion){el.clas
 function openDayOverview(d){
   const s=dayStat(d);
   if(!s.ms.length){tileModal(longDate(d),"",`<p class="hint">Nothing is planned for this day yet.</p>`);return}
-  const tl=timelineHTML(s),meals=mealsOf(d).map(m=>`<li><span>${esc(m.custom?m.o.n:m.slot)} <span class="q2">${fmtTime(m.time)}</span></span><span class="q">${m.o.skip?"Skipped":esc(m.o.n)}</span><span class="st-ic">${stIcon(m)}</span></li>`).join("");
-  tileModal(isToday(d)?"Today":longDate(d),"",`<div class="st-day"><p class="dl-say">${daySentence(s)}</p>${tl.html}</div><h3>Meals</h3><ul class="ing st-meals">${meals}</ul>`);
+  const tl=timelineHTML(s),meals=mealsOf(d).map(m=>`<li><span>${esc(m.custom?"Added":m.slot)}</span><span class="q">${m.o.skip?"Skipped":esc(m.o.n)}</span><span class="st-ic">${stIcon(m)}</span></li>`).join("");
+  tileModal(isToday(d)?"Today":longDate(d),"",`<div class="st-day"><p class="dl-say">${heroSentence(s)}</p>${tl.html}</div><h3>Meals</h3><ul class="ing st-meals">${meals}</ul>`);
   bindDots($("infoBox"),d);const sc=$("infoBox").querySelector(".dl-scroll");if(sc)scrollToNow(sc,tl,null);
 }
 function bindDots(root,d){root.querySelectorAll(".mk[data-key]").forEach(b=>b.onclick=()=>{const m=mealsOf(d).find(x=>mealKey(x)===b.dataset.key);if(m){if(!$("infoBg").hidden)closeInfo();openMeal(d,m)}})}
@@ -1523,10 +1542,11 @@ function renderRangeline(st){
   const cols=st.map(s=>`<button class="rc ${s.kind}${s.today?" today":""}" data-d="${s.d}" aria-label="${esc(longDate(s.d))}: ${esc(s.text)}"><span class="rc-bar"><i class="pl" style="height:${pc(s.t.k/scale)}"></i><i class="ek" style="height:${pc(s.ek/scale)}"></i></span><span class="rc-l">${wk(s.d)}</span><span class="rc-dot"></span></button>`).join("");
   el.className="dayline range "+kind;
   const gb=`calc(var(--lb) + (100% - var(--lb)) * ${Math.min(1,state.target/scale).toFixed(3)})`;
-  const togo=n-run.length,say=!run.length?`${n} days are planned, averaging ${B(fmt(planned/n)+" calories")} a day.`
-    :kind==="ok"?`So far you're on track: ${B(fmt(eaten)+" calories")} eaten over ${run.length} day${run.length>1?"s":""}${togo?`, with ${togo} to go`:""}.`
-    :run.length===1?`You're ${B(fmt(gap)+" calories")} behind so far${togo?`, with ${togo} day${togo>1?"s":""} to go`:""}.`
-    :`You're ${B(fmt(gap)+" calories")} behind over ${run.length} days; ${okN?`${okN} of them ${okN===1?"was":"were"} on track`:"none of them were on track"}.`;
+  // in words, like the one-day sentence: how it's going and what would help
+  const togo=n-run.length,span=n===7?"this week":"these days",avg=planned/n,off=avg-state.target;
+  const say=!run.length?`${n===7?"The week":"The next few days"} ${n===7?"is":"are"} planned out, ${Math.abs(off)<=100?"right around your goal each day":off>0?"a little over your goal each day":"a little under your goal each day"}.`
+    :kind==="ok"?`You're on track ${span}${okN===run.length&&run.length>1?", every day so far":""}. ${togo?`${togo} day${togo>1?"s":""} to go; keep it steady.`:"Nice work."}`
+    :`You've fallen a little behind ${span}${run.length>1?`; ${okN?`${okN} of ${run.length} days`:"no days yet"} hit the goal`:""}. ${togo?"An extra snack on the days ahead would catch you up.":"The next week is a fresh start."}`;
   el.innerHTML=dlHead(kind,say,spanLabel())
     +`<div class="rc-row"><span class="rc-goal" style="bottom:${gb}" aria-hidden="true"></span><span class="rc-gl" style="bottom:${gb}" aria-hidden="true">${fmt(state.target)}</span>${cols}</div>`;
   el.querySelectorAll(".rc").forEach(b=>b.onclick=()=>openDayOverview(+b.dataset.d));chartIn(el,"r"+st.map(x=>x.d).join());
