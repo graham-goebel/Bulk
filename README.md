@@ -127,6 +127,14 @@ Each recipe's time to make is shown in its Details. It comes from a **Prep (min)
 
 Under that, pantry items running low or expiring in the next three days take turns, about every seven seconds, each with a meal that would use it: one already planned for today or tomorrow first, otherwise recipes that list it or are linked to it. Tap one to open the item.
 
+## Moving between days
+
+On the Plan, Dashboard, Calendar and Grocery tabs, swipe left or right on the page to go to the next or previous day. Swipes on the meal cards, the day strip and the pantry keep their own meaning.
+
+## Pantry to grocery list
+
+A pantry item's **Add to grocery list** puts it in an **Added** section at the top of the grocery list, with an ✕ to take it off (and Undo either way).
+
 ## Day templates
 
 In the Plan tab's ⋯ menu, **Save day as template** keeps the day's meals and times under a name. **Use a template** lists them: pick the days to apply one to (the day you're on is picked already) and tap the template. Its meals are locked on those days, so rebalancing leaves them as they were. Templates are kept on this device.

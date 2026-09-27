@@ -605,6 +605,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .grp h3{display:flex;align-items:center;gap:8px;margin:22px 0 6px;font-size:.85rem;font-weight:500;color:var(--ink)}
 .grp h3 .ic{width:17px;height:17px}
 .list .grp:first-child h3{margin-top:10px} /* the first thing under a heading starts close, as on the calendar */
+.item:has(.sh-rm){grid-template-columns:1fr auto auto;grid-template-areas:"nm rm cb" "q rm cb"}.item .sh-rm{grid-area:rm}
 .item{display:grid;grid-template-columns:1fr auto;grid-template-areas:"nm cb" "q cb";align-items:center;gap:1px 12px;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
 .item input{grid-area:cb}.item .nm{grid-area:nm}.item .q{grid-area:q}
 .item input{appearance:none;-webkit-appearance:none;width:18px;height:18px;border:1px solid var(--muted);border-radius:5px;margin:0;flex:none;display:grid;place-items:center;cursor:pointer}
@@ -989,7 +990,7 @@ function fmtTime(hm){let [h,m]=hm.split(":").map(Number);const ap=h>=12?"PM":"AM
 
 /* ---------- state ---------- */
 function blank(){return{v:2,updatedAt:0,target:3000,protein:110,startDate:iso(new Date()),times:DEFAULT_TIMES.slice(),
-  days:Array.from({length:D},()=>({picks:Array(N).fill(0),locked:Array(N).fill(false),times:Array(N).fill(null),done:Array(N).fill(false),missed:Array(N).fill(false),extras:Array.from({length:N},()=>[]),custom:[]})),checked:[]}}
+  days:Array.from({length:D},()=>({picks:Array(N).fill(0),locked:Array(N).fill(false),times:Array(N).fill(null),done:Array(N).fill(false),missed:Array(N).fill(false),extras:Array.from({length:N},()=>[]),custom:[]})),checked:[],extraShop:[]}}
 // Add-ons are pantry items added to a planned meal; custom meals are eaten or planned outside the six slots.
 // Both keep macros per serving (k, p, c, f) and a serving count q.
 function uid(){return (Math.random().toString(36).slice(2)+"00000000").slice(0,8)}
@@ -1009,6 +1010,7 @@ function normalize(s){
     times:SLOTS.map((_,i)=>{const t=dy&&Array.isArray(dy.times)?dy.times[i]:null;return typeof t==="string"&&/^\d{2}:\d{2}$/.test(t)?t:null}),
     extras:SLOTS.map((_,i)=>cleanExtras(dy&&Array.isArray(dy.extras)?dy.extras[i]:null)),custom:cleanCustom(dy&&dy.custom)}));
   b.checked=Array.isArray(s.checked)?s.checked.filter(x=>typeof x==="string").slice(0,300):[];
+  b.extraShop=Array.isArray(s.extraShop)?s.extraShop.filter(x=>x&&typeof x.n==="string"&&x.n.trim()).slice(0,100).map(x=>({n:x.n.trim().slice(0,100),pid:typeof x.pid==="string"?x.pid:""})):[];
   b.nsnap={};if(s.nsnap&&typeof s.nsnap==="object")Object.keys(s.nsnap).slice(0,400).forEach(k=>{const v=s.nsnap[k];if(v&&typeof v.meal==="string"&&typeof v.when==="string")b.nsnap[k]={meal:v.meal,when:v.when,locked:!!v.locked,eaten:!!v.eaten,skipped:!!v.skipped,extras:typeof v.extras==="string"?v.extras:""}});
   return b;
 }
@@ -1494,8 +1496,7 @@ function renderMeter(){
   // Nutrients: a capsule per nutrient, filled up to its share of the daily value
   const caps=dn.has?`<span class="caps" aria-hidden="true">${NUTR.map(([k,l,,dv])=>{const r=dn.sum[k]/dv;return `<i class="${r<1?"low":""}" title="${l} ${Math.round(r*100)}%"><b style="height:${pc(Math.max(.08,Math.min(1,r)))}"></b></i>`}).join("")}</span>`:"";
   // every panel: a title, a sentence about it, and a small picture underneath
-  const TILE_IC={planned:"flame",macros:"pie",variety:"leaf",nutrients:"drop"};
-  const tile=(key,title,say)=>`<button class="tile" data-modal="${key}"><span class="t"><svg class="ic" aria-hidden="true"><use href="#i-${TILE_IC[key]}"/></svg>${title}</span><span class="say">${say}</span></button>`;
+  const tile=(key,title,say)=>`<button class="tile" data-modal="${key}"><span class="t">${title}</span><span class="say">${say}</span></button>`;
   const top=split.reduce((a,x)=>x[3]>a[3]?x:a),ad=multi?" a day":"",lowN=dn.has?NUTR.filter(([k,,,dv])=>dn.sum[k]<dv).map(([,l])=>l):[];
   $("tiles").innerHTML=
     tile("planned","Planned",`${B(fmt(t.k))} calories${ad}<span class="sub">${Math.abs(diff)<=100?"On goal":diff>0?`${fmt(diff)} over`:`${fmt(-diff)} under`}</span>`,
@@ -2160,10 +2161,20 @@ function buildList(){
     if(ING[o.n])ING[o.n].forEach(([n0,q,u,sec,gf])=>{const{n,have}=sub(o.n,n0),key=n+"|"+u;const e=map.get(key)||{n,u,sec,gf:!!gf&&n===n0,q:0,have};e.q+=q;e.have=e.have&&have;map.set(key,e)});
     else (o.ing||[]).forEach(l=>{const clean=l.replace(/\s*\(certified GF\)/i,""),r=sub(o.n,clean),n=r.n===clean?l:r.n;other.set(n,(other.get(n)||0)+1)});}));
   const groups=SECTIONS.map(([k,label])=>({label,items:[...map.values()].filter(e=>e.sec===k).sort((a,b)=>a.n.localeCompare(b.n)).map(e=>({...e,text:qtyText(e.q,e.u)}))})).filter(g=>g.items.length);
+  // things added by hand (from the pantry) come first
+  const added=(state.extraShop||[]).filter(x=>!map.has(x.n+"|")).map(x=>({n:x.n,text:"",added:true}));
+  if(added.length)groups.unshift({label:"Added",items:added});
   if(other.size)groups.push({label:"From your Notion meals",items:[...other].map(([l,c])=>({n:l.replace(/\s*\(certified GF\)/i,""),gf:/certified GF/i.test(l),text:c>1?`×${c}`:""}))});
   return groups;
 }
 function scopeLabel(){const[a,b]=spanRange();return a===b?longDate(a):`${shortDate(a)} to ${shortDate(b)}`}
+// A pantry item put on the grocery list by hand (Add to grocery list); Undo takes it back off.
+const onGrocery=name=>(state.extraShop||[]).some(x=>x.n.toLowerCase()===name.toLowerCase());
+function addToGrocery(it){if(!state.extraShop)state.extraShop=[];if(onGrocery(it.name)){toast(`${it.name} is already on your grocery list`,{key:"groc"});return}
+  state.extraShop.push({n:it.name,pid:it.id||""});save();if(ui.tab==="shop")renderShop();
+  toast(`Added ${it.name} to your grocery list`,{kind:"ok",key:"groc",action:"Undo",onAction:()=>removeFromGrocery(it.name,true)})}
+function removeFromGrocery(name,quiet){const x=(state.extraShop||[]).find(y=>y.n===name);state.extraShop=(state.extraShop||[]).filter(y=>y.n!==name);state.checked=state.checked.filter(c=>c!==name);save();if(ui.tab==="shop")renderShop();
+  if(!quiet&&x)toast(`Removed ${name} from the list`,{kind:"removed",key:"groc",action:"Undo",onAction:()=>{state.extraShop.push(x);save();if(ui.tab==="shop")renderShop()}})}
 function renderShop(){
   const body=$("listBody");body.innerHTML="";const checked=new Set(state.checked);
   buildList().forEach(g=>{
@@ -2177,7 +2188,10 @@ function renderShop(){
       if(it.gf){const x=document.createElement("span");x.className="gf";x.textContent="check GF label";nm.appendChild(x)}
       if(it.have){const x=document.createElement("span");x.className="gf have";x.textContent="in pantry";nm.appendChild(x)}
       const q=document.createElement("span");q.className="q";q.textContent=it.text;
-      lab.append(cb,nm,q);sec.appendChild(lab);
+      lab.append(cb,nm,q);
+      if(it.added){const x=document.createElement("button");x.className="x-rm sh-rm";x.setAttribute("aria-label",`Remove ${it.n} from the list`);x.innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>';
+        x.onclick=e=>{e.preventDefault();removeFromGrocery(it.n)};lab.appendChild(x)}
+      sec.appendChild(lab);
     });
     body.appendChild(sec);
   });
@@ -2423,6 +2437,17 @@ const wideMQ=window.matchMedia("(min-width:900px)");
 function switchTab(t){if(t==="dash"&&wideMQ.matches)t="plan";ui.tab=t;saveUi();renderAll(false)}
 function placeDash(){const mount=$(wideMQ.matches?"dashMountPlan":"dashMountTab");if($("dashWrap").parentElement!==mount)mount.appendChild($("dashWrap"))}
 {const onWide=()=>{if(ui.tab==="dash"&&wideMQ.matches)switchTab("plan");else{placeDash()}};wideMQ.addEventListener?wideMQ.addEventListener("change",onWide):wideMQ.addListener(onWide)}
+// Swiping sideways on a page moves between days (Plan, Dashboard, Calendar, Grocery), except where the swipe
+// already means something: the meal cards, the day strip, sheets, menus, the pantry and anything that scrolls sideways.
+{let sx=0,sy=0,st=0,ok=false;
+  const skip='.track,.strip,.sheet-bg,.menu,.pan,.wgrid,.tp-days,.nx-chips,.sh-acts,input,select,textarea,.tabbar,#toasts';
+  document.addEventListener("touchstart",e=>{const t=e.touches[0];ok=e.touches.length===1&&["plan","dash","cal","shop"].includes(ui.tab)&&!e.target.closest(skip);sx=t.clientX;sy=t.clientY;st=Date.now()},{passive:true});
+  document.addEventListener("touchend",e=>{if(!ok)return;ok=false;const t=e.changedTouches[0],dx=t.clientX-sx,dy=t.clientY-sy;
+    if(Date.now()-st>700||Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*1.8)return;
+    const step=dx<0?1:-1,nd=ui.day+step;if(nd<0||nd>=D||ui.span===7)return;
+    ui.day=nd;saveUi();renderAll(false);
+    // the page slides in from the side it came from
+    const m=document.querySelector("main");if(m&&!reduceMotion&&m.animate)m.animate([{transform:`translateX(${step*28}px)`,opacity:.4},{transform:"none",opacity:1}],{duration:260,easing:"cubic-bezier(.2,.8,.2,1)"})},{passive:true});}
 // Tapping the tab you're on, or the page's name, scrolls back to the top.
 function toTop(){window.scrollTo({top:0,behavior:reduceMotion?"auto":"smooth"});const l=$("pList");if(l&&l.scrollTop)l.scrollTo({top:0,behavior:reduceMotion?"auto":"smooth"})}
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{const bar=b.closest(".tabbar"),same=ui.tab===b.dataset.tab;
@@ -2982,6 +3007,7 @@ function viewPantryItem(it){
   sheetActs([
     ["adjust","Edit",()=>editPantryItem(it)],
     ["plus","Add to a meal",()=>openAddToMeal(it)],
+    onGrocery(it.name)?["shop","On your grocery list",()=>{closeDetail();switchTab("shop");window.scrollTo(0,0)}]:["shop","Add to grocery list",()=>{addToGrocery(it);viewPantryItem(it)}],
     ["cal","Log as a meal",()=>{const a=addonFrom(it,1),m=mac(a);openCustom(pickDay(),null,{n:it.name,k:m.k,p:m.p,c:m.c,f:m.f,pid:it.id})}],
     ["trash","Remove from pantry",()=>{closeDetail();removePantryItem(it)}]]);
   $("shClose").focus();
