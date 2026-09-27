@@ -401,13 +401,34 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .wb:hover{box-shadow:0 2px 10px rgba(0,0,0,.1)}
 .wg-now{position:absolute;left:0;right:0;border-top:1.5px solid var(--ink);z-index:2}
 .wg-hint{padding:0 24px;margin:6px 0 0;font-size:.8rem;color:var(--muted)}
-/* next meal: no card, full bleed between two hairlines. Urgency colours the clock and the progress line:
-   green while there's time, yellow when it's close or just started, red once it's an hour overdue. */
-.next{--a1:#1baf7a;position:relative;display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;width:100%;margin:10px 0 0;padding:14px 24px 16px;text-align:left;
+/* next meal: no card. Urgency colours the clock, the timer's accent and the progress line: green while
+   there's time, yellow when it's close or just started, red once it's an hour overdue. */
+.next{--a1:#1baf7a;position:relative;display:flex;flex-direction:column;width:100%;margin:10px 0 0;padding:14px 24px 16px;text-align:left;
   color:var(--ink);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .next.u-soon{--a1:#e0a100}
 .next.u-late{--a1:#d6482f}
 .next .top .ic{color:var(--a1)}
+.nx-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.next .timer{display:block;font-size:2.4rem;font-weight:300;letter-spacing:-0.04em;line-height:1;margin:6px 0 6px;font-variant-numeric:tabular-nums}
+.nx-act{display:none;margin-top:14px}
+.nx-eat{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:var(--bg);border-color:var(--ink);padding:10px 18px}
+.nx-eat .ic{width:16px;height:16px}
+.dash-head{display:none}
+@media (max-width:899px){
+  #view-dash .dash-head{display:flex;padding-top:10px}
+  /* the next meal fills the screen below the headings; it sticks under the header while the drawer rises */
+  #view-dash .next{position:sticky;top:56px;z-index:0;height:max(360px,calc(100svh - 390px));margin:0;padding:18px 24px 22px;border:0;justify-content:center}
+  #view-dash .next>*{transform:translateY(calc(var(--dp,0) * -48px)) scale(calc(1 - var(--dp,0) * .06));opacity:calc(1 - var(--dp,0) * .9);transform-origin:50% 0}
+  #view-dash .nx-top{position:absolute;top:18px;left:24px;right:24px}
+  #view-dash .next .big{font-size:1.5rem;margin:0}
+  #view-dash .next .timer{font-size:clamp(4.2rem,22vw,6.5rem);margin:6px 0 10px;letter-spacing:-0.05em}
+  #view-dash .next .sm{font-size:.95rem;white-space:normal}
+  #view-dash .next .prog{margin-top:22px;height:3px}
+  #view-dash .nx-act{display:block}
+  #view-dash .dash-drawer{position:relative;z-index:2;background:var(--bg);border-radius:28px 28px 0 0;margin-top:-28px;padding-top:14px;
+    box-shadow:0 -1px 0 var(--line),0 -14px 34px -12px rgba(0,0,0,.14);min-height:calc(100svh - 120px)}
+  #view-dash .dash-drawer::before{content:"";display:block;width:38px;height:4px;border-radius:2px;background:rgba(0,0,0,.14);margin:0 auto 4px}
+}
 .next .main{display:block;min-width:0;text-align:left;color:inherit}
 .next .nm-more{align-self:start;width:40px;height:40px;margin:-4px -8px 0 0;color:var(--ink);background:none;box-shadow:inset 0 0 0 1px var(--line)}
 .next .nm-more:hover,.next .nm-more[aria-expanded="true"]{background:var(--soft);color:var(--ink)}
@@ -630,7 +651,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   <section id="view-plan" class="narrow" aria-label="Plan">
    <div class="plan-side" id="dashMountPlan"></div>
    <div class="plan-main">
-    <div class="cal-title plan-head"><div class="ct-t"><h2 id="planDate"></h2><span id="planSum"></span></div><div class="seg" role="group" aria-label="Plan view" id="planSeg"><button data-pv="cards" aria-pressed="true">Cards</button><button data-pv="list" aria-pressed="false">List</button></div></div>
+    <div class="cal-title plan-head"><div class="ct-t"><h2 id="planDate" class="span-lbl"></h2></div><div class="seg" role="group" aria-label="Plan view" id="planSeg"><button data-pv="cards" aria-pressed="true">Cards</button><button data-pv="list" aria-pressed="false">List</button></div></div>
     <div id="slots"></div>
     <div id="planAdded"></div>
     <div id="planList" hidden></div>
@@ -656,6 +677,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 
   <!-- SHOP -->
   <section id="view-shop" class="narrow" aria-label="Grocery" hidden>
+    <div class="cal-title"><div class="ct-t"><h2 id="shopDate" class="span-lbl"></h2></div></div>
     <div class="list" id="listBody"></div>
     <div class="foot">
       <button class="pdf with-ic" id="shopPdf" hidden><svg class="ic" aria-hidden="true"><use href="#i-down"/></svg>Download PDF</button>
@@ -688,10 +710,13 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 </main>
 
 <div id="dashWrap">
+  <div class="cal-title dash-head"><div class="ct-t"><h2 id="dashDate" class="span-lbl"></h2></div></div>
   <div class="next" id="nextMeal" hidden></div>
-  <div class="hero" id="hero"><div class="rings" id="rings" aria-live="polite"></div></div>
-  <div class="dayline" id="dayline" hidden></div>
-  <div class="tiles" id="tiles"></div>
+  <div class="dash-drawer">
+    <div class="hero" id="hero"><div class="rings" id="rings" aria-live="polite"></div></div>
+    <div class="dayline" id="dayline" hidden></div>
+    <div class="tiles" id="tiles"></div>
+  </div>
 </div>
 <div class="sheet-bg" id="goals" hidden><div class="sheet" id="goalsBox" role="dialog" aria-modal="true" aria-labelledby="goalsTitle">
   <div class="sh-bar static"><button class="sh-x" id="goalsClose" aria-label="Close"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button><h2 id="goalsTitle" class="sh-mini">Goals &amp; settings</h2><span></span></div>
@@ -1158,10 +1183,6 @@ function updatePlan(except=-1,smooth=true){
   // 3 days and the week show each day as a list; cards are for choosing one day's meals
   const multi=ui.span>1,list=multi||ui.pv==="list";
   $("planSeg").hidden=multi;$("planActs").hidden=multi;
-  // the date row, as on the calendar: the day (or range) and its totals, with Cards / List on the right
-  {const ds=spanDays(),md=d=>dayDate(d).toLocaleDateString("en-US",{month:"short",day:"numeric"}),t=ds.map(totals).reduce((a,x)=>({k:a.k+x.k,p:a.p+x.p}),{k:0,p:0});
-    $("planDate").textContent=multi?`${md(ds[0])} to ${md(ds[ds.length-1])}`:longDate(ui.day);
-    $("planSum").textContent=multi?`${fmt(t.k/ds.length)} kcal, ${fmt(t.p/ds.length)} g protein a day`:`${fmt(t.k)} kcal, ${fmt(t.p)} g protein`}
   $("slots").hidden=list;$("planList").hidden=!list;$("planAdded").hidden=list;
   if(list){$("planList").innerHTML="";if(multi)spanDays().forEach(d=>renderDay($("planList"),d,true));else renderDay($("planList"))}
   else{const box=$("planAdded");box.innerHTML="";const added=mealsOf(ui.day).filter(m=>m.custom);
@@ -1500,27 +1521,48 @@ function nextMeal(){
 }
 function dur(min){const h=Math.floor(min/60),m=min%60;return h?`${h} h`+(m?` ${m} min`:""):`${m} min`}
 function inText(min){return min<1?"now":"in "+dur(min)}
+// The next meal, with a live timer: counting down to it, or up from when it started.
 function renderNext(){
   const el=$("nextMeal"),n=nextMeal();
-  if(!n){el.hidden=true;return}
-  const{d,m,diff,from,to,now,prev,late}=n,pct=Math.max(0,Math.min(100,(now-from)/Math.max(1,to-from)*100));
+  if(!n){el.hidden=true;el._at=0;dashParallax();return}
+  const{d,m,diff,from,to,now,late}=n,pct=Math.max(0,Math.min(100,(now-from)/Math.max(1,to-from)*100));
   const lbl=diff>0?"Next meal":"",state_=diff>0?inText(diff):late<=5?"is now":`started ${dur(late)} ago`;
-  el.innerHTML=`<button class="main"><span class="top"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg>${lbl?`<span>${lbl}</span><span>·</span>`:""}<span></span></span><span class="big"><b></b> <span></span></span><span class="sm"></span>
-    <span class="prog" aria-hidden="true"><i style="width:${pct}%"></i></span></button>
-    <button class="more nm-more" aria-haspopup="menu" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="#i-dots"/></svg></button>`;
-  el.querySelector(".top span:last-child").textContent=fmtTime(m.time)+(isToday(d)?"":" tomorrow");
-  el.querySelector(".big b").textContent=m.custom?m.o.n:m.slot;
-  el.querySelector(".big span").textContent=state_;
+  const name=m.custom?m.o.n:m.slot,[hh,mm]=m.time.split(":").map(Number),b=dayDate(d);
+  el._at=new Date(b.getFullYear(),b.getMonth(),b.getDate(),hh,mm).getTime();
+  el.innerHTML=`<div class="nx-top"><span class="top"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg>${lbl?`<span>${lbl}</span><span>·</span>`:""}<span class="tm"></span></span>
+      <button class="more nm-more" aria-haspopup="menu" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="#i-dots"/></svg></button></div>
+    <button class="main"><span class="big"><b></b> <span class="st"></span></span><span class="timer" aria-hidden="true"></span><span class="sm"></span></button>
+    <span class="prog" aria-hidden="true"><i style="width:${pct}%"></i></span>
+    <div class="nx-act"><button class="btn nx-eat with-ic"><svg class="ic" aria-hidden="true"><use href="#i-ok"/></svg>Mark eaten</button></div>`;
+  el.querySelector(".tm").textContent=fmtTime(m.time)+(isToday(d)?"":" tomorrow");
+  el.querySelector(".big b").textContent=name;
+  el.querySelector(".st").textContent=diff>0?"starts in":late<=5?"is now":"started";
   el.querySelector(".sm").textContent=`${m.custom?"":m.o.n+" · "}${fmt(m.o.k)} kcal · ${fmt(m.o.p)} g protein`;
-  el.querySelector(".main").setAttribute("aria-label",`${lbl?lbl+": ":""}${m.slot} ${state_}, ${m.o.n} at ${fmtTime(m.time)}. Open recipe.`);
+  el.querySelector(".main").setAttribute("aria-label",`${lbl?lbl+": ":""}${name} ${state_}, ${m.o.n} at ${fmtTime(m.time)}. Open recipe.`);
   el.querySelector(".main").onclick=()=>openMeal(d,m);
-  const mb=el.querySelector(".nm-more");mb.setAttribute("aria-label",`${m.slot} actions`);
-  mb.onclick=()=>openMenu(mb,`${m.slot} actions`,[["ok","Mark eaten",()=>markDone(d,m,true)],
+  el.querySelector(".nx-eat").onclick=()=>markDone(d,m,true);
+  const mb=el.querySelector(".nm-more");mb.setAttribute("aria-label",`${name} actions`);
+  mb.onclick=()=>openMenu(mb,`${name} actions`,[["ok","Mark eaten",()=>markDone(d,m,true)],
     m.custom?["trash","Remove",()=>removeCustom(d,m.cid)]:["skip","I skipped it",()=>setMissed(d,m.i,true)],["bell","Remind me",()=>openReminder(d,m),diff<=0]]);
   // urgency: green while there's time, yellow within 15 minutes or during the first hour, red after that
   const u=diff>15?"ok":diff>0||late<=60?"soon":"late";el.classList.remove("u-ok","u-soon","u-late");el.classList.add("u-"+u);
-  el.classList.add("has-mark");el.hidden=false;
+  el.hidden=false;tickNext();dashParallax();
 }
+function tickNext(){
+  const el=$("nextMeal");if(el.hidden||!el._at)return;const t=el.querySelector(".timer");if(!t)return;
+  const s=Math.round((el._at-Date.now())/1000),a=Math.abs(s),h=Math.floor(a/3600),mi=Math.floor(a%3600/60),se=a%60,p2=v=>String(v).padStart(2,"0");
+  t.textContent=h?`${h}:${p2(mi)}:${p2(se)}`:`${mi}:${p2(se)}`;
+  if(s===0)setTimeout(renderNext,1100); // the countdown ran out: it's time
+}
+setInterval(()=>{if((ui.tab==="plan"||ui.tab==="dash")&&document.visibilityState==="visible")tickNext()},1000);
+// Phones, Dashboard tab: the next meal fills most of the screen and the panels slide up over it like a
+// drawer; as they cover it, its content drifts up and fades (--dp, 0 to 1).
+function dashParallax(){
+  const n=$("nextMeal"),dr=document.querySelector(".dash-drawer");if(!n||!dr)return;
+  if(ui.tab!=="dash"||wideMQ.matches||n.hidden){n.style.removeProperty("--dp");return}
+  const a=n.getBoundingClientRect(),b=dr.getBoundingClientRect();n.style.setProperty("--dp",clamp((a.bottom-b.top)/Math.max(1,a.height),0,1).toFixed(3));
+}
+{let raf=0;window.addEventListener("scroll",()=>{if(ui.tab==="dash"&&!raf)raf=requestAnimationFrame(()=>{raf=0;dashParallax()})},{passive:true})}
 setInterval(()=>{if((ui.tab==="plan"||ui.tab==="dash")&&document.visibilityState==="visible"){renderNext();renderMeter()}},30000);
 
 /* ---------- calendar ---------- */
@@ -1539,8 +1581,8 @@ function calButtons(add){const b=document.createElement("div");b.className="ct-b
     `<button class="icon-btn bare" data-act="remind" aria-label="Remind me about these meals" title="Remind me"><svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg></button>`;
   b.querySelector('[data-act="remind"]').onclick=openReminderAll;const a=b.querySelector('[data-act="add"]');if(a)a.onclick=()=>openCustom(ui.day,null);return b}
 function titleRow(d){
-  const t=totals(d);const w=document.createElement("div");w.className="cal-title narrow";
-  w.innerHTML=`<div class="ct-t"><h2>${longDate(d)}</h2><span>${fmt(t.k)} kcal, ${fmt(t.p)} g protein</span></div>`;w.appendChild(calButtons(true));return w;
+  const w=document.createElement("div");w.className="cal-title narrow";
+  w.innerHTML=`<div class="ct-t"><h2>${spanLabel()}</h2></div>`;w.appendChild(calButtons(true));return w;
 }
 function renderHour(body){
   body.appendChild(titleRow(ui.day));
@@ -1660,8 +1702,7 @@ function renderWeek(body,n=D){
   }
   wrap.appendChild(g);
   const top=document.createElement("div");top.className="cal-title";
-  const md=d=>dayDate(d).toLocaleDateString("en-US",{month:"short",day:"numeric"});
-  top.innerHTML=`<div class="ct-t"><h2>${md(days[0])} to ${md(days[n-1])}</h2></div>`;top.appendChild(calButtons(false));
+  top.innerHTML=`<div class="ct-t"><h2>${spanLabel()}</h2></div>`;top.appendChild(calButtons(false));
   const hint=document.createElement("p");hint.className="wg-hint";hint.textContent=few?"Tap a meal for the recipe. Pick a date above to move the three days.":"Tap a meal for the recipe, or a day to see its hours. Drag meals to new times in the Day view.";
   body.append(top,hint,wrap);
   if(few)return;
@@ -1956,8 +1997,13 @@ function renderSpanBtn(){
   b.setAttribute("aria-label",`Showing ${n===1?"1 day":n+" days"}. Show ${next===1?"1 day":next+" days"}`);b.title=b.getAttribute("aria-label");
 }
 $("spanBtn").onclick=()=>{setSpan(ui.span===1?3:ui.span===3?7:1);saveUi();renderAll(false)};
+// The heading above each tab's content: which days it's showing.
+function spanLabel(){
+  if(ui.span===7)return "This week";if(ui.span===3)return "3 days";
+  const dd=iso(dayDate(ui.day));return isToday(ui.day)?"Today":dd===iso(new Date(Date.now()+864e5))?"Tomorrow":dd===iso(new Date(Date.now()-864e5))?"Yesterday":wk(ui.day,"long");
+}
 function renderHead(){
-  renderSpanBtn();renderPlBtn();let t;
+  renderSpanBtn();renderPlBtn();let t;document.querySelectorAll(".span-lbl").forEach(h=>{h.textContent=spanLabel()});
   if(ui.tab==="dash")t="Dashboard";
   else if(ui.tab==="plan")t="Plan";
   else if(ui.tab==="cal")t="Calendar";
