@@ -97,7 +97,7 @@ The Dashboard opens on one card: a greeting with the day's status, the next meal
 - **Inner layers:** earlier days this week turn inside as fainter shells.
 - A food group appearing for the first time today blooms out from the centre, and the sentence under the orb says so.
 
-Tap a patch to see which food it is, or **What's in it** for a line on each of these. It's a picture of variety and habits, not a measure of your microbiome.
+The orb follows the days button: **1 day** draws the selected day (with earlier days as inner layers), **3 days** the last three days up to today, and **This week** the week so far. Food groups use one muted palette of eight hues, checked for colour-blind separation; nuts & seeds share legumes & soy's lavender. Tap a patch to see which food it is, or **What's in it** for a line on each of these. It's a picture of variety and habits, not a measure of your microbiome.
 
 Tap any tile on the Dashboard for its detail with a chart: calories through the day against your goal (or by day over 3 or 7 days), the energy split of protein, carbs and fat with each meal's breakdown, which food groups each meal covers, and each nutrient as a percent of its daily value. Outlines mean planned or not yet met; filled means eaten or met.
 

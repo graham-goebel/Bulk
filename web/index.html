@@ -197,6 +197,8 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .more{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:var(--muted);margin-right:-8px}
 .more:hover,.more[aria-expanded="true"]{background:var(--soft);color:var(--ink)}.more .ic{width:18px;height:18px}
 .menu{position:fixed;z-index:40;min-width:210px;background:var(--bg);border-radius:14px;padding:6px;box-shadow:0 12px 32px rgba(0,0,0,.16),0 0 0 1px rgba(0,0,0,.06)}
+.menu.in{animation:menuIn .22s cubic-bezier(.2,.9,.25,1.05)}.menu.out{animation:menuOut .13s ease-in forwards}
+@keyframes menuIn{from{opacity:0;transform:scale(.5)}}@keyframes menuOut{to{opacity:0;transform:scale(.7)}}
 .menu button{display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;border-radius:9px;font-size:.92rem;text-align:left}
 .menu button:hover,.menu button:focus-visible{background:var(--soft);outline:none}
 .menu button:disabled{opacity:.4;cursor:default;background:none}
@@ -644,7 +646,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .sheet-bg.closing{animation:scrimOut .26s ease-in forwards}
 .sheet-bg.closing>.sheet{animation:sheetDown .26s cubic-bezier(.5,0,.9,.6) forwards}
 @media (min-width:700px){.sheet-bg:not([hidden])>.sheet{animation-name:sheetIn;animation-duration:.3s}.sheet-bg.closing>.sheet{animation-name:sheetOut;animation-duration:.2s}}
-@media (prefers-reduced-motion: reduce){*{transition:none!important}.sheet-bg,.sheet-bg>.sheet{animation:none!important}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}.sheet-bg,.sheet-bg>.sheet,.menu{animation:none!important}}
 @media (max-width:639px){
   .hours{margin:18px 12px 0}
   .blk{left:42px}
@@ -1187,7 +1189,9 @@ function openMenu(btn,label,items){
     b.innerHTML=`<svg class="ic" aria-hidden="true"><use href="#i-${OUTLINE[icon]||icon}"/></svg><span></span>`;b.lastChild.textContent=text;b.onclick=()=>{closeMealMenu(true);fn()};m.appendChild(b)});
   document.body.appendChild(m);
   const r=btn.getBoundingClientRect(),mh=m.offsetHeight,mw=m.offsetWidth,below=r.bottom+6+mh<window.innerHeight-90;
-  m.style.left=Math.max(12,Math.min(window.innerWidth-mw-12,r.right-mw))+"px";m.style.top=(below?r.bottom+6:r.top-6-mh)+"px";
+  const left=Math.max(12,Math.min(window.innerWidth-mw-12,r.right-mw));m.style.left=left+"px";m.style.top=(below?r.bottom+6:r.top-6-mh)+"px";
+  // it grows out of the button that opened it
+  m.style.transformOrigin=`${Math.round(r.left+r.width/2-left)}px ${below?"-6px":`calc(100% + 6px)`}`;m.classList.add("in");
   btn.setAttribute("aria-expanded","true");menuFor={m,btn};
   const first=m.querySelector("button:not(:disabled)");if(first)first.focus();
 }
@@ -1201,7 +1205,8 @@ function openMealMenu(i,btn){
     ["swap","I ate something else",()=>ateInstead(d,i),E],
     ["plus","Add from pantry",()=>openAddFromPantry(d,i),o.skip||M]]);
 }
-function closeMealMenu(quiet){if(!menuFor)return;const{m,btn}=menuFor;menuFor=null;m.remove();btn.setAttribute("aria-expanded","false");if(!quiet)btn.focus()}
+function closeMealMenu(quiet){if(!menuFor)return;const{m,btn}=menuFor;menuFor=null;
+  if(reduceMotion)m.remove();else{m.classList.remove("in");m.classList.add("out");m.style.pointerEvents="none";setTimeout(()=>m.remove(),130)}btn.setAttribute("aria-expanded","false");if(!quiet)btn.focus()}
 document.addEventListener("pointerdown",e=>{if(menuFor&&!menuFor.m.contains(e.target)&&!menuFor.btn.contains(e.target))closeMealMenu(true)},true);
 document.addEventListener("scroll",()=>closeMealMenu(true),{capture:true,passive:true}); // any scroll, including inside a sheet
 document.addEventListener("keydown",e=>{
@@ -1621,7 +1626,10 @@ function timerText(sec){
    - Memory: earlier days this week turn inside as fainter shells, so a varied week gives it a full core.
    - A food group appearing for the first time today blooms out from the centre.
    It's a picture of variety and habits, not a measurement of anyone's microbiome. */
-const GROUP_HEX=["#e0584f","#1f8fc4","#f0b400","#8fb3e6","#a5703f","#ec8d2f","#2fae68","#e2487e","#7a62d6"]; // same order as GROUPS
+// One colour per food group, in GROUPS order. Eight hues at an even lightness and chroma, checked as a set for
+// colour-blind separation (worst deutan ΔE 8.5) and normal-vision separation (worst ΔE 15.7); nine couldn't clear
+// those floors, so nuts & seeds share legumes & soy's lavender, as the other plant protein.
+const GROUP_HEX=["#c66c71","#2061a1","#ea9c1b","#1bc2bf","#a888e5","#968103","#0d711a","#963374","#a888e5"];
 const FERMENTED=/yogh?urt|kefir|kimchi|sauerkraut|miso|tempeh|kombucha|cottage cheese|natto|pickle/i;
 const hashStr=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0};
 // The different foods in a meal: its ingredients (and add-ons), or the meal itself when it has none.
@@ -1633,31 +1641,37 @@ function foodsOf(o){
   return names.length?names:[clean(o.n)];
 }
 const maskGroups=m=>GROUPS.map((_,j)=>j).filter(j=>m&(1<<j));
-function orbStats(td){
+// The days the orb draws: as many as are shown (1, 3 or 7), ending at the last one shown or today, whichever is
+// earlier, since days to come have nothing eaten yet.
+function orbDays(){const td=[...Array(D).keys()].find(isToday),days=spanDays();if(td==null)return days;if(days[0]>td)return [];
+  const end=Math.min(days[days.length-1],td),start=Math.max(0,end-ui.span+1);return Array.from({length:end-start+1},(_,k)=>start+k)}
+function orbStats(){
+  const days=orbDays(),last=days.length?days[days.length-1]:null,n=Math.max(1,days.length),live=last!=null&&isToday(last);
   const eaten=d=>mealsOf(d).filter(m=>m.done&&!m.o.skip),now=new Date(),nm=now.getHours()*60+now.getMinutes();
-  const ms=eaten(td),ek=ms.reduce((a,m)=>a+m.o.k,0);let mask=0;ms.forEach(m=>{mask|=m.o.gm||0});
+  const all=days.flatMap(d=>eaten(d).map(m=>({d,m}))),ek=all.reduce((a,x)=>a+x.m.o.k,0);let mask=0;all.forEach(x=>{mask|=x.m.o.gm||0});
   const groups=GROUPS.filter((_,j)=>mask&(1<<j));
-  // nutrients from today's eaten recipes, plus fiber from pantry items logged as meals
+  // nutrients a day, from eaten recipes plus fiber from pantry items logged as meals
   const nu={};NUTR.forEach(([k])=>nu[k]=0);let hasNu=false;
-  ms.forEach(m=>{if(m.o.nu){hasNu=true;NUTR.forEach(([k])=>nu[k]+=m.o.nu[k]||0)}
-    if(m.custom){const x=customOf(td).find(y=>y.id===m.cid),p=x&&x.pid&&pantry.find(z=>z.id===x.pid);if(p&&p.nutrition&&p.nutrition.fiber!=null){hasNu=true;nu.fiber+=p.nutrition.fiber*(x.q||1)}}});
-  // every different food eaten this week so far: each one a colony, tinted by one of its meal's food groups
+  all.forEach(({d,m})=>{if(m.o.nu){hasNu=true;NUTR.forEach(([k])=>nu[k]+=(m.o.nu[k]||0)/n)}
+    if(m.custom){const x=customOf(d).find(y=>y.id===m.cid),p=x&&x.pid&&pantry.find(z=>z.id===x.pid);if(p&&p.nutrition&&p.nutrition.fiber!=null){hasNu=true;nu.fiber+=p.nutrition.fiber*(x.q||1)/n}}});
+  // every different food in these days: each one a colony, tinted by one of its meal's food groups
   const foods=[],seen=new Set();
-  for(let d=0;d<=td;d++)eaten(d).forEach(m=>foodsOf(m.o).forEach(f=>{if(seen.has(f))return;seen.add(f);
-    const gs=maskGroups(m.o.gm||0),g=gs.length?gs[hashStr(f)%gs.length]:-1;foods.push({f,g,today:d===td})}));
-  // fermented foods eaten today, with how long ago
-  const ferm=ms.filter(m=>FERMENTED.test([m.o.n,m.o.d||"",...foodsOf(m.o)].join(" "))).map(m=>({n:m.o.n,time:m.time,ago:Math.max(0,nm-mins(m.time))}));
-  // rhythm: of the meals due by now, how many were eaten; and how long since the last one
-  const due=mealsOf(td).filter(m=>!m.o.skip&&mins(m.time)+60<=nm),off=due.filter(m=>!m.done).length;
-  const lastEat=ms.length?Math.max(...ms.map(m=>mins(m.time))):null,gapH=lastEat==null?0:Math.max(0,nm-lastEat)/60;
-  // earlier days this week, newest first
-  const memory=[];for(let d=td-1;d>=Math.max(0,td-6);d--){const e=eaten(d);if(!e.length)continue;let mk=0;e.forEach(m=>{mk|=m.o.gm||0});
-    memory.push({age:td-d,fill:clamp(e.reduce((a,m)=>a+m.o.k,0)/state.target,0,1),colors:maskGroups(mk).map(j=>GROUP_HEX[j])})}
-  // a food group the latest meal brought for the first time today
-  let before=0,newest=[];[...ms].sort((a,b)=>mins(a.time)-mins(b.time)).forEach(m=>{const add=(m.o.gm||0)&~before;newest=maskGroups(add).map(j=>GROUPS[j]);before|=m.o.gm||0});
-  return{td,meals:ms.length,ek,groups,mask,fill:clamp(ek/state.target,0,1),foods,ferm,hasNu,fiber:nu.fiber,fib:hasNu?clamp(nu.fiber/28,0,1.2):0,
+  all.forEach(({d,m})=>foodsOf(m.o).forEach(f=>{if(seen.has(f))return;seen.add(f);
+    const gs=maskGroups(m.o.gm||0),g=gs.length?gs[hashStr(f)%gs.length]:-1;foods.push({f,g,today:d===last})}));
+  // fermented foods: ripples only while they're recent, so only on today
+  const ferm=live?eaten(last).filter(m=>FERMENTED.test([m.o.n,m.o.d||"",...foodsOf(m.o)].join(" "))).map(m=>({n:m.o.n,time:m.time,ago:Math.max(0,nm-mins(m.time))})):[];
+  // rhythm: of the meals due in these days, how many were eaten; and, today, how long since the last one
+  const due=days.flatMap(d=>mealsOf(d).filter(m=>!m.o.skip&&(!isToday(d)||mins(m.time)+60<=nm))),off=due.filter(m=>!m.done).length;
+  const todayEaten=live?eaten(last):[],lastEat=todayEaten.length?Math.max(...todayEaten.map(m=>mins(m.time))):null,gapH=lastEat==null?0:Math.max(0,nm-lastEat)/60;
+  // inner layers: for one day, the days before it this week; for 3 days or the week, the days before the latest
+  const inner=ui.span===1?(last==null?[]:Array.from({length:Math.min(6,last)},(_,k)=>last-1-k)):days.slice(0,-1).reverse();
+  const memory=[];inner.forEach((d,k)=>{const e=eaten(d);if(!e.length)return;let mk=0;e.forEach(m=>{mk|=m.o.gm||0});
+    memory.push({age:k+1,fill:clamp(e.reduce((a,m)=>a+m.o.k,0)/state.target,0,1),colors:maskGroups(mk).map(j=>GROUP_HEX[j])})});
+  // a food group the latest meal today brought for the first time today
+  let before=0,newest=[];if(live)[...todayEaten].sort((a,b)=>mins(a.time)-mins(b.time)).forEach(m=>{const add=(m.o.gm||0)&~before;newest=maskGroups(add).map(j=>GROUPS[j]);before|=m.o.gm||0});
+  return{key:days.join(),last,live,span:ui.span,days:n,meals:all.length,todayMeals:todayEaten.length,ek,groups,mask,fill:clamp(ek/(state.target*n),0,1),foods,ferm,hasNu,fiber:nu.fiber,fib:hasNu?clamp(nu.fiber/28,0,1.2):0,
     moons:NUTR.map(([k,l,,dv])=>({l,r:hasNu?nu[k]/dv:0})),due:due.length,off,reg:due.length?1-off/due.length:1,gapH,memory,newest,
-    energy:clamp(groups.length/GROUPS.length*.5+Math.min(1,foods.length/30)*.3+Math.min(1,ms.length/6)*.2,0,1)};
+    energy:clamp(groups.length/GROUPS.length*.5+Math.min(1,foods.length/(15+5*n))*.3+Math.min(1,all.length/(6*n))*.2,0,1)};
 }
 function fibSphere(n){const pts=[],g=Math.PI*(3-Math.sqrt(5));for(let i=0;i<n;i++){const y=1-(i+.5)/n*2,r=Math.sqrt(1-y*y);pts.push([Math.cos(i*g)*r,y,Math.sin(i*g)*r])}return pts}
 const hexRgb=h=>[1,3,5].map(k=>parseInt(h.slice(k,k+2),16));
@@ -1674,7 +1688,7 @@ const ORB=(()=>{
     // colonies: one per food this week, spread over the globe; each point belongs to its nearest colony
     const sp=st.foods.length?st.foods:[{f:"",g:-1}],C=Math.min(48,Math.max(3,sp.length)),centres=fibSphere(C).map((c,j)=>{const a=j*2.4;return[c[0]*Math.cos(a)-c[2]*Math.sin(a),c[1],c[0]*Math.sin(a)+c[2]*Math.cos(a)]});
     surf=fibSphere(n).map((p,i)=>{let b=0,bd=-9;centres.forEach((c,j)=>{const w=c[0]*p[0]+c[1]*p[1]+c[2]*p[2];if(w>bd){bd=w;b=j}});
-      const food=sp[b%sp.length],base=food.g>=0?hexRgb(GROUP_HEX[food.g]):GREY,v=((hashStr(food.f)%7)-3)*9; // each food a slightly different tint of its group
+      const food=sp[b%sp.length],base=food.g>=0?hexRgb(GROUP_HEX[food.g]):GREY,v=((hashStr(food.f)%7)-3)*5; // each food a slightly different tint of its group
       return{p,c:centres[b],k:b,g:food.g,f:food.f,col:base.map(x=>clamp(x+v,0,255)),ph:(hashStr(food.f+i)%628)/100}});
     shells=st.memory.map(m=>{const cols=(m.colors.length?m.colors:["#8a8a8a"]).map(hexRgb),cs=fibSphere(cols.length);
       return{age:m.age,pts:fibSphere(Math.round(40+90*m.fill)).map(p=>{let b=0,bd=-9;cs.forEach((c,j)=>{const w=c[0]*p[0]+c[1]*p[1]+c[2]*p[2];if(w>bd){bd=w;b=j}});return{p,col:cols[b]}})}});
@@ -1732,29 +1746,31 @@ const ORB=(()=>{
     const wrap=cv.parentElement;if(!wrap)return;if(label)label.remove();label=null;if(!best||!best[3].f)return;
     const q=best[3];label=document.createElement("span");label.className="orb-tip";label.textContent=q.f.replace(/^./,m=>m.toUpperCase())+(q.g>=0?` · ${GROUPS[q.g]}`:"");
     label.style.left=(cv.offsetLeft+best[0])+"px";label.style.top=(cv.offsetTop+best[1])+"px";wrap.appendChild(label);const l=label;setTimeout(()=>{if(l===label){l.remove();label=null}},2600)});
-  return{cv,set(s){const first=!st||st.td!==s.td;st=s;
+  return{cv,set(s){const first=!st||st.key!==s.key;st=s;
       tgt={fill:s.fill,energy:s.energy,fib:s.fib,reg:s.reg,slow:clamp(1-s.gapH/9,.35,1)};if(first)cur={...tgt};
-      const nk=s.td+"|"+s.newest.join();if(!first&&s.newest.length&&nk!==lastNew)bloom={p:0,col:hexRgb(GROUP_HEX[GROUPS.indexOf(s.newest[0])])};lastNew=nk;start()},start};
+      const nk=s.key+"|"+s.newest.join();if(!first&&s.newest.length&&nk!==lastNew)bloom={p:0,col:hexRgb(GROUP_HEX[GROUPS.indexOf(s.newest[0])])};lastNew=nk;start()},start};
 })();
+function orbWhen(o){return o.span===3?"over the last 3 days":o.span===7?"this week":o.live?"today":`on ${o.last!=null?wk(o.last,"long"):"that day"}`}
 function orbSay(o){
-  if(!o.meals)return "Nothing eaten yet today.";
-  const first=o.newest.length&&o.meals>1?`First ${listOf(o.newest.map(g=>g.toLowerCase()))} today. `:"";
-  return `${first}${o.meals} meal${o.meals>1?"s":""} and ${B(fmt(o.ek)+" calories")} so far, from ${B(`${o.groups.length} of ${GROUPS.length}`)} food groups and ${B(`${o.foods.length} different food${o.foods.length===1?"":"s"}`)} this week.`;
+  const when=orbWhen(o);
+  if(!o.meals)return o.live&&o.span===1?"Nothing eaten yet today.":`Nothing marked eaten ${when}.`;
+  const first=o.newest.length&&o.todayMeals>1?`First ${listOf(o.newest.map(g=>g.toLowerCase()))} today. `:"";
+  return `${first}${o.meals} meal${o.meals>1?"s":""} and ${B(fmt(o.ek)+" calories")} ${o.live&&o.span===1?"so far":when}, from ${B(`${o.groups.length} of ${GROUPS.length}`)} food groups and ${B(`${o.foods.length} different food${o.foods.length===1?"":"s"}`)}.`;
 }
 // What the orb is made of, one line per feature.
 function openOrbDetail(){
-  const td=[...Array(D).keys()].find(isToday);if(td==null)return;const o=orbStats(td);
+  const o=orbStats(),per=o.days>1?" a day":"";
   const sw=g=>`<i class="orb-sw" style="background:${GROUP_HEX[GROUPS.indexOf(g)]}"></i>`;
   const rows=[
-    ["Points",`${fmt(o.ek)} of ${fmt(state.target)} calories eaten`],
+    ["Points",`${fmt(o.ek)} of ${fmt(state.target*o.days)} calories eaten`],
     ["Colours",o.groups.length?`${o.groups.length} of ${GROUPS.length} food groups<span class="orb-sws">${o.groups.map(sw).join("")}</span>`:"No food groups yet"],
-    ["Colonies",`${o.foods.length} different food${o.foods.length===1?"":"s"} this week, ${o.foods.filter(f=>f.today).length} of them today`],
-    ["Clustering",o.hasNu?`${fmtN(o.fiber)} g of 28 g fiber`:"No fiber data for today's meals"],
-    ["Ripples",o.ferm.length?listOf(o.ferm.map(f=>`${esc(f.n)} at ${fmtTime(f.time)}`)):"No fermented foods today"],
-    ["Pulse",o.due?`${o.due-o.off} of ${o.due} meals due so far eaten${o.gapH>=4?`, ${Math.floor(o.gapH)} hours since the last`:""}`:"No meals due yet"],
-    ["Moons",o.hasNu?`${o.moons.filter(m=>m.r>=1).length} of ${o.moons.length} nutrients at daily value`:"No nutrient data yet"],
-    ["Inner layers",o.memory.length?`${o.memory.length} earlier day${o.memory.length>1?"s":""} this week`:"No earlier days this week"]];
-  tileModal("Today's orb","",`<ul class="ing orb-rows">${rows.map(([k,v])=>`<li><span>${k}</span><span class="q">${v}</span></li>`).join("")}</ul>
+    ["Colonies",`${o.foods.length} different food${o.foods.length===1?"":"s"}`],
+    ["Clustering",o.hasNu?`${fmtN(o.fiber)} g of 28 g fiber${per}`:"No fiber data for these meals"],
+    ["Ripples",o.ferm.length?listOf(o.ferm.map(f=>`${esc(f.n)} at ${fmtTime(f.time)}`)):o.live?"No fermented foods today":"Only for today"],
+    ["Pulse",o.due?`${o.due-o.off} of ${o.due} meals due eaten${o.gapH>=4?`, ${Math.floor(o.gapH)} hours since the last`:""}`:"No meals due yet"],
+    ["Moons",o.hasNu?`${o.moons.filter(m=>m.r>=1).length} of ${o.moons.length} nutrients at daily value${per}`:"No nutrient data yet"],
+    ["Inner layers",o.memory.length?`${o.memory.length} earlier day${o.memory.length>1?"s":""}`:"No earlier days"]];
+  tileModal("The orb",o.span===1?(o.live?"Today":longDate(o.last)):scopeLabel(),`<ul class="ing orb-rows">${rows.map(([k,v])=>`<li><span>${k}</span><span class="q">${v}</span></li>`).join("")}</ul>
     <p class="fine">A picture of how varied and steady your eating is, not a measure of your microbiome.</p>`);
 }
 // The next meal, said as a sentence: "Lunch starts in 44 minutes." or "Lunch started 1 hour and 36 minutes ago."
@@ -1762,7 +1778,7 @@ function renderNext(){
   const el=$("nextMeal"),n=nextMeal(),td=[...Array(D).keys()].find(isToday);
   // between meals (or once the day's done) the card shows today's orb, with the next meal as one line under it
   if((!n||n.diff>0)&&td!=null){
-    const o=orbStats(td);el.classList.add("orb-mode");el.classList.remove("u-late");
+    const o=orbStats();el.classList.add("orb-mode");el.classList.remove("u-late");
     el.innerHTML=`<div class="nx-orb"></div><p class="orb-say">${orbSay(o)} <button class="txt orb-more">What's in it</button></p>${n?`<div class="nx-line"><button class="main"><span class="nx-pre"></span> <span class="timer"></span>: <b></b></button>
       <button class="more nm-more" aria-haspopup="menu" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="#i-dots"/></svg></button></div>`:""}`;
     el.querySelector(".nx-orb").appendChild(ORB.cv);ORB.set(o);
