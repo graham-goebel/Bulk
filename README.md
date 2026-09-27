@@ -131,6 +131,10 @@ Under that, pantry items running low or expiring in the next three days take tur
 
 A pantry item's **Add to grocery list** puts it in an **Added** section at the top of the grocery list, with an ✕ to take it off (and Undo either way). Pantry items running low or expiring soon also appear on their own in **From your pantry** at the bottom of the list. Checking one off and choosing **Add checked to pantry** adds one more of it to the item you already have.
 
+## Recipe book, favorites and deleting recipes
+
+**Recipe book** in the Plan tab's ⋯ menu lists every recipe with a search box and filters (Favorites, meals, Quick, High protein). A recipe's chips can use it for that meal, **Add to favorites** or **Delete recipe**; a meal's sheet can favorite it too. Favorites show a star in the book and in Suggestions. Deleting takes the recipe out of the planner, gives any days still planning it another recipe, and ticks **Hide from planner** on its Notion row, so it can come back: tap Undo, or untick the box in Notion.
+
 ## Day templates
 
 In the Plan tab's ⋯ menu, **Save day as template** keeps the day's meals and times under a name. **Use a template** lists them: pick the days to apply one to (the day you're on is picked already) and tap the template. Its meals are locked on those days, so rebalancing leaves them as they were. Templates are kept on this device.

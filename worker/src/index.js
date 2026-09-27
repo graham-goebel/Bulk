@@ -78,6 +78,15 @@ export default {
           return json(await writePantry(env, body || {}));
         }
       }
+      if (request.method === "POST" && url.pathname === "/meals/hide") {
+        // a recipe "deleted" in the app is hidden from the planner in Notion, so it can be brought back
+        let body;
+        try { body = await request.json(); } catch { return json({ error: "bad_request", message: "Body must be JSON." }, 400); }
+        const id = body && typeof body.id === "string" ? body.id : "";
+        if (!/^[0-9a-f-]{32,36}$/i.test(id)) return json({ error: "bad_request", message: "A meal id is required." }, 400);
+        await notion(env, `/pages/${id}`, "PATCH", { properties: { "Hide from planner": { checkbox: !!body.hide } } });
+        return json({ ok: true });
+      }
       if (request.method === "POST" && url.pathname === "/plan/batch") {
         let body;
         try { body = await request.json(); } catch { return json({ error: "bad_request", message: "Body must be JSON." }, 400); }
