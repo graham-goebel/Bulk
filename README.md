@@ -56,7 +56,7 @@ When it finishes, the log shows the Worker's address, something like `https://ga
 ## 6. Connect on each device
 
 1. Open https://graham-goebel.github.io/Bulk/.
-2. Tap the cloud icon at the top right. It opens Goals & settings on the Settings tab. Enter the passcode there. Once connected the icon goes away, and only comes back as a warning if a sync fails (tap it for details). Sync status is always shown in Goals & settings → Settings.
+2. Tap the cloud icon at the top right. It opens Settings on the Settings tab. Enter the passcode there. Once connected the icon goes away, and only comes back as a warning if a sync fails (tap it for details). Sync status is always shown in Settings.
 3. Enter your passcode and tap **Save**. The status changes to "Notion: synced". The first sync creates the week's 42 rows in Meal Plan.
 
 To install it like an app: on iPhone or iPad, tap Share, then **Add to Home Screen**. On Android, open the browser menu and choose **Install app** or **Add to Home screen**.
@@ -111,7 +111,7 @@ Tap the bell on the next-meal card, or **Remind me** in a meal's sheet, and choo
 
 ## Shake to shuffle
 
-Turn on **Shake to shuffle** in Goals & settings → Settings, and shaking your phone on the Plan or Dashboard tab shuffles that day's unlocked meals, the same as tapping Shuffle unlocked meals. iOS asks for motion permission the first time you turn it on.
+Turn on **Shake to shuffle** in Settings, and shaking your phone on the Plan or Dashboard tab shuffles that day's unlocked meals, the same as tapping Shuffle unlocked meals. iOS asks for motion permission the first time you turn it on.
 
 ## What syncs and what stays on the device
 
@@ -138,6 +138,8 @@ Every week adds 42 rows to Meal Plan. They're kept as history by default. To tid
 
 ## Small things
 
+- Changing a default meal time in Settings moves that meal today and on later days, except where it's already eaten or skipped (dragging a meal on the Calendar still changes just that day).
+- Unlocking a meal keeps it as it is; only the other unlocked meals rebalance.
 - On the Plan tab, the icon next to the heading switches between cards and a list. Swipe a meal's card to change it; the options wrap around from the last back to the first.
 - Scrolling down shrinks the bottom bar to the current tab's icon; scroll up, or tap it, to bring the rest back.
 - In the pantry search box, **+** starts a new item named after whatever you've typed.
@@ -150,7 +152,7 @@ Short notes pop up above the tab bar for network activity: **Saved to Notion** o
 
 | Message | What to do |
 |---|---|
-| Connect Notion | Enter your passcode in Goals & settings → Settings. |
+| Connect Notion | Enter your passcode in Settings. |
 | Wrong passcode | Re-enter it. It must match `APP_PASSCODE` exactly. |
 | This site isn't on the server's allowed list | Fix `ALLOWED_ORIGINS` in `worker/wrangler.toml` (origin only, no path, no trailing slash) and deploy the Worker again. |
 | The server is missing its settings | Add the `NOTION_TOKEN` and `APP_PASSCODE` secrets, then deploy the Worker again. |
