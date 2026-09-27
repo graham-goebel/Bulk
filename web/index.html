@@ -116,10 +116,9 @@ main{max-width:960px;margin:0 auto;padding-bottom:calc(100px + env(safe-area-ins
 .dayline>.t,.tile .t{display:block;font-size:.82rem;color:var(--muted)}
 .dl-say{margin:8px 0 18px;font-size:1.22rem;line-height:1.42;letter-spacing:-0.015em;color:var(--ink)}
 .dl-say b,.tile .say b{font-weight:500}
-.tile .say{display:block;margin-top:6px;font-size:.95rem;line-height:1.4;color:var(--ink)}
+.tile .say{display:block;margin-top:6px;font-size:1rem;line-height:1.35;color:var(--ink)}.tile .say .sub{display:block;margin-top:2px;font-size:.85rem;color:var(--muted)}
 .dl-badge{flex:none;display:grid;place-items:center;width:34px;height:34px;color:var(--muted)}
 .dl-badge .ic{width:24px;height:24px}
-.dl-badge.ok{color:#1baf7a}.dl-badge.warn{color:#d6452f}
 .dl-tx{display:flex;flex-direction:column;min-width:0}
 .dl-st{font-size:1.4rem;font-weight:500;letter-spacing:-0.03em;line-height:1.15}
 .dl-sub{margin-top:2px;font-size:.82rem;color:var(--muted)}
@@ -430,37 +429,32 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .wb.eaten .n,.blk.eaten .n{color:var(--muted)}
 .wb:hover{box-shadow:0 2px 10px rgba(0,0,0,.1)}
 .wg-now{position:absolute;left:0;right:0;border-top:1.5px solid var(--ink);z-index:2}
-/* now card: the greeting and day status on top, the next meal said as a sentence, then the day so far on a timeline.
-   A card beside the plan on wide screens; on phones it fills the screen and the drawer rises over it. */
-.now-card{margin:10px 24px 0;padding:16px 16px 14px;border:1px solid var(--line);border-radius:20px}
-.nc-top{display:flex;align-items:center;justify-content:flex-end;gap:4px;min-height:34px;margin-right:-4px}
-.nc-orb{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;color:var(--ink)}.nc-orb .ic{width:24px;height:24px}
-@media (hover:hover){.nc-orb:hover{background:var(--soft)}}
-.nc-top .t{font-size:.82rem;color:var(--muted)}
-.next{display:flex;flex-direction:column;margin-top:8px;color:var(--ink)}
-.nx-clock{margin:0;font-size:1.45rem;line-height:1.25;letter-spacing:-0.02em}
+/* dashboard: the orb alone on the base plane, then the drawer: a card with the next meal and a line about the orb,
+   the tiles and the day's nutrition. On wide screens it all sits in a column beside the plan. */
+.now-card{display:flex;justify-content:center;margin:6px 24px 0}
+.nx-orb{position:relative;display:flex;justify-content:center}
+.orb-cv{display:block;width:min(220px,70%);aspect-ratio:1;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.orb-tip{position:absolute;transform:translate(-50%,calc(-100% - 10px));padding:5px 10px;border-radius:12px;background:var(--ink);color:var(--bg);font-size:.8rem;white-space:nowrap;pointer-events:none;animation:scrimIn .2s ease-out}
+.orb-rows li{align-items:baseline}.orb-rows .q{text-align:right}
+.orb-sws{display:inline-flex;gap:3px;margin-left:8px;vertical-align:middle}.orb-sw{display:inline-block;width:9px;height:9px;border-radius:50%}
+.dash-head .ct-btns{gap:2px}.dash-head .icon-btn .ic{width:22px;height:22px}
+.dl-badge.ok{color:#1baf7a}.dl-badge.warn{color:#d6452f}.dl-badge.info{color:var(--ink)}
+.now-tile{margin:12px 24px 0;padding:16px 16px 15px;border:1px solid var(--line);border-radius:20px}
+.next{display:flex;flex-direction:column;color:var(--ink)}
+.nx-clock{margin:0;font-size:1.3rem;line-height:1.25;letter-spacing:-0.02em}
 .next .timer{font-weight:500;font-variant-numeric:tabular-nums}
-
-.nx-say{display:block;font-size:1rem;line-height:1.45;margin-top:8px;color:var(--muted)}.nx-say b{font-weight:500;color:var(--ink)}
+.nx-say{display:block;font-size:.95rem;line-height:1.45;margin-top:6px;color:var(--muted)}.nx-say b{font-weight:500;color:var(--ink)}
 .next .main{display:block;min-width:0;text-align:left;color:inherit}
 .nx-act{display:flex;align-items:center;gap:22px;margin-top:12px}
 .next .nm-more{flex:none;width:36px;height:36px;margin:-8px -10px -8px auto;background:none;box-shadow:none;color:var(--ink)}
 .next .nm-more:hover,.next .nm-more[aria-expanded="true"]{background:var(--soft)}
-.now-card .dayline{margin:0;padding:0;border:0;border-radius:0}
-.now-card .next:not([hidden])+.dayline{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
-.now-card .dayline .dl-say{margin-top:4px;font-size:1rem;color:var(--ink)}
-.now-card .next:not([hidden])+.dayline .dl-say{color:var(--muted)}
-.now-card .next:not([hidden])+.dayline .dl-say b{color:var(--ink)}
-.nx-orb{position:relative;display:flex;justify-content:center;margin:6px 0 4px}
-.orb-cv{cursor:pointer;-webkit-tap-highlight-color:transparent}
-.orb-tip{position:absolute;transform:translate(-50%,calc(-100% - 10px));padding:5px 10px;border-radius:12px;background:var(--ink);color:var(--bg);font-size:.8rem;white-space:nowrap;pointer-events:none;animation:scrimIn .2s ease-out}
-.orb-rows li{align-items:baseline}.orb-rows .q{text-align:right}
-.orb-sws{display:inline-flex;gap:3px;margin-left:8px;vertical-align:middle}.orb-sw{display:inline-block;width:9px;height:9px;border-radius:50%}
-.orb-cv{display:block;width:min(200px,60%);aspect-ratio:1}
-.orb-say{margin:14px 0 0;font-size:1rem;line-height:1.45;color:var(--muted)}.orb-say b{font-weight:500;color:var(--ink)}
-.nx-line{display:flex;align-items:center;gap:10px;margin-top:12px}
-.nx-line .main{flex:1;font-size:.95rem;line-height:1.4;color:var(--muted)}.nx-line .main b{font-weight:500;color:var(--ink)}
+.nx-line{display:flex;align-items:center;gap:10px}
+.nx-line .main{flex:1;font-size:1.02rem;line-height:1.4;color:var(--muted)}.nx-line .main b{font-weight:500;color:var(--ink)}
 .nx-line .nm-more{margin:-8px -10px -8px 0}
+.orb-say{margin:0;font-size:.92rem;line-height:1.45;color:var(--muted)}.orb-say b{font-weight:500;color:var(--ink)}
+.next:not([hidden])+.orb-say{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.st-day .dl-say{margin:4px 0 18px;font-size:1.1rem;line-height:1.42;color:var(--ink)}.st-day .dl-say b{font-weight:500}
+.st-meals li{align-items:center}.st-meals .q{flex:1;text-align:right;color:var(--ink)}.st-meals .st-ic{width:18px;display:flex;justify-content:flex-end}.st-meals .st{width:15px;height:15px}
 .dash-nut{padding:4px 24px 0}
 .gtags{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 14px}
 .gtag{display:inline-flex;align-items:center;gap:6px;padding:5px 11px 5px 9px;border-radius:999px;background:var(--soft);font-size:.82rem;color:var(--ink)}
@@ -470,29 +464,14 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .dn-acc summary::-webkit-details-marker{display:none}.dn-acc summary .q{margin-left:auto;color:var(--muted);font-size:.85rem}
 .dn-acc .chev{width:16px;height:16px;transition:transform .2s}.dn-acc[open] .chev{transform:rotate(180deg)}
 .dn-acc[open] .nut{margin-bottom:6px}.dn-acc .nut li:last-child{border-bottom:0}.dash-nut .dn-h{margin-top:8px}
-.dash-head{display:none}
 .hero{display:none} /* the rings are hidden for now */
+@media (min-width:900px){#dashWrap .dash-head h2{visibility:hidden}} /* the plan beside it has the heading */
 @media (max-width:899px){
-  #view-dash .dash-head{display:flex}
-  /* the card fills the screen below the heading and sticks under the header; the drawer rises over it */
-  #view-dash .now-card{position:sticky;top:56px;z-index:0;display:flex;flex-direction:column;min-height:max(420px,calc(100svh - 300px));margin:0;padding:6px 24px 48px;border:0;border-radius:0}
-  #view-dash .now-card>*{transform:translateY(calc(var(--dp,0) * -40px)) scale(calc(1 - var(--dp,0) * .12));transform-origin:50% 30%;
-    filter:blur(calc(var(--dp,0) * 10px));opacity:calc(1 - var(--dp,0) * .85)}
-  /* between meals the orb does the opposite: it swells toward you as the drawer rises over it */
-  #view-dash .now-card>.next.orb-mode{transform:none;filter:none;opacity:1}
-  #view-dash .next.orb-mode>:not(.nx-orb){transform:translateY(calc(var(--dp,0) * -40px));filter:blur(calc(var(--dp,0) * 10px));opacity:calc(1 - var(--dp,0) * .85)}
-  #view-dash .next.orb-mode>.nx-orb{transform:scale(calc(1 + var(--dp,0) * .9));transform-origin:50% 40%;opacity:calc(1 - var(--dp,0) * .35)}
-  #view-dash .next{margin-top:auto}
-  #view-dash .dayline{margin-bottom:auto}
-  #view-dash .next[hidden]+.dayline{margin-top:auto}
-  #view-dash .nx-clock{font-size:clamp(1.9rem,8.6vw,2.5rem);line-height:1.18;letter-spacing:-0.03em}
-  #view-dash .nx-say{font-size:1.15rem;letter-spacing:-0.01em;margin-top:12px}
-  #view-dash .orb-cv{width:min(300px,76vw)}
-  #view-dash .orb-say{font-size:1.2rem;line-height:1.4;letter-spacing:-0.01em;margin-top:20px}
-  #view-dash .nx-line .main{font-size:1.02rem}
-  #view-dash .now-card .dayline .dl-say{font-size:1.05rem}
-  #view-dash .next[hidden]+.dayline .dl-say{font-size:1.45rem;line-height:1.3;letter-spacing:-0.02em}
-  /* until it starts covering the card, the drawer is just more page: no edge, no shadow, no handle */
+  /* the orb fills the screen below the heading and sticks under the header; the drawer rises over it, and the orb swells */
+  #view-dash .now-card{position:sticky;top:56px;z-index:0;align-items:center;min-height:max(340px,calc(100svh - 420px));margin:0;padding:0 24px 40px}
+  #view-dash .nx-orb{transform:scale(calc(1 + var(--dp,0) * .9));transform-origin:50% 45%;opacity:calc(1 - var(--dp,0) * .35)}
+  #view-dash .orb-cv{width:min(300px,74vw)}
+  /* until it starts covering the orb, the drawer is just more page: no edge, no shadow, no handle */
   #view-dash .dash-drawer{--dd:0;position:relative;z-index:2;background:var(--bg);margin-top:-28px;padding-top:14px;
     border-radius:calc(var(--dd) * 28px) calc(var(--dd) * 28px) 0 0;box-shadow:0 -1px 0 rgba(0,0,0,calc(var(--dd) * .08)),0 -14px 34px -12px rgba(0,0,0,calc(var(--dd) * .14))}
   #view-dash .dash-drawer::before{content:"";display:block;width:38px;height:4px;border-radius:2px;background:rgba(0,0,0,.14);margin:0 auto 4px;opacity:var(--dd)}
@@ -768,14 +747,12 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 </main>
 
 <div id="dashWrap">
-  <div class="cal-title dash-head"><div class="ct-t"><h2 id="dashDate" class="span-lbl"></h2></div></div>
-  <div class="now-card" id="nowCard">
-    <div class="nc-top" id="ncTop"></div>
-    <div class="next" id="nextMeal" hidden></div>
-    <div class="dayline" id="dayline" hidden></div>
-  </div>
+  <div class="cal-title dash-head"><div class="ct-t"><h2 id="dashDate" class="span-lbl"></h2></div><div class="ct-btns" id="ncTop"></div></div>
+  <div class="now-card" id="nowCard"><div class="nx-orb" id="orbBox"></div></div>
   <div class="dash-drawer">
     <div class="hero" id="hero"><div class="rings" id="rings" aria-live="polite"></div></div>
+    <div class="now-tile" id="nowTile"><div class="next" id="nextMeal" hidden></div><p class="orb-say" id="orbSay"></p></div>
+    <div class="dayline" id="dayline" hidden></div>
     <div class="tiles" id="tiles"></div>
     <div class="dash-nut" id="dashNut" hidden></div>
   </div>
@@ -1408,10 +1385,18 @@ const B=v=>`<b>${v}</b>`;
 const listOf=a=>a.length<=1?(a[0]||""):a.length===2?`${a[0]} and ${a[1]}`:`${a[0]}, ${a[1]} and ${a.length-2} more`;
 function greeting(){const h=new Date().getHours();return h<5?"Late night":h<12?"Good morning":h<17?"Good afternoon":"Good evening"}
 // The card's top row: a greeting (or which days these are) and the status icon.
-// The card's top row: the orb button and the day's status icon. (The page heading already says which days these are.)
-function dlTop(kind,title){const t=$("ncTop");t.innerHTML=`<button class="nc-orb" aria-label="What's in the orb" title="What's in the orb"><svg class="ic" aria-hidden="true"><use href="#i-orb"/></svg></button>${kind?`<span class="dl-badge ${kind}" role="img" aria-label="${kind==="ok"?"On track":kind==="warn"?"Behind":"Not started"}"><svg class="ic" aria-hidden="true"><use href="#i-${DL_ICON[kind]}"/></svg></span>`:""}`;
-  t.querySelector(".nc-orb").onclick=openOrbDetail}
-function dlHead(kind,say,title){dlTop(kind,title);return `<p class="dl-say">${say}</p>`}
+// Beside the dashboard's heading: the orb button and the day's status, which opens the day in detail.
+function dlTop(kind){const t=$("ncTop"),k=kind||"info",lbl=k==="ok"?"On track":k==="warn"?"Behind":"Not started";
+  t.innerHTML=`<button class="icon-btn bare nc-orb" aria-label="What's in the orb" title="What's in the orb"><svg class="ic" aria-hidden="true"><use href="#i-orb"/></svg></button><button class="icon-btn bare dl-badge ${k}" aria-label="${lbl}. How the day is going" title="${lbl}"><svg class="ic" aria-hidden="true"><use href="#i-${DL_ICON[k]}"/></svg></button>`;
+  t.querySelector(".nc-orb").onclick=openOrbDetail;t.querySelector(".dl-badge").onclick=openStatus}
+// The day's status, in a sheet: the sentence, the timeline (or the days' columns) and each meal as it stands.
+function openStatus(){
+  const src=$("dayline"),multi=ui.span>1;
+  const meals=multi?"":mealsOf(ui.day).map(m=>`<li><span>${esc(m.custom?m.o.n:m.slot)} <span class="q2">${fmtTime(m.time)}</span></span><span class="q">${m.o.skip?"Skipped":esc(m.o.n)}</span><span class="st-ic">${stIcon(m)}</span></li>`).join("");
+  tileModal(spanLabel(),"",`<div class="st-day">${src.innerHTML||`<p class="dl-say">${multi?"Nothing planned yet.":"Nothing is planned for this day yet."}</p>`}</div>${meals?`<h3>Meals</h3><ul class="ing st-meals">${meals}</ul>`:""}`);
+  $("infoBox").querySelectorAll(".rc").forEach(b=>b.onclick=()=>{closeInfo();ui.day=+b.dataset.d;setSpan(1);saveUi();renderAll(false)});
+}
+function dlHead(kind,say){dlTop(kind);return `<p class="dl-say">${say}</p>`}
 // quiet: the next meal is already on the card above, so don't name it again
 function daySentence(s,quiet){
   const goal=state.target,next=s.ms.find(m=>!m.done&&!m.missed&&(!s.today||mins(m.time)+60>=s.nm)),nm=m=>m.custom?m.o.n:m.slot.toLowerCase();
@@ -1429,17 +1414,17 @@ function daySentence(s,quiet){
 }
 // One day: each meal on a timeline (eaten, skipped, due, to come) and the part of the day that's gone by.
 function renderDayline(s){
-  const el=$("dayline"),{ms,today,past,nm,due}=s;if(!ms.length){el.hidden=true;dlTop(null,today?greeting():spanLabel());return}
+  const el=$("dayline"),{ms,today,past,nm,due}=s;if(!ms.length){el.innerHTML="";dlTop(null);return}
   const times=ms.map(m=>mins(m.time)),t0=Math.min(...times)-30,t1=Math.max(...times)+30,pos=v=>clamp((v-t0)/(t1-t0),0,1)*100;
   const nowP=today?pos(nm):past?100:0;
   const marks=ms.map(m=>{const st=m.done?"on":m.missed?"miss":due(m)?"due":"";return `<i class="mk ${st}" style="left:${pos(mins(m.time)).toFixed(1)}%" title="${esc(m.slot)} ${fmtTime(m.time)}${m.done?", eaten":m.missed?", skipped":due(m)?", not marked":""}"></i>`}).join("");
   // hour ticks under the bar, labelled every 3 hours
   let ticks="";for(let h=Math.ceil(t0/60);h*60<=t1;h++){const x=pos(h*60);ticks+=`<i class="${h%3?"":"mj"}" style="left:${x.toFixed(1)}%"></i>${h%3||x<5||x>95?"":`<span style="left:${x.toFixed(1)}%">${hh(h*60)}</span>`}`}
   el.className="dayline "+s.kind;
-  el.innerHTML=dlHead(s.kind,daySentence(s,today&&!!nextMeal()),today?greeting():spanLabel())+`
+  el.innerHTML=dlHead(s.kind,daySentence(s))+`
     <div class="dl-bar" aria-hidden="true"><span class="dl-el" style="width:${nowP.toFixed(1)}%"></span>${today&&nm>=t0&&nm<=t1?`<span class="dl-now" style="left:${nowP.toFixed(1)}%"></span>`:""}${marks}</div>
     <div class="dl-ticks" aria-hidden="true">${ticks}</div>`;
-  el.setAttribute("aria-label",el.querySelector(".dl-say").textContent);el.hidden=false;
+  el.setAttribute("aria-label",el.querySelector(".dl-say").textContent); // shown in the status sheet
 }
 // 3 days or the week: a column per day, eaten over planned against the goal line, and the gap across the days so far.
 function renderRangeline(st){
@@ -1458,7 +1443,7 @@ function renderRangeline(st){
   el.innerHTML=dlHead(kind,say,spanLabel())
     +`<div class="rc-row"><span class="rc-goal" style="bottom:${gb}" aria-hidden="true"></span><span class="rc-gl" style="bottom:${gb}" aria-hidden="true">${fmt(state.target)}</span>${cols}</div>`;
   el.querySelectorAll(".rc").forEach(b=>b.onclick=()=>{ui.day=+b.dataset.d;setSpan(1);saveUi();renderAll(false)});
-  el.setAttribute("aria-label",el.querySelector(".dl-say").textContent);el.hidden=false;
+  el.setAttribute("aria-label",el.querySelector(".dl-say").textContent); // shown in the status sheet
 }
 function rangeNutrition(days){
   const sum={},cnt={};NUTR.forEach(([k])=>sum[k]=0);let mask=0,has=false;
@@ -1497,12 +1482,12 @@ function renderMeter(){
   const tile=(key,title,say,chart)=>`<button class="tile" data-modal="${key}"><span class="t">${title}</span><span class="say">${say}</span><span class="tz">${chart}</span></button>`;
   const top=split.reduce((a,x)=>x[3]>a[3]?x:a),ad=multi?" a day":"",lowN=dn.has?NUTR.filter(([k,,,dv])=>dn.sum[k]<dv).map(([,l])=>l):[];
   $("tiles").innerHTML=
-    tile("planned","Planned",`${B(fmt(t.k)+" calories")} planned${ad}, ${Math.abs(diff)<=100?"right at your goal":diff>0?`${fmt(diff)} over your goal`:`${fmt(-diff)} under your goal`}.`,
+    tile("planned","Planned",`${B(fmt(t.k))} calories${ad}<span class="sub">${Math.abs(diff)<=100?"On goal":diff>0?`${fmt(diff)} over`:`${fmt(-diff)} under`}</span>`,
       `<span class="segs" aria-hidden="true"><span class="fill" style="width:${pc(tk/scale)}">${segs}</span><i class="goal" style="left:${pc(gk/scale)}"></i></span><span class="sc" aria-hidden="true"><span>0</span><span style="left:${pc(gk/scale)}">${fmt(gk)}</span></span>`)+
-    tile("macros","Macros",`${B(fmt(t.p)+" g protein")}${ad}, ${t.p>=state.protein?"above":"below"} your ${state.protein} g goal. Most calories come from ${top[1].toLowerCase()}.`,stack)+
-    (dn.mask?tile("variety","Variety",`${B(`${dn.groups.length} of ${GROUPS.length}`)} food groups${miss.length?`; no ${listOf(miss.map(x=>x.toLowerCase()))} yet`:", every one"}.`,
+    tile("macros","Macros",`${B(fmt(t.p)+" g")} protein${ad}<span class="sub">Goal ${state.protein} g</span>`,stack)+
+    (dn.mask?tile("variety","Variety",`${B(`${dn.groups.length} of ${GROUPS.length}`)} groups<span class="sub">${miss.length===1?`No ${miss[0].toLowerCase()}`:miss.length?`${miss.length} missing`:"Every one"}</span>`,
       `<span class="grid9" aria-hidden="true">${GROUPS.map(g=>`<i class="${dn.groups.includes(g)?"on":""}" title="${g}"></i>`).join("")}</span>`):"")+
-    (dn.has?tile("nutrients","Nutrients",`${B(`${NUTR.length-lowN.length} of ${NUTR.length}`)} nutrients reach their daily value${lowN.length?`; ${listOf(lowN.map(x=>x.replace(/^[A-Z](?=[a-z])/,c=>c.toLowerCase())))} ${lowN.length>1?"are":"is"} low`:""}.`,caps):"");
+    (dn.has?tile("nutrients","Nutrients",`${B(`${NUTR.length-lowN.length} of ${NUTR.length}`)} met<span class="sub">${lowN.length===1?`${lowN[0]} low`:lowN.length?`${lowN.length} low`:"All of them"}</span>`,caps):"");
   $("tiles").querySelectorAll("[data-modal]").forEach(b=>b.onclick=()=>TILE_MODALS[b.dataset.modal]());
   // nutrition for the day (a daily average over several days), as percent of daily value
   const nb=$("dashNut");nb.hidden=!(dn.has||dn.mask);
@@ -1869,52 +1854,40 @@ function openOrbDetail(){
   tileModal("The orb",o.span===1?(o.live?"Today":longDate(o.last)):scopeLabel(),`<ul class="ing orb-rows">${rows.map(([k,v])=>`<li><span>${k}</span><span class="q">${v}</span></li>`).join("")}</ul>
     <p class="fine">A picture of how varied and steady your eating is, not a measure of your microbiome.</p>`);
 }
-// The next meal, said as a sentence: "Lunch starts in 44 minutes." or "Lunch started 1 hour and 36 minutes ago."
+// The dashboard: the orb alone on the base plane, and the words in the first card of the drawer: the next meal
+// ("Lunch in 44 minutes" or, once it's started, "Lunch started 1 hour and 36 minutes ago" with its actions), then
+// a line about what the orb is showing.
 function renderNext(){
-  const el=$("nextMeal"),n=nextMeal(),td=[...Array(D).keys()].find(isToday);
-  // between meals (or once the day's done) the card shows today's orb, with the next meal as one line under it
-  if((!n||n.diff>0)&&td!=null){
-    const o=orbStats();el.classList.add("orb-mode");el.classList.remove("u-late");
-    el.innerHTML=`<div class="nx-orb"></div><p class="orb-say">${orbSay(o)}</p>${n?`<div class="nx-line"><button class="main"><span class="nx-pre"></span> <span class="timer"></span>: <b></b></button>
-      <button class="more nm-more" aria-haspopup="menu" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="#i-dots"/></svg></button></div>`:""}`;
-    el.querySelector(".nx-orb").appendChild(ORB.cv);ORB.set(o);
-    if(n){const{d,m}=n,name=m.custom?m.o.n:m.slot,[h1,m1]=m.time.split(":").map(Number),b=dayDate(d);
-      el._at=new Date(b.getFullYear(),b.getMonth(),b.getDate(),h1,m1).getTime();
-      el.querySelector(".nx-pre").textContent=`${isToday(d)?"":"Tomorrow, "}${isToday(d)?name:name.toLowerCase()} in`;el.querySelector(".nx-line b").textContent=m.o.n;
-      el.querySelector(".main").onclick=()=>openMeal(d,m);el.querySelector(".main").setAttribute("aria-label",`${name} at ${fmtTime(m.time)}: ${m.o.n}. Open recipe.`);
-      const mb=el.querySelector(".nm-more");mb.setAttribute("aria-label",`${name} actions`);
-      mb.onclick=()=>openMenu(mb,`${name} actions`,[["ok","Mark eaten",()=>markDone(d,m,true)],
-        !m.custom&&["sparkle","Suggest another",()=>openSuggest(d,m.i)],!m.custom&&["swap","I ate something else",()=>ateInstead(d,m.i)],
-        m.custom?["trash","Remove",()=>removeCustom(d,m.cid)]:["skip","I skipped it",()=>setMissed(d,m.i,true)],["bell","Remind me",()=>openReminder(d,m)]])}
-    else el._at=0;
-    el.hidden=false;tickNext();dashParallax();return;
-  }
-  el.classList.remove("orb-mode");
+  const el=$("nextMeal"),n=nextMeal(),o=orbStats();
+  $("orbBox").appendChild(ORB.cv);ORB.set(o);$("orbSay").innerHTML=orbSay(o);
   if(!n){el.hidden=true;el._at=0;dashParallax();return}
-  const{d,m,diff,late}=n;
-  const name=m.custom?m.o.n:m.slot,[hh,mm]=m.time.split(":").map(Number),b=dayDate(d);
-  el._at=new Date(b.getFullYear(),b.getMonth(),b.getDate(),hh,mm).getTime();
-  const tmr=!isToday(d),who=(tmr?"Tomorrow, ":"")+(m.custom?m.o.n:tmr?m.slot.toLowerCase():m.slot),meal=m.custom?"it":`<b>${esc(m.o.n)}</b>`,macros=`${fmt(m.o.k)} calories and ${fmt(m.o.p)} g protein`;
-  const pre=diff>0?`${who} starts in`:`${who} started`;
-  const post=diff>0?`At ${fmtTime(m.time)} you're having ${meal}, ${macros}.`
-    :late<=5?`Time to eat${m.custom?"":`: ${meal}`}.`
-    :late>60?`It <b class="late">isn't marked eaten yet</b>. ${m.custom?"It's":`It's ${meal},`} ${macros}.`
-    :`You're having ${meal}, ${macros}.`;
-  el.innerHTML=`<p class="nx-clock"><span class="nx-pre"></span> <span class="timer"></span>.</p>
-    <button class="main"><span class="nx-say">${post}</span></button>
-    <div class="nx-act"><button class="txt nx-eat">Mark eaten</button><button class="txt nx-skip">${m.custom?"Remove":"Skip"}</button>
+  const{d,m,diff,late}=n,name=m.custom?m.o.n:m.slot,[h1,m1]=m.time.split(":").map(Number),b=dayDate(d),tmr=!isToday(d);
+  el._at=new Date(b.getFullYear(),b.getMonth(),b.getDate(),h1,m1).getTime();
+  const menu=mb=>{mb.setAttribute("aria-label",`${name} actions`);
+    mb.onclick=()=>openMenu(mb,`${name} actions`,[["ok","Mark eaten",()=>markDone(d,m,true)],
+      !m.custom&&["sparkle","Suggest another",()=>openSuggest(d,m.i)],!m.custom&&["swap","I ate something else",()=>ateInstead(d,m.i)],
+      m.custom?["trash","Remove",()=>removeCustom(d,m.cid)]:["skip","I skipped it",()=>setMissed(d,m.i,true)],["bell","Remind me",()=>openReminder(d,m),diff<=0]])};
+  if(diff>0){
+    // coming up: one line, the name of the meal in ink
+    el.classList.remove("u-late","now");
+    el.innerHTML=`<div class="nx-line"><button class="main"><span class="nx-pre"></span> <span class="timer"></span>: <b></b></button>
       <button class="more nm-more" aria-haspopup="menu" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="#i-dots"/></svg></button></div>`;
-  el.querySelector(".nx-pre").textContent=pre;
-  el.querySelector(".main").setAttribute("aria-label",`${m.o.n} at ${fmtTime(m.time)}. Open recipe.`);
-  el.querySelector(".main").onclick=()=>openMeal(d,m);
-  el.querySelector(".nx-skip").onclick=()=>m.custom?removeCustom(d,m.cid):setMissed(d,m.i,true);
-  el.querySelector(".nx-eat").onclick=()=>markDone(d,m,true);
-  const mb=el.querySelector(".nm-more");mb.setAttribute("aria-label",`${name} actions`);
-  mb.onclick=()=>openMenu(mb,`${name} actions`,[["ok","Mark eaten",()=>markDone(d,m,true)],
-    !m.custom&&["sparkle","Suggest another",()=>openSuggest(d,m.i)],!m.custom&&["swap","I ate something else",()=>ateInstead(d,m.i)],
-    m.custom?["trash","Remove",()=>removeCustom(d,m.cid)]:["skip","I skipped it",()=>setMissed(d,m.i,true)],["bell","Remind me",()=>openReminder(d,m),diff<=0]]);
-  // urgency: once it's an hour overdue, the time reads in red
-  el.classList.toggle("u-late",diff<=0&&late>60);
+    el.querySelector(".nx-pre").textContent=`${tmr?"Tomorrow, "+name.toLowerCase():name} in`;el.querySelector(".nx-line b").textContent=m.o.n;
+  }else{
+    // under way: the sentence, what it is, and the actions
+    const meal=m.custom?"it":`<b>${esc(m.o.n)}</b>`,macros=`${fmt(m.o.k)} calories and ${fmt(m.o.p)} g protein`;
+    const post=late<=5?`Time to eat${m.custom?"":`: ${meal}`}.`:late>60?`It <b class="late">isn't marked eaten yet</b>. ${m.custom?"It's":`It's ${meal},`} ${macros}.`:`You're having ${meal}, ${macros}.`;
+    el.classList.add("now");el.classList.toggle("u-late",late>60);
+    el.innerHTML=`<p class="nx-clock"><span class="nx-pre"></span> <span class="timer"></span>.</p>
+      <button class="main"><span class="nx-say">${post}</span></button>
+      <div class="nx-act"><button class="txt nx-eat">Mark eaten</button><button class="txt nx-skip">${m.custom?"Remove":"Skip"}</button>
+        <button class="more nm-more" aria-haspopup="menu" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="#i-dots"/></svg></button></div>`;
+    el.querySelector(".nx-pre").textContent=`${tmr?"Tomorrow, ":""}${m.custom?m.o.n:tmr?m.slot.toLowerCase():m.slot} started`;
+    el.querySelector(".nx-skip").onclick=()=>m.custom?removeCustom(d,m.cid):setMissed(d,m.i,true);
+    el.querySelector(".nx-eat").onclick=()=>markDone(d,m,true);
+  }
+  el.querySelector(".main").onclick=()=>openMeal(d,m);el.querySelector(".main").setAttribute("aria-label",`${name} at ${fmtTime(m.time)}: ${m.o.n}. Open recipe.`);
+  menu(el.querySelector(".nm-more"));
   el.hidden=false;tickNext();dashParallax();
 }
 function tickNext(){
