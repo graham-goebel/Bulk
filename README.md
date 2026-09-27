@@ -63,7 +63,7 @@ To install it like an app: on iPhone or iPad, tap Share, then **Add to Home Scre
 
 ## Pantry
 
-The **Pantry** tab shows what's in your fridge, freezer and pantry as a 3D gallery built with three.js (bundled in `web/vendor/three`, so nothing loads from a CDN). Items float in a slowly turning sphere; drag to spin it, pinch or scroll to zoom, and tap an item to change its quantity, expiry date or location. **Shelves** stacks everything on a fridge, freezer and pantry unit, and **List** is a plain list. Search and the filters on the left narrow the view.
+The **Pantry** tab shows what's in your fridge, freezer and pantry as a 3D gallery built with three.js (bundled in `web/vendor/three`, so nothing loads from a CDN). Items float in a slowly turning sphere; drag to spin it, pinch or scroll to zoom, and tap an item to see its details: quantity, expiry, nutrition per serving and linked recipes. To change anything, choose **Edit** in the item's **⋯** menu. **Shelves** stacks everything on a fridge, freezer and pantry unit, and **List** is a plain list. Search and the filters on the left narrow the view.
 
 Items live in the **Pantry** database in Notion (`PANTRY_DB` in `worker/wrangler.toml`). On the Shop tab, check off what you bought and tap **Add checked to pantry**; items you already have get their quantity increased. Without a Notion connection the pantry is kept on the device.
 
