@@ -466,9 +466,13 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .nudge.in>*{animation:swapIn .35s ease-out both}
 .nd-dots{display:flex;gap:4px;width:100%;padding-left:56px}.nd-dots i{width:5px;height:5px;border-radius:50%;background:var(--line)}.nd-dots i.on{background:var(--ink)}
 .day-hero{margin:6px 24px 30px}
-.dh-goal{margin:0 0 10px;font-size:.85rem;color:var(--muted)}
+.dh-goal{margin:0 0 12px;font-size:.95rem;color:var(--muted)}
 .day-hero .dayline{margin:0;padding:0;border:0;border-radius:0}
-.day-hero .dl-say{margin:0 0 20px;font-size:1.45rem;line-height:1.32;letter-spacing:-0.02em;color:var(--ink)}.day-hero .dl-say b{font-weight:500}
+.day-hero .dl-say{margin:0 0 22px;font-size:clamp(1.8rem,7.4vw,2.2rem);line-height:1.2;letter-spacing:-0.03em;color:var(--ink)}
+.dl-scroll{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;margin:0 -24px;padding:26px 24px 2px}.dl-scroll::-webkit-scrollbar{display:none}
+.dl-track{position:relative;min-width:100%}
+.dl-bar .mk{border:0;padding:0;cursor:pointer}.dl-bar .mk::after{content:"";position:absolute;inset:-12px}
+.mk-l{position:absolute;top:-26px;transform:translateX(-50%);font-size:.72rem;color:var(--muted);white-space:nowrap;pointer-events:none}.day-hero .dl-say b{font-weight:500}
 .dh-focus{margin:18px 0 0;font-size:.95rem;line-height:1.45;color:var(--muted)}.dh-focus b{font-weight:500;color:var(--ink);margin-right:6px}
 .st-day .dl-say{margin:4px 0 18px;font-size:1.1rem;line-height:1.42;color:var(--ink)}.st-day .dl-say b{font-weight:500}
 .st-meals li{align-items:center}.st-meals .q{flex:1;text-align:right;color:var(--ink)}.st-meals .st-ic{width:18px;display:flex;justify-content:flex-end}.st-meals .st{width:15px;height:15px}
@@ -1416,7 +1420,7 @@ function openStatus(){
   const src=$("dayline"),multi=ui.span>1;
   const meals=multi?"":mealsOf(ui.day).map(m=>`<li><span>${esc(m.custom?m.o.n:m.slot)} <span class="q2">${fmtTime(m.time)}</span></span><span class="q">${m.o.skip?"Skipped":esc(m.o.n)}</span><span class="st-ic">${stIcon(m)}</span></li>`).join("");
   tileModal(spanLabel(),"",`<div class="st-day">${src.innerHTML||`<p class="dl-say">${multi?"Nothing planned yet.":"Nothing is planned for this day yet."}</p>`}</div>${meals?`<h3>Meals</h3><ul class="ing st-meals">${meals}</ul>`:""}`);
-  $("infoBox").querySelectorAll(".rc").forEach(b=>b.onclick=()=>{closeInfo();ui.day=+b.dataset.d;setSpan(1);saveUi();renderAll(false)});
+  bindDots($("infoBox"),ui.day);$("infoBox").querySelectorAll(".rc").forEach(b=>b.onclick=()=>{closeInfo();ui.day=+b.dataset.d;setSpan(1);saveUi();renderAll(false)});
 }
 function dlHead(kind,say){dlTop(kind);return `<p class="dl-say">${say}</p>`}
 // quiet: the next meal is already on the card above, so don't name it again
@@ -1438,16 +1442,23 @@ function daySentence(s,quiet){
 function renderDayline(s){
   const el=$("dayline"),{ms,today,past,nm,due}=s;if(!ms.length){el.innerHTML=`<p class="dl-say">Nothing is planned for this day yet.</p>`;dlTop(null);return}
   const times=ms.map(m=>mins(m.time)),t0=Math.min(...times)-30,t1=Math.max(...times)+30,pos=v=>clamp((v-t0)/(t1-t0),0,1)*100;
-  const nowP=today?pos(nm):past?100:0;
-  const marks=ms.map(m=>{const st=m.done?"on":m.missed?"miss":due(m)?"due":"";return `<i class="mk ${st}" style="left:${pos(mins(m.time)).toFixed(1)}%" title="${esc(m.slot)} ${fmtTime(m.time)}${m.done?", eaten":m.missed?", skipped":due(m)?", not marked":""}"></i>`}).join("");
-  // hour ticks under the bar, labelled every 3 hours
-  let ticks="";for(let h=Math.ceil(t0/60);h*60<=t1;h++){const x=pos(h*60);ticks+=`<i class="${h%3?"":"mj"}" style="left:${x.toFixed(1)}%"></i>${h%3||x<5||x>95?"":`<span style="left:${x.toFixed(1)}%">${hh(h*60)}</span>`}`}
+  const nowP=today?pos(nm):past?100:0,W=Math.round((t1-t0)/60*72); // 72px an hour: wider than a phone, so it scrolls sideways
+  // each meal is a dot you can tap for its details, named above it
+  const marks=ms.map(m=>{const st=m.done?"on":m.missed?"miss":due(m)?"due":"",x=pos(mins(m.time)).toFixed(1);
+    return `<button class="mk ${st}" style="left:${x}%" data-key="${mealKey(m)}" aria-label="${esc(m.custom?m.o.n:m.slot)} at ${fmtTime(m.time)}${m.done?", eaten":m.missed?", skipped":due(m)?", not marked":""}. Open details."></button><span class="mk-l" style="left:${x}%">${esc(m.custom?m.o.n:m.slot)}</span>`}).join("");
+  // hour ticks under the bar, a label every hour
+  let ticks="";for(let h=Math.ceil(t0/60);h*60<=t1;h++){const x=pos(h*60);ticks+=`<i class="mj" style="left:${x.toFixed(1)}%"></i>${x<3||x>97?"":`<span style="left:${x.toFixed(1)}%">${hh(h*60)}</span>`}`}
+  if(el._d!==s.d)el._moved=false;const prev=el.querySelector(".dl-scroll"),keep=prev&&el._moved?prev.scrollLeft:null;el._d=s.d;
   el.className="dayline "+s.kind;
-  el.innerHTML=dlHead(s.kind,daySentence(s,true))+`
-    <div class="dl-bar" aria-hidden="true"><span class="dl-el" style="width:${nowP.toFixed(1)}%"></span>${today&&nm>=t0&&nm<=t1?`<span class="dl-now" style="left:${nowP.toFixed(1)}%"></span>`:""}${marks}</div>
-    <div class="dl-ticks" aria-hidden="true">${ticks}</div>`;
+  el.innerHTML=dlHead(s.kind,daySentence(s,true))+`<div class="dl-scroll"><div class="dl-track" style="width:${W}px">
+    <div class="dl-bar"><span class="dl-el" style="width:${nowP.toFixed(1)}%"></span>${today&&nm>=t0&&nm<=t1?`<span class="dl-now" style="left:${nowP.toFixed(1)}%"></span>`:""}${marks}</div>
+    <div class="dl-ticks" aria-hidden="true">${ticks}</div></div></div>`;
+  bindDots(el,s.d);
+  // open on now (or where you'd scrolled to)
+  const sc=el.querySelector(".dl-scroll");["pointerdown","wheel","touchstart"].forEach(ev=>sc.addEventListener(ev,()=>{el._moved=true},{passive:true}));requestAnimationFrame(()=>{sc.scrollLeft=keep!=null?keep:Math.max(0,W*nowP/100-sc.clientWidth*.35)});
   el.setAttribute("aria-label",el.querySelector(".dl-say").textContent); // shown in the status sheet
 }
+function bindDots(root,d){root.querySelectorAll(".mk[data-key]").forEach(b=>b.onclick=()=>{const m=mealsOf(d).find(x=>mealKey(x)===b.dataset.key);if(m){if(!$("infoBg").hidden)closeInfo();openMeal(d,m)}})}
 // 3 days or the week: a column per day, eaten over planned against the goal line, and the gap across the days so far.
 function renderRangeline(st){
   const el=$("dayline"),run=st.filter(s=>s.kind!=="info"),gap=run.reduce((a,s)=>a+s.gap,0),okN=run.filter(s=>s.kind==="ok").length;
