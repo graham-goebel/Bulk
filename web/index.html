@@ -150,7 +150,7 @@ main{max-width:960px;margin:0 auto;padding-bottom:calc(100px + env(safe-area-ins
 .dl-ticks span{position:absolute;top:9px;transform:translateX(-50%);font-family:var(--mono);font-size:10px;color:var(--muted)}
 .rc-gl{position:absolute;right:0;margin-bottom:3px;font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--bg);padding-left:4px;z-index:1}
 .rc-l{font-family:var(--mono)}
-.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 24px 22px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 24px 34px}
 .tile{display:flex;flex-direction:column;width:100%;text-align:left;border:1px solid var(--line);border-radius:20px;padding:16px 16px 14px;min-width:0}
 button.tile:hover{outline:1px solid var(--line)}
 
@@ -276,7 +276,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 @media (min-width:700px){.sheet-bg{align-items:center}.sheet{border-radius:18px;max-height:84%}}
 /* phones: sheets float inset from the edges instead of running full bleed */
 @media (max-width:699px){.sheet{width:calc(100% - 16px);margin-bottom:calc(8px + env(safe-area-inset-bottom,0px));border-radius:24px;max-height:calc(100% - 64px)}}
-#goalsBox{display:flex;flex-direction:column;height:min(600px,86vh);max-height:min(600px,86vh);overflow:hidden}
+#goalsBox{display:flex;flex-direction:column;height:calc(100% - 64px);max-height:calc(100% - 64px);overflow:hidden}
 #goalsBox .goal-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .sh-sl{font-size:.82rem;color:var(--muted);margin:0}
 .sheet h2{margin:4px 0 4px;font-size:1.6rem;font-weight:400;letter-spacing:-0.02em;line-height:1.15}
@@ -349,9 +349,9 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   padding:30px 24px 12px;background:linear-gradient(to top,var(--bg) 58%,color-mix(in srgb,var(--bg) 0%,transparent))}
 @media (min-width:700px){.sh-acts{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}}
 .sh-acts::-webkit-scrollbar{display:none}
-.sh-acts .act{flex:none;display:flex;align-items:center;gap:7px;height:38px;padding:0 15px 0 13px;border:1px solid var(--line);border-radius:19px;font-size:.9rem;white-space:nowrap;color:var(--ink);background:var(--bg)}
+.sh-acts .act{flex:none;display:flex;align-items:center;gap:7px;height:40px;padding:0 16px 0 14px;border:0;border-radius:20px;font-size:.9rem;white-space:nowrap;color:var(--ink);background:var(--soft)}
 .sh-acts .act .ic{width:17px;height:17px}
-@media (hover:hover){.sh-acts .act:hover{border-color:var(--ink)}}
+@media (hover:hover){.sh-acts .act:hover{background:var(--line)}}
 .sheet:has(>.sh-acts){padding-bottom:0}
 .sg-row .mt+.mt{margin-top:2px}
 .sg-best{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:10px;background:var(--soft);font-size:.72rem;font-weight:400;color:var(--ink);vertical-align:2px}
@@ -442,7 +442,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .dash-head .ct-btns{gap:2px}.dash-head .icon-btn .ic{width:22px;height:22px}
 .dl-badge.ok{color:#1baf7a}.dl-badge.warn{color:#d6452f}.dl-badge.info{color:var(--ink)}
 .now-tile{margin:12px 24px 0;padding:16px 16px 15px;border:1px solid var(--line);border-radius:20px}
-@media (max-width:899px){.now-tile{margin:4px 24px 8px;padding:0;border:0;border-radius:0}.now-tile .nx-line .main,.now-tile .nx-clock{font-size:1.3rem;line-height:1.35;letter-spacing:-0.015em}} /* phones: the sentences read straight on the page */
+@media (max-width:899px){.now-tile{margin:10px 24px 28px;padding:0;border:0;border-radius:0}.now-tile .nx-line .main,.now-tile .nx-clock{font-size:1.3rem;line-height:1.35;letter-spacing:-0.015em}} /* phones: the sentences read straight on the page */
 .next{display:flex;flex-direction:column;color:var(--ink)}
 .nx-clock{margin:0;font-size:1.3rem;line-height:1.25;letter-spacing:-0.02em}
 .next .timer{font-weight:500;font-variant-numeric:tabular-nums}
@@ -455,19 +455,19 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .nx-line .main{flex:1;font-size:1.02rem;line-height:1.4;color:var(--muted)}.nx-line .main b{font-weight:500;color:var(--ink)}
 .nx-line .nm-more{margin:-8px -10px -8px 0}
 .orb-say{margin:0;font-size:.92rem;line-height:1.45;color:var(--muted)}.orb-say b{font-weight:500;color:var(--ink)}
-.next:not([hidden])+.orb-say{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.next:not([hidden])+.orb-say{margin-top:26px;padding-top:24px;border-top:1px solid var(--line)}
 .nx-go{color:var(--ink);font-weight:500}
-.nx-chips{display:flex;align-items:center;gap:8px;margin-top:12px}
-.nx-chips .act{display:flex;align-items:center;gap:7px;height:36px;padding:0 14px 0 12px;border:1px solid var(--line);border-radius:18px;font-size:.88rem;color:var(--ink)}
-.nx-chips .act .ic{width:16px;height:16px}@media (hover:hover){.nx-chips .act:hover{border-color:var(--ink)}}
+.nx-chips{display:flex;align-items:center;gap:10px;margin-top:18px}
+.nx-chips .act{display:flex;align-items:center;gap:8px;height:46px;padding:0 20px 0 17px;border:0;border-radius:23px;background:var(--soft);font-size:1rem;color:var(--ink)}
+.nx-chips .act .ic{width:19px;height:19px}@media (hover:hover){.nx-chips .act:hover{background:var(--line)}}
 .nx-chips .nm-more{margin-left:auto}
-.nudge{display:flex;align-items:flex-start;gap:10px;width:100%;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);text-align:left;font-size:.92rem;line-height:1.45;color:var(--muted);flex-wrap:wrap}
-.nudge .ic{flex:none;width:17px;height:17px;margin-top:2px;color:var(--ink)}.nudge>span:first-of-type{flex:1;min-width:0}.nudge b{font-weight:500;color:var(--ink)}
+.nudge{display:flex;align-items:flex-start;gap:12px;width:100%;margin-top:24px;padding-top:24px;border-top:1px solid var(--line);text-align:left;font-size:.92rem;line-height:1.45;color:var(--muted);flex-wrap:wrap}
+.nd-th{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:var(--soft);overflow:hidden}.nd-th img{width:100%;height:100%;object-fit:contain;background:#fff}.nudge .nd-th .ic{width:19px;height:19px;color:var(--ink)}.nudge>span:nth-of-type(2){flex:1;min-width:0;align-self:center}.nudge b{font-weight:500;color:var(--ink)}
 .nudge.in>*{animation:swapIn .35s ease-out both}
-.nd-dots{display:flex;gap:4px;width:100%;padding-left:27px}.nd-dots i{width:5px;height:5px;border-radius:50%;background:var(--line)}.nd-dots i.on{background:var(--ink)}
+.nd-dots{display:flex;gap:4px;width:100%;padding-left:56px}.nd-dots i{width:5px;height:5px;border-radius:50%;background:var(--line)}.nd-dots i.on{background:var(--ink)}
 .st-day .dl-say{margin:4px 0 18px;font-size:1.1rem;line-height:1.42;color:var(--ink)}.st-day .dl-say b{font-weight:500}
 .st-meals li{align-items:center}.st-meals .q{flex:1;text-align:right;color:var(--ink)}.st-meals .st-ic{width:18px;display:flex;justify-content:flex-end}.st-meals .st{width:15px;height:15px}
-.dash-nut{padding:4px 24px 0}
+.dash-nut{padding:10px 24px 0}
 .dvc{margin:4px 0 14px}.dvc-n{margin:0 0 8px}.dvc-n b{font-size:1.8rem;font-weight:400;letter-spacing:-0.02em}.dvc-n span{margin-left:4px;color:var(--muted);font-size:.9rem}
 .dvc-bar{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}.dvc-bar i{height:10px;border-radius:3px;box-shadow:inset 0 0 0 1px var(--line)}
 .dvc-bar i:nth-child(5){margin-right:6px}.dvc-bar i.g{background:var(--ink);box-shadow:none}.dvc-bar i.n{background:#8a8a8a;box-shadow:none}
@@ -898,7 +898,7 @@ const ING={
 "Warm milk & GF cookies":[["Whole milk",1,"cup","D"],["GF cookies",2,"","K"]]
 };
 const SECTIONS=[["P","Produce"],["M","Meat & fish"],["D","Dairy, eggs & deli"],["B","Bread & tortillas"],["F","Frozen"],["K","Pantry"]];
-const SECTION_ICON={"Produce":"leaf","Meat & fish":"fish","Dairy, eggs & deli":"milk","Bread & tortillas":"bread","Frozen":"freezer","Pantry":"jar"};
+const SECTION_ICON={"From your pantry":"pantry","Added":"plus","Produce":"leaf","Meat & fish":"fish","Dairy, eggs & deli":"milk","Bread & tortillas":"bread","Frozen":"freezer","Pantry":"jar"};
 
 const STEPS={
 "Cheesy eggs & toast":["Whisk the eggs with a pinch of salt.","Melt half the butter in a nonstick pan over medium-low heat. Add the eggs and stir gently until just set.","Fold in the cheddar off the heat.","Toast the bread, spread with the rest of the butter, and serve with the banana."],
@@ -1499,12 +1499,12 @@ function renderMeter(){
   const tile=(key,title,say)=>`<button class="tile" data-modal="${key}"><span class="t">${title}</span><span class="say">${say}</span></button>`;
   const top=split.reduce((a,x)=>x[3]>a[3]?x:a),ad=multi?" a day":"",lowN=dn.has?NUTR.filter(([k,,,dv])=>dn.sum[k]<dv).map(([,l])=>l):[];
   $("tiles").innerHTML=
-    tile("planned","Planned",`${B(fmt(t.k))} calories${ad}<span class="sub">${Math.abs(diff)<=100?"On goal":diff>0?`${fmt(diff)} over`:`${fmt(-diff)} under`}</span>`,
+    tile("planned","Planned",`${B(fmt(t.k))} calories${ad}`,
       `<span class="segs" aria-hidden="true"><span class="fill" style="width:${pc(tk/scale)}">${segs}</span><i class="goal" style="left:${pc(gk/scale)}"></i></span><span class="sc" aria-hidden="true"><span>0</span><span style="left:${pc(gk/scale)}">${fmt(gk)}</span></span>`)+
-    tile("macros","Macros",`${B(fmt(t.p)+" g")} protein${ad}<span class="sub">Goal ${state.protein} g</span>`,stack)+
-    (dn.mask?tile("variety","Variety",`${B(`${dn.groups.length} of ${GROUPS.length}`)} groups<span class="sub">${miss.length===1?`No ${miss[0].toLowerCase()}`:miss.length?`${miss.length} missing`:"Every one"}</span>`,
+    tile("macros","Macros",`${B(fmt(t.p)+" g")} protein${ad}`,stack)+
+    (dn.mask?tile("variety","Variety",`${B(`${dn.groups.length} of ${GROUPS.length}`)} groups`,
       `<span class="grid9" aria-hidden="true">${GROUPS.map(g=>`<i class="${dn.groups.includes(g)?"on":""}" title="${g}"></i>`).join("")}</span>`):"")+
-    (dn.has?tile("nutrients","Nutrients",`${B(`${NUTR.length-lowN.length} of ${NUTR.length}`)} met<span class="sub">${lowN.length===1?`${lowN[0]} low`:lowN.length?`${lowN.length} low`:"All of them"}</span>`,caps):"");
+    (dn.has?tile("nutrients","Nutrients",`${B(`${NUTR.length-lowN.length} of ${NUTR.length}`)} met`,caps):"");
   $("tiles").querySelectorAll("[data-modal]").forEach(b=>b.onclick=()=>TILE_MODALS[b.dataset.modal]());
   // nutrition for the day (a daily average over several days), as percent of daily value
   const nb=$("dashNut");nb.hidden=!(dn.has||dn.mask);
@@ -1925,8 +1925,10 @@ function renderNudge(){
   const el=$("pantryNudge");if(!el)return;const ns=pantryNudges();clearInterval(nudgeT);
   if(!ns.length){el.hidden=true;return}el.hidden=false;
   const show=()=>{const n=ns[nudgeK%ns.length];el.classList.remove("in");void el.offsetWidth;
-    el.innerHTML=`<svg class="ic" aria-hidden="true"><use href="#i-${n.exp?"clockl":"low"}"/></svg><span>${n.html}</span>${ns.length>1?`<span class="nd-dots" aria-hidden="true">${ns.map((_,k)=>`<i class="${k===nudgeK%ns.length?"on":""}"></i>`).join("")}</span>`:""}`;
-    el.classList.add("in");el.onclick=()=>openPantryItem(n.it)};
+    el.innerHTML=`<span class="nd-th"><svg class="ic" aria-hidden="true"><use href="#i-${n.exp?"clockl":"low"}"/></svg></span><span>${n.html}</span>${ns.length>1?`<span class="nd-dots" aria-hidden="true">${ns.map((_,k)=>`<i class="${k===nudgeK%ns.length?"on":""}"></i>`).join("")}</span>`:""}`;
+    el.classList.add("in");el.onclick=()=>openPantryItem(n.it);
+    // the item's photo, when it has one, in place of the icon
+    if(n.it.image&&notionOn())photoThumb(n.it.image).then(u=>{const th=el.querySelector(".nd-th");if(th&&el.contains(th)&&ns[nudgeK%ns.length]===n)th.innerHTML=`<img alt="" src="${u}">`}).catch(()=>{})};
   show();if(ns.length>1&&!reduceMotion)nudgeT=setInterval(()=>{if(ui.tab!=="dash"&&!wideMQ.matches)return;nudgeK++;show()},7000);
 }
 
@@ -2162,8 +2164,12 @@ function buildList(){
     else (o.ing||[]).forEach(l=>{const clean=l.replace(/\s*\(certified GF\)/i,""),r=sub(o.n,clean),n=r.n===clean?l:r.n;other.set(n,(other.get(n)||0)+1)});}));
   const groups=SECTIONS.map(([k,label])=>({label,items:[...map.values()].filter(e=>e.sec===k).sort((a,b)=>a.n.localeCompare(b.n)).map(e=>({...e,text:qtyText(e.q,e.u)}))})).filter(g=>g.items.length);
   // things added by hand (from the pantry) come first
-  const added=(state.extraShop||[]).filter(x=>!map.has(x.n+"|")).map(x=>({n:x.n,text:"",added:true}));
+  const added=(state.extraShop||[]).filter(x=>!map.has(x.n+"|")).map(x=>({n:x.n,text:"",added:true,pid:x.pid}));
   if(added.length)groups.unshift({label:"Added",items:added});
+  // pantry items running low or expiring soon are added at the bottom on their own
+  const listed=new Set(groups.flatMap(g=>g.items.map(i=>i.n.toLowerCase())));
+  const fromPantry=pantry.filter(it=>(lowQ(it)||expSoon(it)&&daysLeft(it)>=0)&&!listed.has(it.name.toLowerCase())).map(it=>({n:it.name,pid:it.id,text:expSoon(it)&&daysLeft(it)>=0?expLabel(it).replace(/^./,c=>c.toUpperCase()):"Running low"}));
+  if(fromPantry.length)groups.push({label:"From your pantry",items:fromPantry});
   if(other.size)groups.push({label:"From your Notion meals",items:[...other].map(([l,c])=>({n:l.replace(/\s*\(certified GF\)/i,""),gf:/certified GF/i.test(l),text:c>1?`×${c}`:""}))});
   return groups;
 }
@@ -3149,6 +3155,8 @@ function addCheckedToPantry(){
   const checked=new Set(state.checked),creates=[],updates=[];
   buildList().forEach(g=>g.items.forEach(item=>{
     if(!checked.has(item.n))return;
+    // something that came from the pantry is restocked: one more of it
+    const own=item.pid&&pantry.find(p=>p.id===item.pid);if(own){updates.push({id:own.id,quantity:+((+own.quantity||0)+1).toFixed(2)});return}
     let name=item.n,qty=item.q,unit=item.u||"";
     if(qty==null){const m=name.match(UNIT_RE);if(m){qty=(FRAC[m[1]]??parseFloat(m[1]))||1;unit=(m[2]||"").toLowerCase();name=m[3]}else qty=1}
     if(/^(tbsp|tsp)$/.test(unit)){qty=1;unit=""}
@@ -3160,6 +3168,7 @@ function addCheckedToPantry(){
   }));
   const n=creates.length+updates.length;
   if(!n){toast("Check off what you bought first.",{kind:"error",key:"shop"});return}
+  state.extraShop=(state.extraShop||[]).filter(x=>!checked.has(x.n)); // bought: off the list
   state.checked=state.checked.filter(x=>!buildList().some(g=>g.items.some(i=>i.n===x)));save();renderShop();
   pantryWrite({creates,updates});toast(`Added ${n} item${n===1?"":"s"} to your pantry`,{kind:"ok",key:"pantry"});
 }

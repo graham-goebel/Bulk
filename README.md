@@ -133,7 +133,7 @@ On the Plan, Dashboard, Calendar and Grocery tabs, swipe left or right on the pa
 
 ## Pantry to grocery list
 
-A pantry item's **Add to grocery list** puts it in an **Added** section at the top of the grocery list, with an ✕ to take it off (and Undo either way).
+A pantry item's **Add to grocery list** puts it in an **Added** section at the top of the grocery list, with an ✕ to take it off (and Undo either way). Pantry items running low or expiring soon also appear on their own in **From your pantry** at the bottom of the list. Checking one off and choosing **Add checked to pantry** adds one more of it to the item you already have.
 
 ## Day templates
 
