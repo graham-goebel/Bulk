@@ -85,7 +85,7 @@ If you skip a meal, choose **I skipped it** from its **⋯** menu or in its shee
 
 Below the rings on the Dashboard, a card shows the whole day from the first meal to the last, with a dot for each meal, a mark for the current time, and a status: on track, behind by some calories, goal met, or short at the end of the day. A meal counts toward "behind" only once it's an hour past its start time, so you aren't flagged the moment a meal begins.
 
-The Dashboard opens on the orb, with its button and the day's status icon on the heading line; tap the status icon for the day in detail: how it's going, the timeline and each meal. The first card under the orb says what's next ("Lunch in 44 minutes: Salmon quinoa plate"), or once a meal has started, how long ago, with **Mark eaten** and **Skip**, then a line about what the orb shows. The small tiles give one number each; tap them for the detail.
+The Dashboard is one page of plain sentences. The day's status icon sits on the heading line; tap it for the day in detail: how it's going, the timeline and each meal. The first card says what's next ("Lunch in 44 minutes: Salmon quinoa plate", or when to start making it), or once a meal has started, how long ago, with **Mark eaten** and **Skip**; then what's been eaten so far and any pantry items running low or expiring. The four tiles give one number each; tap them for the detail.
 
 - **Points:** more calories eaten today put more points on the surface.
 - **Colonies:** every different food you've eaten this week (each ingredient, add-on or logged meal) is a colony, tinted by its food group.

@@ -344,7 +344,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .steps li{padding:5px 0 5px 4px;font-size:.92rem}
 .steps li::marker{color:var(--muted)}
 .sh-acts{position:sticky;bottom:0;z-index:2;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain;margin:28px -24px 0;
-  padding:12px 24px 12px;background:var(--bg);box-shadow:0 -1px 0 var(--line)}
+  padding:30px 24px 12px;background:linear-gradient(to top,var(--bg) 58%,color-mix(in srgb,var(--bg) 0%,transparent))}
 @media (min-width:700px){.sh-acts{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}}
 .sh-acts::-webkit-scrollbar{display:none}
 .sh-acts .act{flex:none;display:flex;align-items:center;gap:7px;height:38px;padding:0 15px 0 13px;border:1px solid var(--line);border-radius:19px;font-size:.9rem;white-space:nowrap;color:var(--ink);background:var(--bg)}
@@ -476,16 +476,8 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .dn-acc[open] .nut{margin-bottom:6px}.dn-acc .nut li:last-child{border-bottom:0}.dash-nut .dn-h{margin-top:8px}
 .hero{display:none} /* the rings are hidden for now */
 @media (min-width:900px){#dashWrap .dash-head h2{visibility:hidden}} /* the plan beside it has the heading */
-@media (max-width:899px){
-  /* the orb fills the screen below the heading and sticks under the header; the drawer rises over it, and the orb swells */
-  #view-dash .now-card{position:sticky;top:56px;z-index:0;overflow:clip;align-items:center;min-height:max(340px,calc(100svh - 420px));margin:0;padding:0 24px 40px}
-  #view-dash .nx-orb{transform:scale(calc(1 + var(--dp,0) * .9));transform-origin:50% 45%;opacity:calc(1 - var(--dp,0) * .35)}
-  #view-dash .orb-cv{width:min(300px,74vw)}
-  /* until it starts covering the orb, the drawer is just more page: no edge, no shadow, no handle */
-  #view-dash .dash-drawer{--dd:0;position:relative;z-index:2;background:var(--bg);margin-top:-28px;padding-top:14px;
-    border-radius:calc(var(--dd) * 28px) calc(var(--dd) * 28px) 0 0;box-shadow:0 -1px 0 rgba(0,0,0,calc(var(--dd) * .08)),0 -14px 34px -12px rgba(0,0,0,calc(var(--dd) * .14))}
-  #view-dash .dash-drawer::before{content:"";display:block;width:38px;height:4px;border-radius:2px;background:rgba(0,0,0,.14);margin:0 auto 4px;opacity:var(--dd)}
-}
+/* the orb is set aside for now: its card and button are hidden, and the dashboard is one plain page */
+.now-card,.nc-orb{display:none!important}
 .rem-opts{display:grid;gap:8px;margin-top:18px}
 .rem-opt{display:flex;justify-content:space-between;align-items:center;width:100%;border:1px solid var(--line);border-radius:14px;padding:13px 16px;font-size:.95rem}
 .rem-opt:hover{border-color:var(--ink)}
@@ -1495,7 +1487,7 @@ function renderMeter(){
   // Nutrients: a capsule per nutrient, filled up to its share of the daily value
   const caps=dn.has?`<span class="caps" aria-hidden="true">${NUTR.map(([k,l,,dv])=>{const r=dn.sum[k]/dv;return `<i class="${r<1?"low":""}" title="${l} ${Math.round(r*100)}%"><b style="height:${pc(Math.max(.08,Math.min(1,r)))}"></b></i>`}).join("")}</span>`:"";
   // every panel: a title, a sentence about it, and a small picture underneath
-  const tile=(key,title,say,chart)=>`<button class="tile" data-modal="${key}"><span class="t">${title}</span><span class="say">${say}</span><span class="tz">${chart}</span></button>`;
+  const tile=(key,title,say)=>`<button class="tile" data-modal="${key}"><span class="t">${title}</span><span class="say">${say}</span></button>`;
   const top=split.reduce((a,x)=>x[3]>a[3]?x:a),ad=multi?" a day":"",lowN=dn.has?NUTR.filter(([k,,,dv])=>dn.sum[k]<dv).map(([,l])=>l):[];
   $("tiles").innerHTML=
     tile("planned","Planned",`${B(fmt(t.k))} calories${ad}<span class="sub">${Math.abs(diff)<=100?"On goal":diff>0?`${fmt(diff)} over`:`${fmt(-diff)} under`}</span>`,
@@ -1980,7 +1972,8 @@ function tickNext(){
 setInterval(()=>{if((ui.tab==="plan"||ui.tab==="dash")&&document.visibilityState==="visible")tickNext()},1000);
 // Phones, Dashboard tab: the next meal fills most of the screen and the panels slide up over it like a
 // drawer; as they cover it, its content drifts up and fades (--dp, 0 to 1).
-function dashParallax(){
+function dashParallax(){return; // no drawer for now: the dashboard is one plain page
+
   const n=$("nowCard"),dr=document.querySelector(".dash-drawer");if(!n||!dr)return;
   if(ui.tab!=="dash"||wideMQ.matches){n.style.removeProperty("--dp");dr.style.removeProperty("--dd");return}
   const a=n.getBoundingClientRect(),b=dr.getBoundingClientRect(),over=a.bottom-b.top-28; // it tucks 28px under at rest
