@@ -63,9 +63,9 @@ To install it like an app: on iPhone or iPad, tap Share, then **Add to Home Scre
 
 ## Pantry
 
-The **Pantry** tab shows what's in your fridge, freezer and pantry as a 3D gallery built with three.js (bundled in `web/vendor/three`, so nothing loads from a CDN). Items float in a slowly turning sphere; drag to spin it, pinch or scroll to zoom, and tap an item to see its details: quantity, expiry, nutrition per serving and linked recipes. To change anything, choose **Edit** in the item's **⋯** menu. **Shelves** stacks everything on a fridge, freezer and pantry unit, and **List** is a plain list. Search and the filters on the left narrow the view.
+The **Pantry** tab shows what's in your fridge, freezer and pantry as a 3D gallery built with three.js (bundled in `web/vendor/three`, so nothing loads from a CDN). Items float in a slowly turning sphere; drag to spin it, pinch or scroll to zoom, and tap an item to see its details: quantity, expiry, nutrition per serving and linked recipes. To change anything, choose **Edit** in the item's **⋯** menu. **Shelves** stacks everything on a fridge, freezer and pantry unit, and **List** is a plain list. The search box shows how many items you have; its filter button opens location, category and status filters, and **+** adds an item.
 
-Items live in the **Pantry** database in Notion (`PANTRY_DB` in `worker/wrangler.toml`). On the Shop tab, check off what you bought and tap **Add checked to pantry**; items you already have get their quantity increased. Without a Notion connection the pantry is kept on the device.
+Items live in the **Pantry** database in Notion (`PANTRY_DB` in `worker/wrangler.toml`). On the Grocery tab, check off what you bought and tap **Add checked to pantry**; items you already have get their quantity increased. Without a Notion connection the pantry is kept on the device.
 
 To use a real product photo, open an item, paste a link to the product page (or straight to the photo) into **Store link**, and tap **Get photo**. The Worker reads the page's product photo and name; the app removes a plain studio background and shows the cut-out in the 3D view and the list. Busy lifestyle photos are left as they are. Some stores block automated requests; for those, open the photo in your browser, copy its image address, and paste that instead. The Pantry database keeps the link and photo address in its **Link** and **Image** columns.
 
@@ -87,9 +87,11 @@ Below the rings on the Dashboard, a card shows the whole day from the first meal
 
 The next-meal card says a meal "is now" for five minutes after it starts, then how long ago it started. Its color shows urgency: green while the next meal is more than 15 minutes away, yellow when it's close or started within the last hour, and red once it's more than an hour overdue.
 
+Tap any tile on the Dashboard for its detail with a chart: calories through the day against your goal (or by day over 3 or 7 days), the energy split of protein, carbs and fat with each meal's breakdown, which food groups each meal covers, and each nutrient as a percent of its daily value. Outlines mean planned or not yet met; filled means eaten or met.
+
 ## 1, 3 or 7 days
 
-The calendar button next to settings cycles every tab between 1 day, 3 days and the whole week; the number on it shows which. 3 days starts at the selected day. The Calendar and Shopping list switches follow the same setting. On Plan, 3 days and the week show each day as a list (tap a day's heading to go back to that one day). On the Dashboard, the rings add up the days against your goal for all of them, the tiles show daily averages, and the status card turns into a column per day, eaten over planned, with the goal as a dashed line.
+The calendar button next to settings cycles every tab between 1 day, 3 days and the whole week; the number on it shows which. 3 days starts at the selected day. The Calendar and Grocery tabs follow it too. On Plan, 3 days and the week show each day as a list (tap a day's heading to go back to that one day). On the Dashboard, the rings add up the days against your goal for all of them, the tiles show daily averages, and the status card turns into a column per day, eaten over planned, with the goal as a dashed line.
 
 ## Adding meals and pantry items
 
@@ -118,7 +120,7 @@ Stored in Notion and shared across your devices:
 
 Kept on each device:
 - calorie and protein goals, default meal times, and the week's start date
-- shopping list checkmarks
+- grocery list checkmarks
 
 ## Nutrition and diversity score
 

@@ -1,6 +1,6 @@
 // Dashboard rings drawn as a sequence of dots, after the "sequence" and "matrix" shapes in Dovetail's
-// Thinking component: every dot stays faintly visible so the ring reads as a track, eaten dots are lit in
-// the ring's colour, planned ones half lit, and one soft glint steps slowly round the eaten arc.
+// Thinking component: every dot stays visible as a faint outline so the ring reads as a track, planned dots
+// are outlined in the ring's colour, eaten ones filled, and one soft glint steps slowly round the eaten arc.
 // The page's SVG rings stay underneath as the fallback.
 
 const K = 44;          // dots per ring
@@ -39,11 +39,15 @@ export function createDashFx(hero, { reduceMotion = false } = {}) {
         const b = lit ? 1 : planned ? 0.42 : 0;
         let glint = 0;
         if (lit && head >= 0) { const d = (head - f + 1) % 1; glint = d < 0.12 ? Math.pow(1 - d / 0.12, 1.6) : 0; }
-        const a = f * TAU - Math.PI / 2;
-        ctx.fillStyle = b ? `rgba(${g.rgb},${(0.2 + 0.8 * b).toFixed(3)})` : "rgba(0,0,0,.09)";
+        const a = f * TAU - Math.PI / 2, x = g.cx + Math.cos(a) * g.R, y = g.cy + Math.sin(a) * g.R;
         ctx.beginPath();
-        ctx.arc(g.cx + Math.cos(a) * g.R, g.cy + Math.sin(a) * g.R, dot * (0.5 + 0.5 * b + 0.35 * glint), 0, TAU);
-        ctx.fill();
+        if (lit) { // eaten: a filled dot
+          ctx.arc(x, y, dot * (0.95 + 0.35 * glint), 0, TAU);
+          ctx.fillStyle = `rgb(${g.rgb})`; ctx.fill();
+        } else { // planned: an outline in the ring's colour; the rest of the track: a faint outline
+          ctx.arc(x, y, dot * 0.8, 0, TAU);
+          ctx.lineWidth = 1; ctx.strokeStyle = planned ? `rgba(${g.rgb},.85)` : "rgba(0,0,0,.18)"; ctx.stroke();
+        }
       }
     }
   }

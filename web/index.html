@@ -16,9 +16,9 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..600&display=swap" rel="stylesheet">
 <style>
-:root{--mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+:root{--mono:"Geist",ui-sans-serif,system-ui,-apple-system,sans-serif;
   --ink:#141414; --muted:#8A8A8A; --line:#E7E7E7; --bg:#FFFFFF; --soft:#F1F1F1; --card:#F8F8F8;
   color-scheme:light; box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
@@ -34,13 +34,16 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"Geist",ui-sans-
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0;text-align:inherit}
 button:focus-visible,summary:focus-visible,input:focus-visible{outline:1.5px solid var(--ink);outline-offset:3px;border-radius:4px}
 [hidden]{display:none!important}
+body{overflow-x:clip} /* nothing may widen the page, or phones zoom out and let it drift sideways */
+/* iOS zooms the page into any field under 16px when it's tapped */
+@media (pointer:coarse){input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{font-size:16px!important}}
 .narrow{max-width:520px;margin:0 auto}
 
 /* The page header sticks to the top. Its top padding scrolls away first (the negative top), and the title
    shrinks as --hc (set on scroll) goes from 0 to 1; a hairline fades in once it's compact. */
 .app-head{--hc:0;position:sticky;top:-16px;z-index:20;background:var(--bg);box-shadow:0 0 0 100vmax var(--bg);clip-path:inset(0 -100vmax);
   max-width:960px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:24px 24px 6px}
-.app-head::after{content:"";position:absolute;left:-100vmax;right:-100vmax;bottom:0;border-bottom:1px solid var(--line);opacity:var(--hc);pointer-events:none}
+.app-head::after{content:"";position:absolute;left:50%;width:100vw;transform:translateX(-50%);bottom:0;border-bottom:1px solid var(--line);opacity:var(--hc);pointer-events:none}
 .h-txt{min-width:0}
 .h-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0;font-size:2rem;font-weight:500;letter-spacing:-0.04em;line-height:1.1;
   transform-origin:left center;transform:scale(calc(1 - .38 * var(--hc)))}
@@ -109,27 +112,27 @@ main{max-width:960px;margin:0 auto;padding-bottom:calc(100px + env(safe-area-ins
 .dial .unit{position:relative;max-width:74%;text-align:center;line-height:1.25;font-size:10px;color:var(--muted);letter-spacing:0;margin-top:3px}
 .ring .rd{display:flex;flex-direction:column;align-items:center;gap:1px;margin-top:8px;font-family:var(--mono);font-size:10.5px;line-height:1.3;color:var(--muted);white-space:nowrap}
 .ring .rd b{font-weight:500;font-size:12px;color:var(--ink)}
-.dayline{margin:14px 24px 0;padding:18px 18px 16px;border-radius:24px;background:var(--soft)}
+.dayline{margin:14px 24px 0;padding:18px 18px 16px;border-radius:20px;border:1px solid var(--line)}
 .dl-top{display:flex;align-items:center;gap:12px;margin-bottom:18px}
-.dl-badge{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.06);color:var(--muted)}
-.dl-badge .ic{width:20px;height:20px}
-.dl-badge.ok{background:#1baf7a;color:#fff}.dl-badge.warn{background:#d6452f;color:#fff}
+.dl-badge{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:50%;box-shadow:inset 0 0 0 1.25px currentColor;color:var(--muted)}
+.dl-badge .ic{width:18px;height:18px}
+.dl-badge.ok{color:#1baf7a}.dl-badge.warn{color:#d6452f}
 .dl-tx{display:flex;flex-direction:column;min-width:0}
 .dl-st{font-size:1.3rem;font-weight:500;letter-spacing:-0.025em;line-height:1.2}
 .dl-sub{margin-top:2px;font-size:.82rem;color:var(--muted)}
-.dl-bar{position:relative;height:10px;margin:0 8px;border-radius:5px;background:rgba(0,0,0,.07)}
-.dl-el{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:rgba(0,0,0,.13)}
-.dl-bar .mk{position:absolute;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:var(--card);box-shadow:inset 0 0 0 2.5px #1baf7a,0 0 0 3px var(--soft)}
-.dl-bar .mk.on{background:#1baf7a}
-.dl-bar .mk.due{box-shadow:inset 0 0 0 2.5px var(--ink),0 0 0 3px var(--soft)}
-.dl-bar .mk.miss{width:10px;height:10px;margin:-5px 0 0 -5px;background:rgba(0,0,0,.22);box-shadow:0 0 0 3px var(--soft)}
-.dl-now{position:absolute;top:-8px;bottom:-8px;width:2px;margin-left:-1px;border-radius:1px;background:var(--ink)}
+.dl-bar{position:relative;height:2px;margin:8px 8px;border-radius:1px;background:rgba(0,0,0,.12)}
+.dl-el{position:absolute;left:0;top:0;bottom:0;border-radius:1px;background:var(--ink)}
+.dl-bar .mk{position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--bg);box-shadow:inset 0 0 0 1.25px #1baf7a,0 0 0 3px var(--bg)}
+.dl-bar .mk.on{background:radial-gradient(circle,#1baf7a 0 3.5px,var(--bg) 4px)}
+.dl-bar .mk.due{box-shadow:inset 0 0 0 1.25px var(--ink),0 0 0 3px var(--bg)}
+.dl-bar .mk.miss{width:8px;height:8px;margin:-4px 0 0 -4px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.35),0 0 0 3px var(--bg)}
+.dl-now{position:absolute;top:-9px;bottom:-9px;width:2px;margin-left:-1px;border-radius:1px;background:var(--ink)}
 .rc-row{--lb:29px;position:relative;display:flex;gap:6px;height:118px}
 .rc-goal{position:absolute;left:0;right:0;border-top:1.5px dashed rgba(0,0,0,.28);pointer-events:none;z-index:1}
 .rc{flex:1;display:flex;flex-direction:column;align-items:center;min-width:0;border-radius:12px}
-.rc-bar{position:relative;flex:1;width:100%;max-width:34px;border-radius:9px;background:rgba(0,0,0,.05);overflow:hidden}
-.rc-bar i{position:absolute;left:0;right:0;bottom:0;border-radius:9px}
-.rc-bar .pl{background:rgba(235,104,52,.24)}.rc-bar .ek{background:#eb6834}
+.rc-bar{position:relative;flex:1;width:100%;max-width:26px;border-radius:6px;overflow:hidden}
+.rc-bar i{position:absolute;left:0;right:0;bottom:0;border-radius:6px}
+.rc-bar .pl{box-shadow:inset 0 0 0 1px #eb6834}.rc-bar .ek{background:#eb6834}
 .rc-l{height:14px;margin-top:6px;font-size:.72rem;line-height:14px;color:var(--muted)}.rc.today .rc-l{color:var(--ink);font-weight:600}
 .rc-dot{flex:none;width:5px;height:5px;margin-top:4px;border-radius:50%;background:transparent}
 .rc.ok .rc-dot{background:#1baf7a}.rc.warn .rc-dot{background:#d6452f}
@@ -142,10 +145,10 @@ main{max-width:960px;margin:0 auto;padding-bottom:calc(100px + env(safe-area-ins
 .dl-ticks{position:relative;height:22px;margin:6px 8px 0}
 .dl-ticks i{position:absolute;top:0;width:1px;height:4px;background:rgba(0,0,0,.2)}.dl-ticks i.mj{height:7px;background:rgba(0,0,0,.45)}
 .dl-ticks span{position:absolute;top:9px;transform:translateX(-50%);font-family:var(--mono);font-size:10px;color:var(--muted)}
-.rc-gl{position:absolute;right:0;margin-bottom:3px;font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--soft);padding-left:4px;z-index:1}
+.rc-gl{position:absolute;right:0;margin-bottom:3px;font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--bg);padding-left:4px;z-index:1}
 .rc-l{font-family:var(--mono)}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 24px 22px}
-.tile{display:block;width:100%;text-align:left;background:var(--soft);border-radius:20px;padding:14px 16px 15px;min-width:0}
+.tile{display:block;width:100%;text-align:left;border:1px solid var(--line);border-radius:20px;padding:14px 16px 15px;min-width:0}
 button.tile:hover{outline:1px solid var(--line)}
 .tile .t{display:block;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .tile .v{display:block;font-family:var(--mono);font-size:1.45rem;font-weight:500;letter-spacing:-0.04em;margin:6px 0 1px;line-height:1.1}
@@ -154,22 +157,22 @@ button.tile:hover{outline:1px solid var(--line)}
 .tile .c b{font-family:var(--mono);font-weight:500;color:var(--ink)}.tile .nw{white-space:nowrap;font-family:var(--mono)}
 .tile .sc{position:relative;display:block;height:14px;margin:-4px 0 6px;font-family:var(--mono);font-size:10px;color:var(--muted)}
 .tile .sc span{position:absolute;top:0}.tile .sc span+span{transform:translateX(-100%)}
-.tile .stack{display:flex;gap:2px;height:14px;margin:14px 0 10px}.tile .stack i{height:100%;border-radius:4px;min-width:3px}
+.tile .stack{display:flex;gap:2px;height:12px;margin:14px 0 10px}.tile .stack i{height:100%;border-radius:3px;min-width:3px}
 .tile .leg{display:grid;grid-template-columns:1fr auto auto;gap:3px 10px;font-size:.74rem;color:var(--muted);align-items:center}
 .tile .leg>span{display:flex;align-items:center;gap:6px;min-width:0}.tile .leg>span i{width:8px;height:8px;border-radius:2px;flex:none}
 .tile .leg b{font-family:var(--mono);font-weight:500;color:var(--ink);text-align:right}.tile .leg em{font-style:normal;font-family:var(--mono);text-align:right;min-width:3ch}
 .tile .th{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.tile .th .v{font-size:1.1rem;margin:0}
-.tile .segs{position:relative;display:block;height:14px;margin:14px 0 9px}
-.tile .segs .fill{display:flex;gap:2px;height:100%}.tile .segs .fill i{border-radius:4px;background:rgb(235 104 52 / .28)}.tile .segs .fill i.on{background:#eb6834}
+.tile .th .v{font-size:1.1rem;margin:0;white-space:nowrap}
+.tile .segs{position:relative;display:block;height:12px;margin:14px 0 9px}
+.tile .segs .fill{display:flex;gap:2px;height:100%}.tile .segs .fill i{border-radius:3px;box-shadow:inset 0 0 0 1px #eb6834}.tile .segs .fill i.on{background:#eb6834}
 .tile .segs .goal{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;border-radius:1px;background:var(--ink)}
 .tile .bubs{display:flex;justify-content:space-between;align-items:flex-end;gap:6px;margin-top:10px}
 .tile .bub{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.72rem;color:var(--muted);min-width:0;white-space:nowrap}
 .tile .bb{height:44px;display:flex;align-items:flex-end;justify-content:center}
 .tile .bub i{border-radius:50%}.tile .bub b{color:var(--ink);font-weight:500}
-.tile .mp{background:#2a78d6}.tile .mc{background:rgba(0,0,0,.28)}.tile .mf{background:rgba(0,0,0,.12)}
-.tile .grid9{display:grid;grid-template-columns:repeat(3,10px);gap:6px;margin:12px 0 8px}.tile .grid9 i{height:10px;border-radius:50%;background:rgba(0,0,0,.1)}.tile .grid9 i.on{background:var(--ink)}
-.tile .caps{display:flex;gap:4px;height:34px;margin:12px 0 8px}.tile .caps i{position:relative;flex:1;max-width:9px;border-radius:5px;background:rgba(0,0,0,.07);overflow:hidden}
+.tile .mp,.mk-p{background:rgb(42 120 214 / .16);box-shadow:inset 0 0 0 1px #2a78d6}.tile .mc,.mk-c{background:rgba(0,0,0,.07);box-shadow:inset 0 0 0 1px rgba(0,0,0,.55)}.tile .mf,.mk-f{box-shadow:inset 0 0 0 1px rgba(0,0,0,.3)}
+.tile .grid9{display:grid;grid-template-columns:repeat(3,10px);gap:6px;margin:12px 0 8px}.tile .grid9 i{height:10px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.3)}.tile .grid9 i.on{background:var(--ink);box-shadow:none}
+.tile .caps{display:flex;gap:5px;height:34px;margin:12px 0 8px}.tile .caps i{position:relative;flex:1;max-width:6px;border-radius:5px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.22);overflow:hidden}
 .tile .caps b{position:absolute;left:0;right:0;bottom:0;border-radius:5px;background:var(--ink)}.tile .caps i.low b{background:rgba(0,0,0,.25)}
 .plan-main{border-top:1px solid var(--line)}
 .g-tabs{display:flex;gap:4px;margin-top:14px;padding:4px;border-radius:14px;background:var(--soft)}
@@ -282,8 +285,41 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .dv{margin:0 0 2px;font-size:.95rem}.dv b{font-weight:500}
 .grps{margin:0 0 8px;font-size:.84rem;color:var(--muted)}
 .nut{list-style:none;margin:0;padding:0}
+.chart{margin:16px 0 6px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{font-size:10px;fill:var(--muted)}.chart text.ink{fill:var(--ink)}.chart text.big{font-size:17px;font-weight:500;fill:var(--ink)}
+.chart .gl{stroke:rgba(0,0,0,.07);stroke-width:1}
+.chart .goal{stroke:var(--ink);stroke-width:1;stroke-dasharray:3 3}
+.chart .ref{stroke:var(--ink);stroke-width:1;stroke-dasharray:2 2}
+.chart .now{stroke:var(--ink);stroke-width:1}
+.chart .l-pl{fill:none;stroke:rgba(0,0,0,.45);stroke-width:1.25}
+.chart .l-on{fill:none;stroke:#eb6834;stroke-width:2;stroke-linejoin:round}
+.chart circle.pl{fill:var(--bg);stroke:rgba(0,0,0,.55);stroke-width:1.25}.chart circle.on{fill:#eb6834;stroke:var(--bg);stroke-width:2}
+.chart .b-pl{fill:none;stroke:#eb6834;stroke-width:1}.chart .b-on{fill:#eb6834}
+.chart .b-met{fill:var(--ink)}.chart .b-low{fill:none;stroke:var(--ink);stroke-width:1}
+.lg{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-size:.78rem;color:var(--muted)}
+.lg span{display:inline-flex;align-items:center;gap:6px}
+.lg i{display:inline-block;width:16px;height:0;border-top:1.25px solid rgba(0,0,0,.45)}
+.lg i.k-on{border-top:2px solid #eb6834}.lg i.k-goal{border-top:1px dashed var(--ink)}.lg i.k-ref{width:0;height:12px;border-top:0;border-left:1px dashed var(--ink)}
+.lg i.k-bpl,.lg i.k-bon,.lg i.k-met,.lg i.k-low{width:10px;height:10px;border:0;border-radius:3px}
+.lg i.k-bpl{box-shadow:inset 0 0 0 1px #eb6834}.lg i.k-bon{background:#eb6834}.lg i.k-met{background:var(--ink)}.lg i.k-low{box-shadow:inset 0 0 0 1px var(--ink)}
+.donut{display:grid;grid-template-columns:120px 1fr;gap:18px;align-items:center}
+.dn-t{border-collapse:collapse;width:100%;font-size:.88rem}
+.dn-t th{text-align:left;font-weight:400;color:var(--muted);padding:7px 0;border-bottom:1px solid var(--line)}
+.dn-t td{text-align:right;padding:7px 0 7px 10px;border-bottom:1px solid var(--line)}
+.dn-t i,.mbars i{display:inline-block;vertical-align:-1px;width:9px;height:9px;border-radius:2px;margin-right:7px}
+.mbars{display:grid;grid-template-columns:minmax(52px,auto) 1fr auto;gap:8px 10px;align-items:center;font-size:.82rem;margin-top:8px}
+.mb-l{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
+.mb-b{display:flex;gap:2px;height:10px}.mb-b i{height:100%;margin:0;border-radius:3px;min-width:0}
+.mb-v{text-align:right}
+.gm{display:grid;gap:6px 0;align-items:center;margin-top:16px;font-size:.82rem}
+.gm .gh{font-size:.7rem;color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden}
+.gm .gl-l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:6px}.gm .gl-l.miss{color:var(--muted)}
+.gm .gc{display:grid;place-items:center}.gm .gc i{width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.28)}.gm .gc i.on{background:var(--ink);box-shadow:none}
+.gm .gn{text-align:right;color:var(--muted)}
 .nut li{display:grid;grid-template-columns:1fr auto 3.4em;gap:5px 12px;padding:7px 0;border-bottom:1px solid var(--line);font-size:.9rem}
 .nut .q{color:var(--muted)}.nut .pct{text-align:right;font-variant-numeric:tabular-nums}
+.nut.plain .bar{display:none}
 .nut .bar{grid-column:1/-1;height:3px;background:var(--soft);border-radius:2px;overflow:hidden}
 .nut .bar i{display:block;height:100%;background:var(--ink)}
 .nut li.low .pct{color:var(--muted)}.nut li.low .bar i{background:var(--muted)}
@@ -364,21 +400,16 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .wb:hover{box-shadow:0 2px 10px rgba(0,0,0,.1)}
 .wg-now{position:absolute;left:0;right:0;border-top:1.5px solid var(--ink);z-index:2}
 .wg-hint{padding:0 24px;margin:6px 0 0;font-size:.8rem;color:var(--muted)}
-/* next meal */
-/* White frosted glass over a field of the urgency color: green while there's time, yellow when a meal
-   is close or has just started, red once it's an hour overdue. */
-.next{--a1:#1baf7a;position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;width:calc(100% - 48px);margin:14px 24px 0;padding:16px 14px 16px 18px;text-align:left;
-  border-radius:24px;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.05)}
-.next.u-soon{--a1:#e8ab1c}
+/* next meal: no card, full bleed between two hairlines. Urgency colours the clock and the progress line:
+   green while there's time, yellow when it's close or just started, red once it's an hour overdue. */
+.next{--a1:#1baf7a;position:relative;display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;width:100%;margin:10px 0 0;padding:14px 24px 16px;text-align:left;
+  color:var(--ink);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.next.u-soon{--a1:#e0a100}
 .next.u-late{--a1:#d6482f}
-.next::before{content:"";position:absolute;inset:0;z-index:-2;background:
-  radial-gradient(90% 140% at 0% 0%,var(--a1) 0,transparent 65%) var(--soft);opacity:.16;transition:background .4s,opacity .4s}
-.next::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;background:var(--soft);
-  box-shadow:inset 0 0 0 1px rgba(0,0,0,.045)}
-
+.next .top .ic{color:var(--a1)}
 .next .main{display:block;min-width:0;text-align:left;color:inherit}
-.next .nm-more{align-self:start;width:40px;height:40px;margin:-4px -2px 0 0;color:var(--ink);background:rgba(255,255,255,.55);box-shadow:inset 0 0 0 1px rgba(255,255,255,.8)}
-.next .nm-more:hover,.next .nm-more[aria-expanded="true"]{background:rgba(255,255,255,.85);color:var(--ink)}
+.next .nm-more{align-self:start;width:40px;height:40px;margin:-4px -8px 0 0;color:var(--ink);background:none;box-shadow:inset 0 0 0 1px var(--line)}
+.next .nm-more:hover,.next .nm-more[aria-expanded="true"]{background:var(--soft);color:var(--ink)}
 .rem-opts{display:grid;gap:8px;margin-top:18px}
 .rem-opt{display:flex;justify-content:space-between;align-items:center;width:100%;border:1px solid var(--line);border-radius:14px;padding:13px 16px;font-size:.95rem}
 .rem-opt:hover{border-color:var(--ink)}
@@ -390,8 +421,8 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .next .big{display:block;font-size:1.25rem;font-weight:300;letter-spacing:-0.02em;line-height:1.2;margin:5px 0 2px}
 .next .big b{font-weight:500}
 .next .sm{display:block;font-size:.8rem;color:rgba(0,0,0,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.next .prog{display:block;position:relative;height:4px;border-radius:2px;background:rgba(0,0,0,.08);margin-top:12px;overflow:hidden}
-.next .prog i{position:absolute;inset:0 auto 0 0;background:var(--ink);border-radius:2px;transition:width .4s ease}
+.next .prog{display:block;position:relative;height:2px;border-radius:1px;background:rgba(0,0,0,.08);margin-top:12px;overflow:hidden}
+.next .prog i{position:absolute;inset:0 auto 0 0;background:var(--a1);border-radius:1px;transition:width .4s ease}
 /* wider screens */
 @media (min-width:640px){
   .narrow{max-width:640px}
@@ -420,7 +451,13 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .pan-search{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:999px;padding:0 16px;min-height:46px}
 .pan-search svg{width:17px;height:17px;flex:none;color:var(--muted)}
 .pan-search input{flex:1;min-width:0;border:0;background:transparent;font:inherit;color:var(--ink);outline:none}
-.pan-count{display:flex;justify-content:space-between;align-items:center;margin:10px 2px 0;font-size:.85rem;color:var(--muted);min-height:32px}
+.pan-search{padding-right:8px}
+.ps-btn{position:relative;flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:none;color:var(--ink)}
+.pan-search .ps-btn svg{width:18px;height:18px;color:var(--ink)}
+@media (hover:hover){.ps-btn:hover{background:var(--soft)}}
+.ps-btn.on::after{content:"";position:absolute;top:8px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--ink);box-shadow:0 0 0 2px var(--bg)}
+.pan-search .ps-btn+.ps-btn{margin-left:-8px}
+#pReset{margin-top:8px}
 .pan-group h3{margin:16px 0 8px;font-size:.68rem;font-weight:400;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
 .pan-opts{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
 .pan-opts::-webkit-scrollbar{display:none}
@@ -436,9 +473,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .pan-btn{border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:.84rem;min-height:36px}
 .pan-btn:hover{border-color:var(--ink)}
 .pan-btn svg{width:15px;height:15px;display:block}
-.pan-fdet summary{list-style:none;cursor:pointer;margin:12px 0 0;display:inline-block;font-size:.87rem;border:1px solid var(--line);border-radius:999px;padding:7px 14px}
-.pan-fdet summary::-webkit-details-marker{display:none}
-.pan-fdet[open] summary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pan-fdet summary{display:none}
 .pan-btn.primary{background:var(--ink);border-color:var(--ink);color:var(--bg);margin-left:auto}
 .pan-canvas{position:relative;height:58vh;min-height:320px;border-radius:18px;overflow:hidden;
   background:radial-gradient(ellipse at 50% 42%,#ffffff 0%,#f3f2ef 62%,#e9e7e2 100%)}
@@ -490,7 +525,6 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   .pan{grid-template-columns:290px minmax(0,1fr);gap:0 20px;align-items:start}
   .pan-side{position:sticky;top:8px;max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:thin}
   .pan-opts{flex-direction:column;overflow:visible}
-  .pan-fdet summary{display:none}
   .pan-opt{border-radius:12px;padding:10px 16px}
   .pan-canvas{height:calc(100vh - 200px);min-height:460px}
 }
@@ -555,21 +589,16 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   .pan{display:block;position:relative}
   .pan-side{position:absolute;top:10px;left:12px;right:12px;z-index:6;padding:0;display:flex;flex-direction:column;gap:8px;min-width:0}
   .pan-search{background:var(--bg);box-shadow:0 8px 22px rgba(0,0,0,.14)}
-  .pan-count{background:var(--bg);border-radius:999px;padding:6px 14px;box-shadow:0 6px 16px rgba(0,0,0,.12);margin:0;min-height:0}
-  .pan-fdet summary{background:var(--bg);box-shadow:0 6px 16px rgba(0,0,0,.12);margin:0}
   .pan-fdet[open]{background:var(--bg);border-radius:16px;box-shadow:0 10px 26px rgba(0,0,0,.16);padding:8px 10px 2px;margin-top:2px}
   .pan-stage{padding:0;min-width:0}
   .pan-canvas{height:var(--pan-h,60vh);min-height:280px;border-radius:0}
-  .pan-list{padding:128px 20px calc(160px + env(safe-area-inset-bottom,0px))}
-  .pan-count{align-self:flex-start;gap:12px}
+  .pan-list{padding:72px 20px calc(110px + env(safe-area-inset-bottom,0px))}
   .pan-tools{flex-wrap:nowrap;gap:6px}
   .pan-seg button{padding:6px 10px}
-  #pAdd{padding:7px 12px}
-  #pMsg{position:absolute;left:16px;right:16px;bottom:calc(150px + env(safe-area-inset-bottom,0px));z-index:6;margin:0;background:var(--bg);border-radius:12px;padding:9px 12px;box-shadow:0 6px 18px rgba(0,0,0,.14);min-height:0}
+  #pMsg{position:absolute;left:16px;right:16px;bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:6;margin:0;background:var(--bg);border-radius:12px;padding:9px 12px;box-shadow:0 6px 18px rgba(0,0,0,.14);min-height:0}
   #pMsg:empty{display:none}
   .pan-tools{position:absolute;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:6;margin:0;background:var(--bg);padding:8px;border-radius:20px;box-shadow:0 8px 22px rgba(0,0,0,.14)}
-  .pan-btn.primary{margin-left:auto}
-  #pMax{display:none}
+  .pan-tools{display:none} /* its only button, full screen, isn't needed on phones */
 }
 
 </style>
@@ -622,7 +651,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   </section>
 
   <!-- SHOP -->
-  <section id="view-shop" class="narrow" aria-label="Shopping list" hidden>
+  <section id="view-shop" class="narrow" aria-label="Grocery" hidden>
     <div class="list" id="listBody"></div>
     <div class="foot">
       <button class="pdf with-ic" id="shopPdf" hidden><svg class="ic" aria-hidden="true"><use href="#i-down"/></svg>Download PDF</button>
@@ -636,15 +665,15 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   <section id="view-pantry" aria-label="Pantry" hidden>
     <div class="pan" id="pan">
       <aside class="pan-side" aria-label="Find food">
-        <label class="pan-search"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg>
-          <input type="search" id="pSearch" placeholder="Search your food" aria-label="Search your food"></label>
-        <div class="pan-count"><span id="pCount" role="status"></span><button class="txt" id="pReset">Reset</button></div>
-        <details class="pan-fdet" id="pFdet"><summary>Filters</summary><div id="pFilters"></div></details>
+        <div class="pan-search"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg>
+          <input type="search" id="pSearch" placeholder="Search your food" aria-label="Search your food">
+          <button class="ps-btn" id="pFilt" aria-label="Filters" aria-expanded="false" title="Filters"><svg class="ic" aria-hidden="true"><use href="#i-adjust"/></svg></button>
+          <button class="ps-btn" id="pAdd" aria-label="Add an item" title="Add an item"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></button></div>
+        <details class="pan-fdet" id="pFdet"><summary>Filters</summary><div id="pFilters"></div><button class="txt" id="pReset">Clear filters</button></details>
       </aside>
       <div class="pan-stage">
         <div class="pan-tools">
           <button class="pan-btn" id="pMax" aria-pressed="false" aria-label="Full screen" title="Full screen"><svg class="ic" aria-hidden="true"><use href="#i-grow"/></svg></button>
-          <button class="pan-btn primary with-ic" id="pAdd"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>Add</button>
         </div>
         <div class="pan-canvas" id="pCanvas"><div class="pan-tip" id="pTip" hidden></div><p class="pan-empty" id="pEmpty" hidden></p></div>
         <div class="pan-list" id="pList" hidden></div>
@@ -691,7 +720,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
         <div class="row"><span>Shake your phone on the Plan or Dashboard tab to shuffle today's unlocked meals</span><button class="btn" id="shakeToggle" type="button" aria-pressed="false">Off</button></div>
         <p class="subhead">This device</p>
         <p class="hint" id="sync" role="status"></p>
-        <p class="hint">Goals, default meal times, the week's start date and shopping checkmarks are kept on this device. Meals, your weekly plan, eaten marks and the pantry sync through Notion.</p>
+        <p class="hint">Goals, default meal times, the week's start date and grocery checkmarks are kept on this device. Meals, your weekly plan, eaten marks and the pantry sync through Notion.</p>
       </div>
 </div></div>
 <div class="sheet-bg" id="sheet" hidden><div class="sheet" id="sheetBox" role="dialog" aria-modal="true" aria-labelledby="shTitle"></div></div>
@@ -702,7 +731,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   <button data-tab="plan" aria-current="page" aria-label="Plan" title="Plan"><svg class="ic" aria-hidden="true"><use href="#i-plan"/></svg></button>
   <button data-tab="cal" aria-label="Calendar" title="Calendar"><svg class="ic" aria-hidden="true"><use href="#i-cal"/></svg></button>
   <button data-tab="dash" aria-label="Dashboard" title="Dashboard"><svg class="ic" aria-hidden="true"><use href="#i-dash"/></svg></button>
-  <button data-tab="shop" aria-label="Shop" title="Shop"><svg class="ic" aria-hidden="true"><use href="#i-shop"/></svg></button>
+  <button data-tab="shop" aria-label="Grocery" title="Grocery"><svg class="ic" aria-hidden="true"><use href="#i-shop"/></svg></button>
   <button data-tab="pantry" aria-label="Pantry" title="Pantry"><svg class="ic" aria-hidden="true"><use href="#i-pantry"/></svg></button>
 </nav>
 
@@ -913,7 +942,7 @@ let ui={tab:"plan",day:0,cal:"hour",scope:"week",pv:"cards",pl:"sphere",span:1};
 const TABS=["plan","dash","cal","shop","pantry"];
 try{const u=JSON.parse(localStorage.getItem(UIKEY)||"null");if(u){ui.tab=TABS.includes(u.tab)?u.tab:"plan";ui.pl=["sphere","shelves","list"].includes(u.pl)?u.pl:"sphere";ui.day=clamp(u.day|0,0,D-1);ui.cal=["hour","three","week"].includes(u.cal)?u.cal:"hour";ui.pv=u.pv==="list"?"list":"cards";ui.scope=u.scope==="day"?"day":"week";ui.span=[1,3,7].includes(u.span)?u.span:ui.cal==="week"?7:ui.cal==="three"?3:1}}catch(e){}
 // One setting for how many days every tab shows (the header button cycles it): the calendar view, the
-// shopping list scope, the plan list and the dashboard all follow it. 3 days is a window that starts at the selected day.
+// grocery list scope, the plan list and the dashboard all follow it. 3 days is a window that starts at the selected day.
 function setSpan(n){ui.span=n;ui.cal=n===1?"hour":n===3?"three":"week";ui.scope=n===1?"day":n===3?"three":"week"}
 function spanRange(){if(ui.span===7)return[0,D-1];if(ui.span===3){const a=Math.min(ui.day,D-3);return[a,a+2]}return[ui.day,ui.day]}
 function spanDays(){const[a,b]=spanRange();return Array.from({length:b-a+1},(_,k)=>a+k)}
@@ -1163,9 +1192,9 @@ var dashFx=null,meterData=[]; // particle rings (dashfx.js) once loaded; the SVG
 // distinct for color-blind and full-color vision. Each ring also carries its label, so color is never the only cue.
 const RING={k:{hex:"#eb6834",rgb:"235,104,52"},p:{hex:"#2a78d6",rgb:"42,120,214"},m:{hex:"#1baf7a",rgb:"27,175,122"}};
 function ringSvg(planned,eaten,val,unit,col){
-  // two arcs in the ring's color: the day's plan faint, what's been eaten solid
-  const r=42,C=2*Math.PI*r,arc=(f,op)=>f>0?`<circle cx="50" cy="50" r="${r}" fill="none" stroke="${col}" stroke-opacity="${op}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${Math.max(0.001,Math.min(1,f)*C)} ${C}" transform="rotate(-90 50 50)"/>`:"";
-  return `<div class="dial"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="${r}" fill="none" stroke="rgba(0,0,0,.06)" stroke-width="6"/>${arc(planned,.3)}${arc(eaten,1)}</svg>
+  // two arcs in the ring's color: the day's plan as a thin line, what's been eaten thicker
+  const r=42,C=2*Math.PI*r,arc=(f,op,w)=>f>0?`<circle cx="50" cy="50" r="${r}" fill="none" stroke="${col}" stroke-opacity="${op}" stroke-width="${w}" stroke-linecap="round" stroke-dasharray="${Math.max(0.001,Math.min(1,f)*C)} ${C}" transform="rotate(-90 50 50)"/>`:"";
+  return `<div class="dial"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="${r}" fill="none" stroke="rgba(0,0,0,.14)" stroke-width="1"/>${arc(planned,.8,1)}${arc(eaten,1,3)}</svg>
     <span class="val">${val}</span><span class="unit">${unit}</span></div>`;
 }
 // Readouts: percentages to one decimal, signed differences, 24-hour clock times.
@@ -1265,10 +1294,10 @@ function renderMeter(){
       <span class="c"><b>${pct1(t.k/state.target)}</b> of goal · <span class="nw">Δ ${sgn(diff)}</span>${multi?"<br>kcal a day":""}</span></button>
     <button class="tile" data-modal="macros"><span class="th"><span class="t">Macros${multi?" a day":""}</span></span>
       ${stack}${legend}</button>
-    ${dn.mask?`<button class="tile" data-modal="variety"><span class="th"><span class="t">Food groups</span><span class="v">${dn.groups.length}<small>/ ${GROUPS.length}</small></span></span>
+    ${dn.mask?`<button class="tile" data-modal="variety"><span class="th"><span class="t">Variety</span><span class="v">${dn.groups.length}<small>/${GROUPS.length}</small></span></span>
       <span class="grid9" aria-hidden="true">${GROUPS.map(g=>`<i class="${dn.groups.includes(g)?"on":""}" title="${g}"></i>`).join("")}</span>
       <span class="c"><b>${pct1(dn.groups.length/GROUPS.length)}</b> ${miss.length?`· no ${miss.slice(0,2).join(", ").toLowerCase()}`:"coverage"}</span></button>`:""}
-    ${dn.has?`<button class="tile" data-modal="nutrients"><span class="th"><span class="t">Nutrients ≥ DV</span><span class="v">${NUTR.length-low.length}<small>/ ${NUTR.length}</small></span></span>
+    ${dn.has?`<button class="tile" data-modal="nutrients"><span class="th"><span class="t">Nutrients</span><span class="v">${NUTR.length-low.length}<small>/${NUTR.length}</small></span></span>
       ${caps}
       <span class="c">${low.length?`Low: ${low.slice(0,2).join(", ")}`:`≥ 100% DV${multi?" on average":""}`}</span></button>`:""}`;
   $("tiles").querySelectorAll("[data-modal]").forEach(b=>b.onclick=()=>TILE_MODALS[b.dataset.modal]());
@@ -1292,25 +1321,100 @@ document.addEventListener("keydown",e=>{
   if(e.key==="Tab"){const f=[...$("infoBox").querySelectorAll("button,input,a[href]")];if(!f.length)return;const a=f[0],z=f[f.length-1];
     if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
 });
+/* ---------- charts in the dashboard's detail sheets ----------
+   Thin marks and a light grid; outline = planned or not met, filled = eaten or met (as on the dashboard).
+   Labels stay in ink; every mark has a title, so it names itself on hover. */
+const CH_W=340,KC="#eb6834",PR="#2a78d6";
+const tip=t=>`<title>${esc(t)}</title>`;
+function niceStep(v){const e=Math.pow(10,Math.floor(Math.log10(v||1))),m=v/e;return (m<=1?1:m<=2?2:m<=2.5?2.5:m<=5?5:10)*e}
+const kfmt=v=>v>=1000?`${+(v/1000).toFixed(1)}k`:String(Math.round(v));
+const legend=items=>`<figcaption class="lg">${items.map(([cls,l])=>`<span><i class="${cls}"></i>${l}</span>`).join("")}</figcaption>`;
+// Calories through the day: running total of the plan (thin line) and of what's been eaten (thicker), against the goal.
+function cumChart(d){
+  const ms=mealsOf(d).filter(m=>!m.o.skip&&!m.missed);if(!ms.length)return "";
+  const W=CH_W,H=200,L=34,R=12,T=16,B=24,now=new Date(),nm=now.getHours()*60+now.getMinutes(),today=isToday(d),past=iso(dayDate(d))<iso(now);
+  const times=ms.map(m=>mins(m.time)),x0=Math.max(0,Math.floor((Math.min(...times)-60)/60)*60),x1=Math.min(1440,Math.ceil((Math.max(...times)+60)/60)*60);
+  const tot=ms.reduce((a,m)=>a+m.o.k,0),step=niceStep(Math.max(state.target,tot)*1.05/4),ymax=Math.ceil(Math.max(state.target,tot)*1.05/step)*step;
+  const X=v=>+(L+(v-x0)/(x1-x0)*(W-L-R)).toFixed(1),Y=v=>+(T+(1-v/ymax)*(H-T-B)).toFixed(1);
+  let g="";for(let v=0;v<=ymax+1e-6;v+=step)g+=`<line class="gl" x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L-6}" y="${Y(v)+3}" text-anchor="end">${kfmt(v)}</text>`;
+  for(let h=Math.ceil(x0/60);h*60<=x1;h++)if(h%3===0)g+=`<text x="${X(h*60)}" y="${H-6}" text-anchor="middle">${String(h%24).padStart(2,"0")}:00</text>`;
+  const run=(list,end)=>{let c=0,p=`M${X(x0)},${Y(0)}`;list.forEach(m=>{p+=` H${X(mins(m.time))} V${Y(c+=m.o.k)}`});return p+` H${X(end)}`};
+  const eaten=ms.filter(m=>m.done),endE=today?clamp(nm,x0,x1):past?x1:(eaten.length?mins(eaten[eaten.length-1].time):x0);
+  let c=0;const dots=ms.map(m=>{c+=m.o.k;const x=X(mins(m.time)),y=Y(c);
+    return `<circle cx="${x}" cy="${y}" r="3.5" class="${m.done?"on":"pl"}">${tip(`${m.custom?m.o.n:m.slot} · ${fmtTime(m.time)} · ${fmt(m.o.k)} kcal · running total ${fmt(c)}`)}</circle>`}).join("");
+  const goal=`<line class="goal" x1="${L}" x2="${W-R}" y1="${Y(state.target)}" y2="${Y(state.target)}"/><text class="ink" x="${W-R}" y="${Y(state.target)-5}" text-anchor="end">Goal ${fmt(state.target)}</text>`;
+  const nowL=today&&nm>=x0&&nm<=x1?`<line class="now" x1="${X(nm)}" x2="${X(nm)}" y1="${T-6}" y2="${H-B}"/>`:"";
+  return `<figure class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Running total of calories through the day: ${fmt(tot)} planned, ${fmt(eaten.reduce((a,m)=>a+m.o.k,0))} eaten, goal ${fmt(state.target)}.">
+    ${g}${goal}${nowL}<path class="l-pl" d="${run(ms,x1)}"/>${eaten.length||today||past?`<path class="l-on" d="${run(eaten,endE)}"/>`:""}${dots}</svg>
+    ${legend([["k-pl","Planned"],["k-on","Eaten"],["k-goal","Goal"]])}</figure>`;
+}
+// Several days: a column per day, planned as an outline and eaten filled, against the goal.
+function dayBars(days){
+  const W=CH_W,H=190,L=34,R=8,T=16,B=24,st=days.map(dayStat),mx=Math.max(state.target,...st.map(s=>s.t.k))*1.05,step=niceStep(mx/4),ymax=Math.ceil(mx/step)*step;
+  const Y=v=>+(T+(1-v/ymax)*(H-T-B)).toFixed(1),cw=(W-L-R)/days.length,bw=Math.min(22,cw*.55);
+  let g="";for(let v=0;v<=ymax+1e-6;v+=step)g+=`<line class="gl" x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L-6}" y="${Y(v)+3}" text-anchor="end">${kfmt(v)}</text>`;
+  const bars=st.map((s,k)=>{const x=+(L+cw*k+(cw-bw)/2).toFixed(1),lab=`${longDate(s.d)} · ${fmt(s.t.k)} kcal planned, ${fmt(s.ek)} eaten`;
+    return `<g>${tip(lab)}<rect class="b-pl" x="${x}" y="${Y(s.t.k)}" width="${bw}" height="${(Y(0)-Y(s.t.k)).toFixed(1)}" rx="3"/>${s.ek?`<rect class="b-on" x="${x}" y="${Y(s.ek)}" width="${bw}" height="${(Y(0)-Y(s.ek)).toFixed(1)}" rx="3"/>`:""}
+      <text x="${(x+bw/2).toFixed(1)}" y="${H-6}" text-anchor="middle"${s.today?' class="ink"':""}>${wk(s.d)}</text></g>`}).join("");
+  const goal=`<line class="goal" x1="${L}" x2="${W-R}" y1="${Y(state.target)}" y2="${Y(state.target)}"/><text class="ink" x="${W-R}" y="${Y(state.target)-5}" text-anchor="end">Goal ${fmt(state.target)}</text>`;
+  return `<figure class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Calories by day, planned and eaten, against the ${fmt(state.target)} kcal goal.">${g}${bars}${goal}</svg>${legend([["k-bpl","Planned"],["k-bon","Eaten"],["k-goal","Goal"]])}</figure>`;
+}
+const MAC=[["p","Protein",4,"mk-p"],["c","Carbs",4,"mk-c"],["f","Fat",9,"mk-f"]];
+// Energy split: a thin donut of protein, carbs and fat by calories, with grams and percent beside it.
+function macroDonut(t){
+  const kc=MAC.map(([k,,e])=>t[k]*e),sum=kc.reduce((a,b)=>a+b,0)||1,r=46,C=2*Math.PI*r,gap=3;let off=0;
+  const cols={p:PR,c:"rgba(0,0,0,.55)",f:"rgba(0,0,0,.28)"};
+  const arcs=MAC.map(([k,l],j)=>{const len=Math.max(0,kc[j]/sum*C-gap),a=`<circle cx="60" cy="60" r="${r}" fill="none" stroke="${cols[k]}" stroke-width="6" stroke-dasharray="${len.toFixed(1)} ${C.toFixed(1)}" stroke-dashoffset="${(-off).toFixed(1)}" transform="rotate(-90 60 60)">${tip(`${l}: ${fmt(t[k])} g, ${fmt(kc[j])} kcal, ${Math.round(kc[j]/sum*100)}%`)}</circle>`;off+=kc[j]/sum*C;return a}).join("");
+  return `<figure class="chart donut"><svg viewBox="0 0 120 120" role="img" aria-label="Energy split: ${MAC.map(([k,l],j)=>`${l} ${Math.round(kc[j]/sum*100)}%`).join(", ")}.">${arcs}
+    <text x="60" y="58" text-anchor="middle" class="big">${fmt(sum)}</text><text x="60" y="73" text-anchor="middle">kcal</text></svg>
+    <table class="dn-t">${MAC.map(([k,l,,cls],j)=>`<tr><th><i class="${cls}"></i>${l}</th><td>${fmt(t[k])} g</td><td>${Math.round(kc[j]/sum*100)}%</td></tr>`).join("")}</table></figure>`;
+}
+// Calories by macro for each meal (or day), as stacked bars on one scale.
+function macroBars(rows){
+  const mx=Math.max(1,...rows.map(r=>r.p*4+r.c*4+r.f*9));
+  return `<div class="mbars">${rows.map(r=>{const tot=r.p*4+r.c*4+r.f*9;return `<div class="mb-l">${esc(r.label)}</div><div class="mb-b" title="${esc(`${r.label}: ${fmt(r.p)} g protein, ${fmt(r.c)} g carbs, ${fmt(r.f)} g fat`)}">${MAC.map(([k,,e,cls])=>`<i class="${cls}" style="width:${(r[k]*e/mx*100).toFixed(1)}%"></i>`).join("")}</div><div class="mb-v">${fmt(tot)}</div>`}).join("")}</div>`;
+}
+// Which food group each meal (or day) covers: a dot per cell, filled where it's there.
+function groupMatrix(cols){
+  return `<div class="gm" style="grid-template-columns:minmax(96px,1fr) repeat(${cols.length},minmax(0,34px)) 30px">
+    <span></span>${cols.map(c=>`<span class="gh" title="${esc(c.title)}">${esc(c.label)}</span>`).join("")}<span class="gh">n</span>
+    ${GROUPS.map((g,j)=>{const n=cols.filter(c=>c.mask&(1<<j)).length;return `<span class="gl-l${n?"":" miss"}">${esc(g)}</span>${cols.map(c=>`<span class="gc"><i class="${c.mask&(1<<j)?"on":""}" title="${esc(`${g}: ${c.mask&(1<<j)?"in":"not in"} ${c.title}`)}"></i></span>`).join("")}<span class="gn">${n}</span>`}).join("")}</div>`;
+}
+// Percent of daily value per nutrient on one scale to 150%, with the 100% line marked; outline bars are under it.
+function nutChart(sum){
+  const W=CH_W,rh=22,L=92,R=40,T=6,max=1.5,rows=NUTR.map(([k,l,u,dv])=>({l,u,v:sum[k]||0,r:(sum[k]||0)/dv})),H=T+rows.length*rh+22;
+  const X=r=>+(L+Math.min(r,max)/max*(W-L-R)).toFixed(1);
+  let g=[0,.5,1,1.5].map(r=>`<line class="${r===1?"ref":"gl"}" x1="${X(r)}" x2="${X(r)}" y1="${T-2}" y2="${T+rows.length*rh}"/><text x="${X(r)}" y="${H-6}" text-anchor="middle">${Math.round(r*100)}%</text>`).join("");
+  const bars=rows.map((o,k)=>{const y=T+k*rh+rh/2,met=o.r>=1;return `<g>${tip(`${o.l}: ${fmtN(o.v)} ${o.u}, ${Math.round(o.r*100)}% of daily value`)}<text class="ink" x="0" y="${y+3.5}">${esc(o.l)}</text>
+    <rect class="${met?"b-met":"b-low"}" x="${L}" y="${y-4}" width="${Math.max(2,X(o.r)-L).toFixed(1)}" height="8" rx="3"/><text class="${met?"ink":""}" x="${W}" y="${y+3.5}" text-anchor="end">${Math.round(o.r*100)}%</text></g>`}).join("");
+  return `<figure class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Percent of daily value for ${rows.length} nutrients; ${rows.filter(o=>o.r>=1).length} reach 100%.">${g}${bars}</svg>${legend([["k-met","100% or more"],["k-low","Under 100%"],["k-ref","Daily value"]])}</figure>`;
+}
 function spanSub(){return ui.span>1?scopeLabel():longDate(ui.day)}
+const slotShort=["Brk","AM","Lun","PM","Din","Bed"];
 function openPlannedDetail(){
   const days=spanDays(),t=rangeTotals(days),diff=t.k-state.target,multi=days.length>1;
   const rows=multi?days.map(d=>`<li><span>${esc(longDate(d))}</span><span class="q">${fmt(totals(d).k)} kcal</span></li>`).join("")
-    :mealsOf(ui.day).filter(m=>!m.o.skip).map(m=>`<li><span>${esc(m.slot)}: ${esc(m.o.n)}</span><span class="q">${fmt(m.o.k)} kcal</span></li>`).join("");
-  tileModal("Planned calories",spanSub(),`<p class="sh-d">${fmt(t.k)} kcal ${multi?"a day on average":"planned"}, ${Math.abs(diff)<=100?"on target":diff>0?`${fmt(diff)} over your ${fmt(state.target)} kcal goal`:`${fmt(-diff)} short of your ${fmt(state.target)} kcal goal`}.</p><ul class="ing">${rows}</ul>`);
+    :mealsOf(ui.day).filter(m=>!m.o.skip).map(m=>`<li><span>${esc(m.custom?m.o.n:`${m.slot}: ${m.o.n}`)}</span><span class="q">${fmt(m.o.k)} kcal</span></li>`).join("");
+  tileModal("Planned calories",spanSub(),`<p class="sh-d">${fmt(t.k)} kcal ${multi?"a day on average":"planned"}, ${Math.abs(diff)<=100?"on target":diff>0?`${fmt(diff)} over your ${fmt(state.target)} kcal goal`:`${fmt(-diff)} short of your ${fmt(state.target)} kcal goal`}.</p>
+    ${multi?dayBars(days):cumChart(ui.day)}<h3>${multi?"By day":"By meal"}</h3><ul class="ing">${rows}</ul>`);
 }
 function openMacrosDetail(){
-  const days=spanDays(),t=rangeTotals(days);
-  tileModal(days.length>1?"Macros a day":"Macros",spanSub(),`<div class="sh-m"><span><b>${fmt(t.p)} g</b> protein</span><span><b>${fmt(t.c)} g</b> carbs</span><span><b>${fmt(t.f)} g</b> fat</span></div><p class="fine">${days.length>1?`Daily average across ${days.length} days. `:""}The protein goal is ${state.protein} g a day. There's no set target for carbs or fat; meals are balanced to hit calories and protein.</p>`);
+  const days=spanDays(),t=rangeTotals(days),multi=days.length>1;
+  const rows=multi?days.map(d=>({label:wk(d),...totals(d)})):mealsOf(ui.day).filter(m=>!m.o.skip&&!m.missed).map(m=>({label:m.custom?m.o.n:m.slot,p:m.o.p,c:m.o.c,f:m.o.f}));
+  tileModal(multi?"Macros a day":"Macros",spanSub(),`${macroDonut(t)}<h3>Calories by macro, ${multi?"each day":"each meal"}</h3>${macroBars(rows)}
+    <p class="fine">${multi?`Daily average across ${days.length} days. `:""}The protein goal is ${state.protein} g a day. There's no set target for carbs or fat; meals are balanced to hit calories and protein.</p>`);
 }
 function openVarietyDetail(){
   const days=spanDays(),n=days.length,dn=rangeNutrition(days);
-  const rows=GROUPS.map(g=>`<li><span>${esc(g)}</span><span class="q">${n>1?`${dn.cnt[g]||0} of ${n} days`:dn.groups.includes(g)?"✓":"—"}</span></li>`).join("");
-  tileModal("Food group variety",spanSub(),`<p class="sh-d">${dn.groups.length} of ${GROUPS.length} food groups ${n>1?`across ${n} days`:"today"}.</p><ul class="ing">${rows}</ul>`);
+  const mask=d=>mealsOf(d).filter(m=>!m.o.skip&&!m.missed&&!m.custom).reduce((a,m)=>a|(m.o.gm||0),0);
+  const cols=n>1?days.map(d=>({label:wk(d),title:longDate(d),mask:mask(d)}))
+    :mealsOf(ui.day).filter(m=>!m.o.skip&&!m.missed&&!m.custom).map(m=>({label:slotShort[m.i]||m.slot,title:`${m.slot}: ${m.o.n}`,mask:m.o.gm||0}));
+  tileModal("Food group variety",spanSub(),`<p class="sh-d">${dn.groups.length} of ${GROUPS.length} food groups ${n>1?`across ${n} days`:"today"}.</p>${groupMatrix(cols)}
+    <p class="fine">${n>1?"Each column is a day; n is how many days include the group.":"Each column is one of the day's meals; n is how many meals include the group."}</p>`);
 }
 function openNutrientsDetail(){
   const days=spanDays(),dn=rangeNutrition(days),n=days.length;
-  tileModal("Nutrients",spanSub(),dn.has?`<ul class="nut">${nutRows(dn.sum,100)}</ul><p class="fine">${n>1?`Average percent of daily value per day across ${n} days`:"Percent of daily value across today's meals"}. Faded bars are under 100%.</p>`:`<p class="sh-d">No meals with nutrition data.</p>`);
+  tileModal("Nutrients",spanSub(),dn.has?`${nutChart(dn.sum)}<h3>Amounts</h3><ul class="nut plain">${nutRows(dn.sum,100)}</ul><p class="fine">${n>1?`Average per day across ${n} days`:"Across the day's meals"}, as a percent of daily value.</p>`:`<p class="sh-d">No meals with nutrition data.</p>`);
 }
 
 /* ---------- reminders in the phone's own Calendar ---------- */
@@ -1598,13 +1702,13 @@ function renderShop(){
   });
 }
 $("clearChecks").onclick=()=>{state.checked=[];save();renderShop()};
-$("shopPdf").onclick=()=>savePdf($("shopPdf"),$("shopMsg"),shopPdf,ui.span===7?`shopping-list-week-${state.startDate}.pdf`:`shopping-list-${iso(dayDate(spanRange()[0]))}${ui.span===3?"-3-days":""}.pdf`);
+$("shopPdf").onclick=()=>savePdf($("shopPdf"),$("shopMsg"),shopPdf,ui.span===7?`grocery-list-week-${state.startDate}.pdf`:`grocery-list-${iso(dayDate(spanRange()[0]))}${ui.span===3?"-3-days":""}.pdf`);
 
 /* ---------- PDFs ---------- */
 function shopPdf(){
   const{jsPDF}=window.jspdf;const doc=new jsPDF({unit:"pt",format:"letter"});
   const W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),M=56;let y=M+8;
-  doc.setFont("helvetica","normal");doc.setTextColor(20);doc.setFontSize(22);doc.text("Shopping list",M,y);y+=20;
+  doc.setFont("helvetica","normal");doc.setTextColor(20);doc.setFontSize(22);doc.text("Grocery list",M,y);y+=20;
   doc.setFontSize(10);doc.setTextColor(130);doc.text(scopeLabel()+". Gluten-free weight-gain plan.",M,y);y+=28;
   buildList().forEach(g=>{
     if(y>H-M-60){doc.addPage();y=M}
@@ -1734,7 +1838,7 @@ function openPantryPicker({eyebrow,title,servings,onPick,back}){
   $("shClose").onclick=back||closeDetail;$("shClose").setAttribute("aria-label",back?"Back":"Close");
   const list=()=>{const box=$("pkList");if(!box)return;box.innerHTML="";const t=query.trim().toLowerCase();
     const its=pantry.filter(it=>!t||it.name.toLowerCase().includes(t)).sort((a,b)=>a.name.localeCompare(b.name));
-    if(!its.length){box.innerHTML=`<p class="hint">${pantry.length?"Nothing in your pantry matches.":"Your pantry is empty. Add items on the Pantry tab, or check off your shopping list and add them from there."}</p>`;return}
+    if(!its.length){box.innerHTML=`<p class="hint">${pantry.length?"Nothing in your pantry matches.":"Your pantry is empty. Add items on the Pantry tab, or check off your grocery list and add them from there."}</p>`;return}
     its.forEach(it=>{const b=document.createElement("button");b.className="pk-row";b.setAttribute("role","listitem");
       const n=it.nutrition||{},kc=n.calories!=null?`${fmt(n.calories*q)} kcal${n.protein!=null?` · ${fmtN(n.protein*q)} g protein`:""}`:"No nutrition info";
       b.innerHTML=`<span class="nm"></span><span class="mt"></span>`;b.querySelector(".nm").textContent=it.name;b.querySelector(".mt").textContent=[kc,qtyLabel(it)].filter(Boolean).join(" · ");
@@ -1818,7 +1922,7 @@ function renderHead(){
   else if(ui.tab==="plan"){const dd=dayDate(ui.day),tmr=iso(dd)===iso(new Date(Date.now()+864e5)),yst=iso(dd)===iso(new Date(Date.now()-864e5));
     t=ui.span===7?"This week":ui.span===3?"3 days":isToday(ui.day)?"Today":tmr?"Tomorrow":yst?"Yesterday":wk(ui.day,"long")}
   else if(ui.tab==="cal")t="Calendar";
-  else if(ui.tab==="shop")t="Shopping list";
+  else if(ui.tab==="shop")t="Grocery";
   else t="Pantry";
   $("hTitle").textContent=t;
 }
@@ -2237,14 +2341,16 @@ function renderPantryFilters(){
 function renderPantry(){
   if(ui.tab!=="pantry")return;
   const list=filteredPantry();
-  $("pCount").textContent=`${list.length} of ${pantry.length} item${pantry.length===1?"":"s"}`;
-  $("pReset").hidden=!(pf.q||pf.loc.size||pf.cat.size||pf.st.size);
+  // the result count lives in the search placeholder; a dot on the filter button shows filters are on
+  const filtered=pf.loc.size||pf.cat.size||pf.st.size,s1=pantry.length===1?"":"s";
+  $("pSearch").placeholder=filtered?`${list.length} of ${pantry.length} item${s1}`:`Search ${pantry.length} item${s1}`;
+  $("pFilt").classList.toggle("on",!!filtered);$("pReset").hidden=!filtered;
   renderPantryFilters();
   renderPlBtn();
   const listMode=ui.pl==="list"||p3Failed;
   $("pCanvas").hidden=listMode;$("pList").hidden=!listMode;$("pMax").hidden=listMode;
   const em=$("pEmpty");em.hidden=!!list.length;
-  em.textContent=pantry.length?"Nothing matches these filters.":"Your pantry is empty. Tap Add item, or check off your shopping list and use Add checked to pantry.";
+  em.textContent=pantry.length?"Nothing matches these filters.":"Your pantry is empty. Tap Add item, or check off your grocery list and use Add checked to pantry.";
   if(listMode){
     const box=$("pList");box.innerHTML="";
     if(!list.length){box.innerHTML=`<p class="pan-msg">${esc(em.textContent)}</p>`}
@@ -2299,7 +2405,9 @@ function setPantryView(v){
 }
 $("plBtn").onclick=()=>setPantryView(PL_ORDER[(PL_ORDER.indexOf(ui.pl)+1)%PL_ORDER.length]);
 $("pSearch").addEventListener("input",e=>{pf.q=e.target.value;renderPantry()});
-$("pReset").onclick=()=>{pf.q="";$("pSearch").value="";pf.loc.clear();pf.cat.clear();pf.st.clear();renderPantry()};
+$("pReset").onclick=()=>{pf.loc.clear();pf.cat.clear();pf.st.clear();renderPantry()};
+$("pFilt").onclick=()=>{const d=$("pFdet");d.open=!d.open};
+$("pFdet").addEventListener("toggle",()=>$("pFilt").setAttribute("aria-expanded",$("pFdet").open));
 $("pMax").onclick=()=>{const on=$("pan").classList.toggle("max");$("pMax").setAttribute("aria-pressed",on);$("pMax").setAttribute("aria-label",on?"Exit full screen":"Full screen");$("pMax").innerHTML=on?'<svg class="ic" aria-hidden="true"><use href="#i-shrink"/></svg>':'<svg class="ic" aria-hidden="true"><use href="#i-grow"/></svg>';if(P3)requestAnimationFrame(()=>P3.resize())};
 // Filters are always open on wide screens and fold away on phones.
 {const mq=window.matchMedia("(min-width:900px)"),f=()=>{$("pFdet").open=mq.matches};f();mq.addEventListener?mq.addEventListener("change",f):mq.addListener(f)}
