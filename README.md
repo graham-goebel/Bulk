@@ -85,7 +85,7 @@ If you skip a meal, choose **I skipped it** from its **⋯** menu or in its shee
 
 Below the rings on the Dashboard, a card shows the whole day from the first meal to the last, with a dot for each meal, a mark for the current time, and a status: on track, behind by some calories, goal met, or short at the end of the day. A meal counts toward "behind" only once it's an hour past its start time, so you aren't flagged the moment a meal begins.
 
-The Dashboard is one page of plain sentences. The day's status icon sits on the heading line; tap it for the day in detail: how it's going, the timeline and each meal. The first card says what's next ("Lunch in 44 minutes: Salmon quinoa plate", or when to start making it), or once a meal has started, how long ago, with **Mark eaten** and **Skip**; then what's been eaten so far and any pantry items running low or expiring. The four tiles give one number each; tap them for the detail.
+The Dashboard leads with the days shown (1, 3 or 7): the goal for them, a sentence on how they're going, the day's timeline (or a column per day) and a **Focus** line naming the one to three things that most need attention, like more protein, a missing food group or a low nutrient. Under that, a card about the next meal: what's next or when to start making it, **Mark eaten** and **Skip**, what's been eaten and any pantry items running low or expiring. The status icon on the heading line opens the day in detail with each meal. The four tiles give one number each; tap them for the detail.
 
 - **Points:** more calories eaten today put more points on the surface.
 - **Colonies:** every different food you've eaten this week (each ingredient, add-on or logged meal) is a colony, tinted by its food group.
@@ -126,10 +126,6 @@ Tap the bell on the next-meal card, or **Remind me** in a meal's sheet, and choo
 Each recipe's time to make is shown in its Details. It comes from a **Prep (min)** number column in the Meals database when you add one and fill it in; otherwise it's estimated from the steps (marked "estimate"). When the next meal takes more than a few minutes, the dashboard counts down to when to start it instead ("Start dinner in 45 minutes: Shrimp coconut curry takes about 25 minutes, for 6:30 PM"), then says "Time to start dinner."
 
 Under that, pantry items running low or expiring in the next three days take turns, about every seven seconds, each with a meal that would use it: one already planned for today or tomorrow first, otherwise recipes that list it or are linked to it. Tap one to open the item.
-
-## Moving between days
-
-On the Plan, Dashboard, Calendar and Grocery tabs, swipe left or right on the page to go to the next or previous day. Swipes on the meal cards, the day strip and the pantry keep their own meaning.
 
 ## Pantry to grocery list
 

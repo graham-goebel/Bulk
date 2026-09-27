@@ -442,7 +442,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .dash-head .ct-btns{gap:2px}.dash-head .icon-btn .ic{width:22px;height:22px}
 .dl-badge.ok{color:#1baf7a}.dl-badge.warn{color:#d6452f}.dl-badge.info{color:var(--ink)}
 .now-tile{margin:12px 24px 0;padding:16px 16px 15px;border:1px solid var(--line);border-radius:20px}
-@media (max-width:899px){.now-tile{margin:10px 24px 28px;padding:0;border:0;border-radius:0}.now-tile .nx-line .main,.now-tile .nx-clock{font-size:1.3rem;line-height:1.35;letter-spacing:-0.015em}} /* phones: the sentences read straight on the page */
+/* the meal card sits under the hero, secondary: about this one meal */
 .next{display:flex;flex-direction:column;color:var(--ink)}
 .nx-clock{margin:0;font-size:1.3rem;line-height:1.25;letter-spacing:-0.02em}
 .next .timer{font-weight:500;font-variant-numeric:tabular-nums}
@@ -465,6 +465,11 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .nd-th{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:var(--soft);overflow:hidden}.nd-th img{width:100%;height:100%;object-fit:contain;background:#fff}.nudge .nd-th .ic{width:19px;height:19px;color:var(--ink)}.nudge>span:nth-of-type(2){flex:1;min-width:0;align-self:center}.nudge b{font-weight:500;color:var(--ink)}
 .nudge.in>*{animation:swapIn .35s ease-out both}
 .nd-dots{display:flex;gap:4px;width:100%;padding-left:56px}.nd-dots i{width:5px;height:5px;border-radius:50%;background:var(--line)}.nd-dots i.on{background:var(--ink)}
+.day-hero{margin:6px 24px 30px}
+.dh-goal{margin:0 0 10px;font-size:.85rem;color:var(--muted)}
+.day-hero .dayline{margin:0;padding:0;border:0;border-radius:0}
+.day-hero .dl-say{margin:0 0 20px;font-size:1.45rem;line-height:1.32;letter-spacing:-0.02em;color:var(--ink)}.day-hero .dl-say b{font-weight:500}
+.dh-focus{margin:18px 0 0;font-size:.95rem;line-height:1.45;color:var(--muted)}.dh-focus b{font-weight:500;color:var(--ink);margin-right:6px}
 .st-day .dl-say{margin:4px 0 18px;font-size:1.1rem;line-height:1.42;color:var(--ink)}.st-day .dl-say b{font-weight:500}
 .st-meals li{align-items:center}.st-meals .q{flex:1;text-align:right;color:var(--ink)}.st-meals .st-ic{width:18px;display:flex;justify-content:flex-end}.st-meals .st{width:15px;height:15px}
 .dash-nut{padding:10px 24px 0}
@@ -761,8 +766,8 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
   <div class="now-card" id="nowCard"><div class="nx-orb" id="orbBox"></div></div>
   <div class="dash-drawer">
     <div class="hero" id="hero"><div class="rings" id="rings" aria-live="polite"></div></div>
+    <div class="day-hero"><p class="dh-goal" id="dayGoal"></p><div class="dayline" id="dayline"></div><p class="dh-focus" id="dayFocus" hidden></p></div>
     <div class="now-tile" id="nowTile"><div class="next" id="nextMeal" hidden></div><p class="orb-say" id="orbSay"></p><button class="nudge" id="pantryNudge" hidden></button></div>
-    <div class="dayline" id="dayline" hidden></div>
     <div class="tiles" id="tiles"></div>
     <div class="dash-nut" id="dashNut" hidden></div>
   </div>
@@ -1431,14 +1436,14 @@ function daySentence(s,quiet){
 }
 // One day: each meal on a timeline (eaten, skipped, due, to come) and the part of the day that's gone by.
 function renderDayline(s){
-  const el=$("dayline"),{ms,today,past,nm,due}=s;if(!ms.length){el.innerHTML="";dlTop(null);return}
+  const el=$("dayline"),{ms,today,past,nm,due}=s;if(!ms.length){el.innerHTML=`<p class="dl-say">Nothing is planned for this day yet.</p>`;dlTop(null);return}
   const times=ms.map(m=>mins(m.time)),t0=Math.min(...times)-30,t1=Math.max(...times)+30,pos=v=>clamp((v-t0)/(t1-t0),0,1)*100;
   const nowP=today?pos(nm):past?100:0;
   const marks=ms.map(m=>{const st=m.done?"on":m.missed?"miss":due(m)?"due":"";return `<i class="mk ${st}" style="left:${pos(mins(m.time)).toFixed(1)}%" title="${esc(m.slot)} ${fmtTime(m.time)}${m.done?", eaten":m.missed?", skipped":due(m)?", not marked":""}"></i>`}).join("");
   // hour ticks under the bar, labelled every 3 hours
   let ticks="";for(let h=Math.ceil(t0/60);h*60<=t1;h++){const x=pos(h*60);ticks+=`<i class="${h%3?"":"mj"}" style="left:${x.toFixed(1)}%"></i>${h%3||x<5||x>95?"":`<span style="left:${x.toFixed(1)}%">${hh(h*60)}</span>`}`}
   el.className="dayline "+s.kind;
-  el.innerHTML=dlHead(s.kind,daySentence(s))+`
+  el.innerHTML=dlHead(s.kind,daySentence(s,true))+`
     <div class="dl-bar" aria-hidden="true"><span class="dl-el" style="width:${nowP.toFixed(1)}%"></span>${today&&nm>=t0&&nm<=t1?`<span class="dl-now" style="left:${nowP.toFixed(1)}%"></span>`:""}${marks}</div>
     <div class="dl-ticks" aria-hidden="true">${ticks}</div>`;
   el.setAttribute("aria-label",el.querySelector(".dl-say").textContent); // shown in the status sheet
@@ -1506,6 +1511,13 @@ function renderMeter(){
       `<span class="grid9" aria-hidden="true">${GROUPS.map(g=>`<i class="${dn.groups.includes(g)?"on":""}" title="${g}"></i>`).join("")}</span>`):"")+
     (dn.has?tile("nutrients","Nutrients",`${B(`${NUTR.length-lowN.length} of ${NUTR.length}`)} met`,caps):"");
   $("tiles").querySelectorAll("[data-modal]").forEach(b=>b.onclick=()=>TILE_MODALS[b.dataset.modal]());
+  // the hero: the goal for the days shown, then (after the sentence and timeline) the one or two things to focus on
+  $("dayGoal").textContent=`${n===1?(isToday(days[0])?"Today's goal":`Goal for ${wk(days[0],"long")}`):n===3?"Goal for these 3 days":"This week's goal"}: ${fmt(state.target)} calories and ${state.protein} g protein${multi?" a day":""}`;
+  const focus=[];if(t.p<state.protein-5)focus.push(`${fmt(state.protein-t.p)} g more protein${ad}`);
+  if(miss.length&&dn.mask)focus.push(`some ${listOf(miss.slice(0,2).map(x=>x.toLowerCase()))}`);
+  if(lowN.length)focus.push(`more ${listOf(lowN.slice(0,2).map(x=>x.replace(/^[A-Z](?=[a-z])/,c=>c.toLowerCase())))}`);
+  if(Math.abs(diff)>150)focus.unshift(diff>0?`about ${fmt(diff)} fewer calories${ad} in the plan`:`about ${fmt(-diff)} more calories${ad} in the plan`);
+  const fe=$("dayFocus");fe.hidden=!nMeals;fe.innerHTML=focus.length?`<b>Focus:</b> ${esc(listOf(focus.slice(0,3)))}.`:`<b>Focus:</b> keep it steady; the plan covers everything.`;
   // nutrition for the day (a daily average over several days), as percent of daily value
   const nb=$("dashNut");nb.hidden=!(dn.has||dn.mask);
   // food groups as tags (the ones not planned yet are faded), then every nutrient folded away under one line
@@ -1944,7 +1956,7 @@ function renderNext(){
   const menu=mb=>{mb.setAttribute("aria-label",`${name} actions`);
     mb.onclick=()=>openMenu(mb,`${name} actions`,[["ok","Mark eaten",()=>markDone(d,m,true)],
       !m.custom&&["sparkle","Suggest another",()=>openSuggest(d,m.i)],!m.custom&&["swap","I ate something else",()=>ateInstead(d,m.i)],
-      m.custom?["trash","Remove",()=>removeCustom(d,m.cid)]:["skip","I skipped it",()=>setMissed(d,m.i,true)],["bell","Remind me",()=>openReminder(d,m),diff<=0]])};
+      m.custom?["trash","Remove",()=>removeCustom(d,m.cid)]:["skip","I skipped it",()=>setMissed(d,m.i,true)],["clockl","Remind me",()=>openReminder(d,m),diff<=0]])};
   const pt=prepOf(m.o),lead=pt>PREP_LEAD?pt:0,low=m.custom?name:(tmr?"tomorrow's "+name.toLowerCase():name.toLowerCase());
   if(diff>0){
     // coming up: one line, the name of the meal in ink. If it takes a while to make, the line counts down to when
@@ -2011,7 +2023,7 @@ function renderCal(){
 // The calendar's heading: the date on the left, and on the right add a meal and remind me.
 function calButtons(add){const b=document.createElement("div");b.className="ct-btns";
   b.innerHTML=(add?`<button class="icon-btn bare" data-act="add" aria-label="Add a meal" title="Add a meal"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></button>`:"")+
-    `<button class="icon-btn bare" data-act="remind" aria-label="Remind me about these meals" title="Remind me"><svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg></button>`;
+    `<button class="icon-btn bare" data-act="remind" aria-label="Remind me about these meals" title="Remind me"><svg class="ic" aria-hidden="true"><use href="#i-clockl"/></svg></button>`;
   b.querySelector('[data-act="remind"]').onclick=openReminderAll;const a=b.querySelector('[data-act="add"]');if(a)a.onclick=()=>openCustom(ui.day,null);return b}
 function titleRow(d){
   const w=document.createElement("div");w.className="cal-title narrow";
@@ -2329,7 +2341,7 @@ function renderSheet(){
     ["swap","I ate something else",()=>ateInstead(d,i),E],
     ["skip",M?"Undo skip":"I skipped it",()=>setMissed(d,i,!M),o.skip],
     ["plus","Add from pantry",()=>openAddFromPantry(d,i),o.skip||M],
-    ["bell","Remind me",()=>openReminder(d,i),o.skip||E||M],
+    ["clockl","Remind me",()=>openReminder(d,i),o.skip||E||M],
     [locked?"unlock":"lock",locked?"Unlock":"Lock",()=>{const dy=state.days[d];dy.locked[i]=!locked;if(locked)rebalanceDay(d,i);save();refreshBehind();renderSheet()},E||M],
     ["sync","Change meal",()=>{closeDetail();gotoPlan(d,i)}]]);
   $("shTime").onchange=e=>{const v=e.target.value;if(/^\d{2}:\d{2}/.test(v)){setTime(d,i,v.slice(0,5));refreshBehind();renderSheetKeep("shTime")}};
@@ -2425,7 +2437,7 @@ function openCustom(d,id,pre,back){
     closeDetail();toast(x?"Meal saved":`Added ${n} to ${isToday(d)?"today":wk(d,"long")}`,{kind:"ok",key:"custom"})};
   if(x){const m=mealsOf(d).find(y=>y.cid===x.id);sheetActs([
     ["ok",x.done?"Unmark eaten":"Mark eaten",()=>{setCustomDone(d,x.id,!x.done);openCustom(d,x.id)}],
-    ["bell","Remind me",()=>openReminder(d,m),x.done],
+    ["clockl","Remind me",()=>openReminder(d,m),x.done],
     ["trash","Remove meal",()=>{closeDetail();removeCustom(d,x.id)}]])}
   (x||touchUI?$("shClose"):$("cmName")).focus();
 }
@@ -2443,17 +2455,6 @@ const wideMQ=window.matchMedia("(min-width:900px)");
 function switchTab(t){if(t==="dash"&&wideMQ.matches)t="plan";ui.tab=t;saveUi();renderAll(false)}
 function placeDash(){const mount=$(wideMQ.matches?"dashMountPlan":"dashMountTab");if($("dashWrap").parentElement!==mount)mount.appendChild($("dashWrap"))}
 {const onWide=()=>{if(ui.tab==="dash"&&wideMQ.matches)switchTab("plan");else{placeDash()}};wideMQ.addEventListener?wideMQ.addEventListener("change",onWide):wideMQ.addListener(onWide)}
-// Swiping sideways on a page moves between days (Plan, Dashboard, Calendar, Grocery), except where the swipe
-// already means something: the meal cards, the day strip, sheets, menus, the pantry and anything that scrolls sideways.
-{let sx=0,sy=0,st=0,ok=false;
-  const skip='.track,.strip,.sheet-bg,.menu,.pan,.wgrid,.tp-days,.nx-chips,.sh-acts,input,select,textarea,.tabbar,#toasts';
-  document.addEventListener("touchstart",e=>{const t=e.touches[0];ok=e.touches.length===1&&["plan","dash","cal","shop"].includes(ui.tab)&&!e.target.closest(skip);sx=t.clientX;sy=t.clientY;st=Date.now()},{passive:true});
-  document.addEventListener("touchend",e=>{if(!ok)return;ok=false;const t=e.changedTouches[0],dx=t.clientX-sx,dy=t.clientY-sy;
-    if(Date.now()-st>700||Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*1.8)return;
-    const step=dx<0?1:-1,nd=ui.day+step;if(nd<0||nd>=D||ui.span===7)return;
-    ui.day=nd;saveUi();renderAll(false);
-    // the page slides in from the side it came from
-    const m=document.querySelector("main");if(m&&!reduceMotion&&m.animate)m.animate([{transform:`translateX(${step*28}px)`,opacity:.4},{transform:"none",opacity:1}],{duration:260,easing:"cubic-bezier(.2,.8,.2,1)"})},{passive:true});}
 // Tapping the tab you're on, or the page's name, scrolls back to the top.
 function toTop(){window.scrollTo({top:0,behavior:reduceMotion?"auto":"smooth"});const l=$("pList");if(l&&l.scrollTop)l.scrollTo({top:0,behavior:reduceMotion?"auto":"smooth"})}
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{const bar=b.closest(".tabbar"),same=ui.tab===b.dataset.tab;
