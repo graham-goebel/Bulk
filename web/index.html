@@ -116,7 +116,8 @@ main{max-width:960px;margin:0 auto;padding-bottom:calc(100px + env(safe-area-ins
 .dayline>.t,.tile .t{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--muted)}.tile .t .ic{width:15px;height:15px;color:var(--ink)}
 .dl-say{margin:8px 0 18px;font-size:1.22rem;line-height:1.42;letter-spacing:-0.015em;color:var(--ink)}
 .dl-say b,.tile .say b{font-weight:500}
-.tile .say{display:block;margin-top:6px;font-size:1rem;line-height:1.35;color:var(--ink)}.tile .say .sub{display:block;margin-top:2px;font-size:.85rem;color:var(--muted)}
+.tile .say{display:block;margin-top:6px;font-size:1rem;line-height:1.35;color:var(--ink)}.tile .say .sub{display:block;margin-top:4px;font-size:.85rem;color:var(--muted)}
+.tile .say{font-size:.9rem;color:var(--muted)}.tile .say b{font-size:2.1rem;font-weight:400;letter-spacing:-0.035em;line-height:1.05;color:var(--ink);margin-right:4px}
 .dl-badge{flex:none;display:grid;place-items:center;width:34px;height:34px;color:var(--muted)}
 .dl-badge .ic{width:24px;height:24px}
 .dl-tx{display:flex;flex-direction:column;min-width:0}
@@ -441,6 +442,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .dash-head .ct-btns{gap:2px}.dash-head .icon-btn .ic{width:22px;height:22px}
 .dl-badge.ok{color:#1baf7a}.dl-badge.warn{color:#d6452f}.dl-badge.info{color:var(--ink)}
 .now-tile{margin:12px 24px 0;padding:16px 16px 15px;border:1px solid var(--line);border-radius:20px}
+@media (max-width:899px){.now-tile{margin:4px 24px 8px;padding:0;border:0;border-radius:0}.now-tile .nx-line .main,.now-tile .nx-clock{font-size:1.3rem;line-height:1.35;letter-spacing:-0.015em}} /* phones: the sentences read straight on the page */
 .next{display:flex;flex-direction:column;color:var(--ink)}
 .nx-clock{margin:0;font-size:1.3rem;line-height:1.25;letter-spacing:-0.02em}
 .next .timer{font-weight:500;font-variant-numeric:tabular-nums}
