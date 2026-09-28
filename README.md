@@ -56,7 +56,7 @@ When it finishes, the log shows the Worker's address, something like `https://ga
 ## 6. Connect on each device
 
 1. Open https://graham-goebel.github.io/Bulk/.
-2. Tap the cloud icon at the top right. It opens Settings on the Settings tab. Enter the passcode there. Once connected the icon goes away, and only comes back as a warning if a sync fails (tap it for details). Sync status is always shown in Settings.
+2. Tap the cloud icon at the top right. It opens Settings. (Goals and Settings are also in the account menu under the person icon, each as its own sheet.) Enter the passcode there. Once connected the icon goes away, and only comes back as a warning if a sync fails (tap it for details). Sync status is always shown in Settings.
 3. Enter your passcode and tap **Save**. The status changes to "Notion: synced". The first sync creates the week's 42 rows in Meal Plan.
 
 To install it like an app: on iPhone or iPad, tap Share, then **Add to Home Screen**. On Android, open the browser menu and choose **Install app** or **Add to Home screen**.
@@ -158,7 +158,7 @@ Kept on each device:
 
 ## Nutrition and diversity score
 
-Each meal in the Meals database has micronutrient columns (fiber, iron, zinc, calcium, magnesium, potassium, vitamin D, B12, folate, vitamin C, omega-3), a **Food groups** tag, and a **Diversity score** formula from 0 to 10: a point per food group (up to 5) plus up to 5 for how many of the 11 nutrients reach 15% of the daily value. Edit the numbers or tags in Notion and the score updates itself.
+Each meal in the Meals database has micronutrient columns (fiber, iron, zinc, calcium, magnesium, potassium, vitamin D, B12, folate, vitamin C, omega-3), a **Food groups** tag, and a **Diversity score** formula from 0 to 10: a point per food group (up to 5) plus up to 5 for how many of the 11 nutrients reach 15% of the daily value. Edit the numbers or tags in Notion and the score updates itself. On the Dashboard, tapping a food group tag under the day's nutrition lists the meals in the days shown that include it, plus a few more recipes that would add it.
 
 The app shows the breakdown in each meal's detail sheet, the score on the plan cards, a variety line under the day's totals, and a day-wide nutrient summary in Calendar's Day view. When it fills unlocked slots, it also prefers days that cover more food groups.
 
