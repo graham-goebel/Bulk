@@ -87,6 +87,23 @@ export default {
         await notion(env, `/pages/${id}`, "PATCH", { properties: { "Hide from planner": { checkbox: !!body.hide } } });
         return json({ ok: true });
       }
+      if (request.method === "POST" && url.pathname === "/meals/update") {
+        // an ingredient taken out of a recipe in the app: its new ingredient list, macros and nutrients
+        let body;
+        try { body = await request.json(); } catch { return json({ error: "bad_request", message: "Body must be JSON." }, 400); }
+        const id = body && typeof body.id === "string" ? body.id : "";
+        if (!/^[0-9a-f-]{32,36}$/i.test(id)) return json({ error: "bad_request", message: "A meal id is required." }, 400);
+        const n = (v) => { const x = +v; return Number.isFinite(x) && x >= 0 && x <= 100000 ? Math.round(x * 100) / 100 : null; };
+        const ing = (Array.isArray(body.ingredients) ? body.ingredients : []).map((x) => String(x || "").trim().slice(0, 200)).filter(Boolean).slice(0, 60);
+        const props = {
+          Ingredients: { rich_text: richText(ing.join("\n")) },
+          Calories: { number: n(body.calories) }, "Protein (g)": { number: n(body.protein) }, "Carbs (g)": { number: n(body.carbs) }, "Fat (g)": { number: n(body.fat) },
+        };
+        if (body.nutrients && typeof body.nutrients === "object")
+          Object.entries(NUTRIENTS).forEach(([k, col]) => { if (k in body.nutrients) props[col] = { number: body.nutrients[k] == null ? null : n(body.nutrients[k]) }; });
+        await notion(env, `/pages/${id}`, "PATCH", { properties: props });
+        return json({ ok: true });
+      }
       if (request.method === "POST" && url.pathname === "/meals/fav") {
         // favorites are kept on the recipe so every browser and the home-screen app share them
         let body;
@@ -375,6 +392,7 @@ async function listPantry(env) {
         category: CATEGORIES.includes(sel(pr["Category"])) ? sel(pr["Category"]) : "Other",
         quantity: numOrNull(pr["Quantity"]),
         unit: text(pr["Unit"]).trim(),
+        full: numOrNull(pr["Full amount"]), // how much a full container holds, so "running low" is relative to it
         expires: pr["Expires"] && pr["Expires"].date ? String(pr["Expires"].date.start).slice(0, 10) : "",
         link: (pr["Link"] && pr["Link"].url) || "",
         image: (pr["Image"] && pr["Image"].url) || "",
@@ -396,6 +414,7 @@ function cleanPantry(raw, needId) {
     category: CATEGORIES.includes(raw.category) ? raw.category : "Other",
     quantity: q === null ? null : Number.isFinite(q) && q >= 0 && q <= 9999 ? Math.round(q * 100) / 100 : null,
     unit: String(raw.unit || "").trim().slice(0, 20),
+    full: (() => { const f = raw.full === null || raw.full === "" || raw.full === undefined ? null : +raw.full; return Number.isFinite(f) && f > 0 && f <= 9999 ? Math.round(f * 100) / 100 : null; })(),
     expires: /^\d{4}-\d{2}-\d{2}$/.test(String(raw.expires || "")) ? String(raw.expires) : "",
     link: webUrl(raw.link),
     image: webUrl(raw.image),
@@ -422,6 +441,7 @@ function pantryProps(it) {
     Category: { select: { name: it.category } },
     Quantity: { number: it.quantity },
     Unit: { rich_text: it.unit ? [{ text: { content: it.unit } }] : [] },
+    "Full amount": { number: it.full },
     Expires: { date: it.expires ? { start: it.expires } : null },
     Link: { url: it.link || null },
     Image: { url: it.image || null },

@@ -362,7 +362,11 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .ing li.new{animation:newRow 2s ease-out}@keyframes newRow{0%,35%{background:var(--soft)}100%{background:transparent}}
 .sheet.swap>*{animation:swapIn .28s ease-out both}@keyframes swapIn{from{opacity:0;transform:translateY(6px)}}
 .sheet.swap>.sh-bar{animation-name:swapBar}@keyframes swapBar{from{opacity:.4}}
-.rb-chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:12px -24px 4px;padding:0 24px}.rb-chips::-webkit-scrollbar{display:none}
+/* Recipe book: the search stays under the header, the filters sit at the bottom like other sheets' actions */
+.rb-top{position:sticky;top:58px;z-index:2;background:var(--bg);margin:0 -24px;padding:4px 24px 8px}.rb-top .pk-s{margin:0}
+#sheetBox:has(>.rb-foot){display:flex;flex-direction:column}#sheetBox:has(>.rb-foot)>*{flex:none}.rb-foot{margin-top:auto}
+.sh-acts .act[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.ing .x-rm.rc{margin-left:auto}
 .tp-days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:6px 0 4px}
 .tp-day{display:flex;flex-direction:column;align-items:center;gap:1px;padding:8px 0;border-radius:12px;border:1px solid var(--line);font-size:.75rem;color:var(--muted)}
 .tp-day b{font-size:1rem;font-weight:500;color:var(--ink)}.tp-day[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}.tp-day[aria-pressed="true"] b{color:var(--bg)}
@@ -377,10 +381,11 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 #planList>.agenda:first-child{padding-top:0}#planList>.agenda:first-child>.ag:first-child{padding-top:10px}
 .ag-day{display:flex;justify-content:space-between;align-items:baseline;gap:12px;width:100%;margin-top:22px;padding-bottom:8px;border-bottom:1.5px solid var(--ink);text-align:left}
 .ag-day .n{font-size:1.05rem;font-weight:500;letter-spacing:-0.01em}.ag-day .m{font-size:.8rem;color:var(--muted)}
-.ag{display:grid;grid-template-columns:82px 1fr;gap:12px;padding:16px 0;border-bottom:1px solid var(--line);width:100%}
+.ag{display:grid;grid-template-columns:82px 1fr auto;gap:12px;padding:16px 0;border-bottom:1px solid var(--line);width:100%}
+.ag>.st{width:17px;height:17px;color:var(--ink);margin-top:3px}
 .ag .tm{font-size:.85rem;color:var(--ink);padding-top:2px}
 .ag .sl{display:block;font-size:.72rem;color:var(--muted);margin-top:2px;line-height:1.3}
-.ag.eaten .n::before{content:"✓ "}.ag.eaten .n,.ag.missed .n{color:var(--muted)}.ag.missed .n{text-decoration:line-through;text-decoration-thickness:1px}
+.ag.eaten .n,.ag.missed .n{color:var(--muted)}.ag.missed .n{text-decoration:line-through;text-decoration-thickness:1px}
 .ag .n{font-size:1rem;font-weight:500;display:block;margin:1px 0 3px}
 .ag .d{font-size:.84rem;color:var(--muted);display:block}
 .ag .m{font-size:.82rem;color:var(--muted);display:block;margin-top:6px}
@@ -1035,6 +1040,7 @@ function normalize(s){
   b.checked=Array.isArray(s.checked)?s.checked.filter(x=>typeof x==="string").slice(0,300):[];
   const names=a=>Array.isArray(a)?[...new Set(a.filter(x=>typeof x==="string"&&x.trim()).map(x=>x.slice(0,120)))].slice(0,300):[];
   b.favs=names(s.favs);b.hidden=names(s.hidden);b.favSync=!!s.favSync;
+  b.edits={};if(s.edits&&typeof s.edits==="object")Object.keys(s.edits).slice(0,200).forEach(n=>{const e=s.edits[n];if(e&&Array.isArray(e.ing)&&e.ing.every(x=>typeof x==="string")&&[e.k,e.p,e.c,e.f].every(x=>typeof x==="number"&&isFinite(x)))b.edits[n]={ing:e.ing.slice(0,60),k:e.k,p:e.p,c:e.c,f:e.f,nu:e.nu&&typeof e.nu==="object"?e.nu:null}});
   b.extraShop=Array.isArray(s.extraShop)?s.extraShop.filter(x=>x&&typeof x.n==="string"&&x.n.trim()).slice(0,100).map(x=>({n:x.n.trim().slice(0,100),pid:typeof x.pid==="string"?x.pid:""})):[];
   b.nsnap={};if(s.nsnap&&typeof s.nsnap==="object")Object.keys(s.nsnap).slice(0,400).forEach(k=>{const v=s.nsnap[k];if(v&&typeof v.meal==="string"&&typeof v.when==="string")b.nsnap[k]={meal:v.meal,when:v.when,locked:!!v.locked,eaten:!!v.eaten,skipped:!!v.skipped,extras:typeof v.extras==="string"?v.extras:""}});
   return b;
@@ -1047,6 +1053,7 @@ if(!state){
     if(o&&Array.isArray(o.picks)&&o.picks.length===N){state.target=clamp(+o.target||3000,1800,4000);state.protein=clamp(+o.protein||110,60,200);
       state.days[0]={picks:o.picks.map((v,i)=>clamp(v|0,0,SLOTS[i].opts.length-1)),locked:SLOTS.map((_,i)=>!!(o.locked&&o.locked[i])),times:Array(N).fill(null),done:Array(N).fill(false),missed:Array(N).fill(false)}}}}catch(e){}
 }
+applyEdits();
 let ui={tab:"plan",day:0,cal:"hour",scope:"week",pv:"cards",pl:"sphere",span:1};
 const TABS=["plan","dash","cal","shop","pantry"];
 try{const u=JSON.parse(localStorage.getItem(UIKEY)||"null");if(u){ui.tab=TABS.includes(u.tab)?u.tab:"plan";ui.pl=u.pl==="list"?"list":"sphere";ui.nutOpen=!!u.nutOpen;ui.day=clamp(u.day|0,0,D-1);ui.cal=["hour","three","week"].includes(u.cal)?u.cal:"hour";ui.pv=u.pv==="list"?"list":"cards";ui.scope=u.scope==="day"?"day":"week";ui.span=[1,3,7].includes(u.span)?u.span:ui.cal==="week"?7:ui.cal==="three"?3:1}}catch(e){}
@@ -1242,13 +1249,13 @@ function openSuggest(d,i){
   if(fromMeal)backBtn(()=>backToMeal(d,i));else $("shClose").onclick=closeDetail;
   $("sheetBox").querySelectorAll(".sg-row").forEach(b=>b.onclick=()=>{const oi=+b.dataset.oi,o=s.opts[oi];
     state.days[d].picks[i]=oi;rebalanceDay(d,i);save();refreshAfterMark(d);
-    if(fromMeal)backToMeal(d,i);else closeDetail();toast(`${o.n} for ${s.name.toLowerCase()}`,{kind:"ok",key:"suggest"})});
+    if(fromMeal)backToMeal(d,i);else closeDetail();toast(`${o.n} for ${s.name.toLowerCase()}`,{kind:"ok",key:"suggest",icon:"sparkle"})});
   $("shClose").focus();
 }
 // A small action menu anchored to a button. items: [icon, label, action, disabled]
 function openMenu(btn,label,items){
   if(menuFor&&menuFor.btn===btn){closeMealMenu();return}closeMealMenu(true);
-  if(!items.some(x=>x&&!x[3])){toast("Nothing to do here right now",{key:"menu"});return}
+  if(!items.some(x=>x&&!x[3])){toast("Nothing to do here right now",{key:"menu",icon:"dots"});return}
   const m=document.createElement("div");m.className="menu";m.setAttribute("role","menu");m.setAttribute("aria-label",label);
   // actions that don't apply right now aren't listed
   items.filter(x=>x&&!x[3]).forEach(([icon,text,fn,off])=>{const b=document.createElement("button");b.setAttribute("role","menuitem");b.disabled=!!off;
@@ -1340,10 +1347,10 @@ document.querySelectorAll(".preset").forEach(b=>b.onclick=()=>setTarget(+b.datas
 // The day's other actions live in the ⋯ menu beside the view toggle.
 $("planMore").onclick=()=>openMenu($("planMore"),"Day actions",[
   ["book","Recipe book",()=>openRecipeBook()],
-  ["shuffle","Shuffle unlocked meals",()=>{rebalanceDay(ui.day,-1,true);updatePlan();save();toast("Shuffled the unlocked meals",{key:"plan"})}],
+  ["shuffle","Shuffle unlocked meals",()=>{rebalanceDay(ui.day,-1,true);updatePlan();save();toast("Shuffled the unlocked meals",{key:"plan",icon:"shuffle"})}],
   ["bookmark","Save day as template",()=>openSaveTemplate(ui.day)],
   ["copy","Use a template",()=>openTemplates(ui.day),!templates.length],
-  ["unlockl","Unlock day",()=>{state.days[ui.day].locked=Array(N).fill(false);updatePlan();save();toast("Day unlocked",{key:"plan"})},!state.days[ui.day].locked.some(Boolean)]]); // meals stay as they are until something changes
+  ["unlockl","Unlock day",()=>{state.days[ui.day].locked=Array(N).fill(false);updatePlan();save();toast("Day unlocked",{key:"plan",icon:"unlock"})},!state.days[ui.day].locked.some(Boolean)]]); // meals stay as they are until something changes
 
 // A clear (✕) button inside a search box, shown while there's text in it.
 function addClear(inp){const b=document.createElement("button");b.type="button";b.className="ps-btn sclr";b.setAttribute("aria-label","Clear search");b.innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-xl"/></svg>';
@@ -1353,20 +1360,81 @@ function addClear(inp){const b=document.createElement("button");b.type="button";
    chip to use it for that meal on the day you're on. */
 // Favourites and deleted recipes are kept by name with the plan. Deleting hides the recipe from the planner in
 // Notion too (its "Hide from planner" box), so nothing is lost, and Undo brings it back.
+/* ---------- taking an ingredient out of a recipe ----------
+   Rough calories and macros for common ingredients, [calories, protein, carbs, fat] per cup, tbsp, oz or ea
+   (each, slice, scoop, can), so a recipe's totals follow when one comes out. Anything not listed gets an even
+   share of what the listed ones don't account for. */
+const FOOD={eggs:{ea:[72,6.3,.4,4.8]},cheddar:{oz:[114,7,.4,9.4]},"gf bread":{ea:[90,2,17,1.5]},butter:{tbsp:[102,.1,0,11.5]},bananas:{ea:[105,1.3,27,.4]},"frozen bananas":{ea:[105,1.3,27,.4]},
+  oats:{cup:[307,11,55,5.3]},"whole milk":{cup:[149,7.7,12,8]},"peanut butter":{tbsp:[94,4,3.2,8]},honey:{tbsp:[64,0,17,0]},berries:{cup:[70,1,17,.5]},"frozen berries":{cup:[70,1,17,.5]},
+  "black beans":{cup:[227,15,41,1]},"rice (dry)":{cup:[675,13,148,1.2]},"brown rice (dry)":{cup:[685,14,143,5]},avocados:{ea:[240,3,13,22]},salsa:{tbsp:[5,.2,1,0]},"sweet potatoes":{ea:[112,2,26,.1]},
+  "ground turkey":{oz:[60,5,0,4.3]},"olive oil":{tbsp:[119,0,0,13.5]},"pancake mix":{cup:[440,8,92,3]},"maple syrup":{tbsp:[52,0,13.4,0]},"turkey sausage links":{ea:[60,6,1,3.5]},
+  "cottage cheese":{cup:[220,25,8,9.7]},pineapple:{cup:[82,.9,22,.2]},"string cheese":{ea:[80,7,1,6]},crackers:{oz:[130,2,21,4.5]},"rice crackers":{oz:[110,2,23,1],ea:[9,.2,1.9,.1]},
+  "trail mix":{cup:[690,20,66,44]},"rice cakes":{ea:[35,.7,7.3,.3]},chickpeas:{cup:[269,14.5,45,4.2]},"coconut milk":{cup:[445,4.6,6.4,48]},"light coconut milk":{cup:[150,1,3,15]},
+  "crushed tomatoes":{cup:[82,4,18,.7]},"curry paste":{tbsp:[30,.5,4,1.5]},spinach:{cup:[7,.9,1.1,.1]},"greek yogurt":{cup:[200,20,9,10]},"firm tofu (calcium-set)":{oz:[40,4.4,1,2.4]},
+  "stir-fry vegetables":{cup:[40,2,8,.2]},"mixed vegetables":{cup:[60,3,12,.3]},"sesame oil":{tbsp:[120,0,0,13.6]},tamari:{tbsp:[11,2,1,0]},bagel:{ea:[290,6,56,5]},"cream cheese":{tbsp:[50,1,.8,5]},
+  "smoked salmon":{oz:[33,5.2,0,1.2]},tomato:{ea:[22,1,4.8,.2]},tomatoes:{ea:[22,1,4.8,.2]},kefir:{cup:[150,9,12,8]},"frozen mango":{cup:[100,1.4,25,.6]},mango:{cup:[99,1.4,25,.6]},
+  "ground flaxseed":{tbsp:[37,1.3,2,3]},shrimp:{oz:[28,6,0,.4]},"chocolate milk":{cup:[208,8,26,8.5]},almonds:{cup:[828,30,31,71],ea:[7,.25,.25,.6]},cod:{oz:[23,5,0,.2]},
+  potatoes:{oz:[22,.6,5,0],cup:[116,3,26,.1]},kale:{cup:[8,.7,1,.3]},"lemon juice":{tbsp:[3,0,1,0]},"chia seeds":{tbsp:[60,2,5,3.8]},"almond butter":{tbsp:[98,3.4,3,9]},
+  "protein powder":{ea:[120,24,3,1.5]},granola:{cup:[560,12,72,24]},salmon:{oz:[58,6,0,3.5]},"quinoa (dry)":{cup:[626,24,109,10]},feta:{oz:[75,4,1.2,6]},"gf pasta":{oz:[100,2,22,.5]},pasta:{oz:[100,2,22,.5]},
+  "ground beef":{oz:[61,5.3,0,4.3]},marinara:{cup:[130,3,20,4.5]},parmesan:{tbsp:[22,2,.2,1.4]},"pork tenderloin":{oz:[34,6,0,1]},"salad greens":{cup:[5,.4,1,.1]},romaine:{cup:[8,.6,1.5,.1]},
+  apples:{ea:[95,.5,25,.3]},orange:{ea:[62,1.2,15.4,.2]},oranges:{ea:[62,1.2,15.4,.2]},clementines:{ea:[35,.6,9,.1]},"deli turkey":{oz:[30,5,1,.5]},"turkey slices":{oz:[30,5,1,.5]},
+  mayo:{tbsp:[94,.1,0,10.3]},mayonnaise:{tbsp:[94,.1,0,10.3]},"potato chips":{oz:[152,2,15,10]},"cherry tomatoes":{cup:[27,1.3,5.8,.3]},"lentils (cooked)":{cup:[230,18,40,.8]},
+  "pumpkin seeds":{tbsp:[50,2.6,1,4.3]},broccoli:{cup:[31,2.5,6,.3]},"corn tortillas":{ea:[52,1.4,11,.7]},"chicken thighs":{oz:[45,5.5,0,2.4]},"edamame (shelled)":{cup:[188,18.5,14,8]},
+  "bell peppers":{ea:[31,1,7,.3]},walnuts:{cup:[765,18,16,76]},ricotta:{cup:[340,22,12,24]},pistachios:{tbsp:[44,1.6,2.2,3.6]},"mixed nuts":{cup:[810,24,34,70]},"dark chocolate":{oz:[170,2.2,13,12]},
+  tuna:{oz:[24,5.3,0,.2]},"white beans":{cup:[250,17,45,.6]},hummus:{tbsp:[25,1.2,2,1.5]},carrots:{ea:[25,.6,6,.1],cup:[52,1.2,12,.3]},cucumbers:{ea:[45,2,11,.3]},olives:{ea:[5,0,.3,.5]},
+  "cocoa powder":{tbsp:[12,1,3,.7]},"sirloin steak":{oz:[55,6.5,0,3]},"green beans":{cup:[31,1.8,7,.2]},"medjool dates":{ea:[66,.4,18,0]},"gf cookies":{ea:[70,.8,9,3.5]},
+  "sardines in olive oil":{ea:[190,22,0,11]},"hemp seeds":{tbsp:[57,3.3,.9,4.9]},"kidney beans":{cup:[225,15,40,.9]},onions:{ea:[44,1.2,10,.1]},"red onions":{ea:[44,1.2,10,.1]},
+  "chili seasoning":{tbsp:[25,1,4,1]},"sour cream":{tbsp:[24,.3,.6,2.3]},"corn tortilla chips":{oz:[140,2,18,7]},"tortilla chips":{oz:[140,2,18,7]},"coconut oil":{tbsp:[117,0,0,13.6]},
+  "chicken apple sausages":{ea:[110,7,3,7]},pickles:{ea:[7,.2,1.5,.1]},"cacao nibs":{tbsp:[65,1.3,4,5.5]},"tart cherries":{cup:[80,1.5,19,.5]},"almond milk":{cup:[40,1,2,3]},grapes:{cup:[104,1,27,.2]},
+  waffles:{ea:[100,2,16,3.5]},"chicken breast":{oz:[34,6.5,0,.8]},breadcrumbs:{cup:[440,12,80,5]},cashews:{cup:[720,20,40,58]},"dark chocolate chips":{tbsp:[70,1,8,4.5]},
+  lemons:{ea:[17,.6,5.4,.2]},limes:{ea:[20,.5,7,.1]},"blueberry muffins":{ea:[350,4,50,15]},"cooked chicken":{oz:[47,8.8,0,1]},celery:{ea:[6,.3,1.2,.1]},"dried apricots":{cup:[313,4.4,81,.7]},
+  "burger buns":{ea:[190,4,34,4]},lettuce:{ea:[1,.1,.2,0]},raisins:{tbsp:[27,.3,7,0]},corn:{cup:[130,5,29,1.8]},jam:{tbsp:[56,.1,14,0]},"sliced almonds":{tbsp:[34,1.3,1.2,3]},basil:{cup:[5,.7,.6,.1]},
+  "pine nuts":{tbsp:[57,1.1,1.1,5.8]},parsley:{cup:[22,1.8,3.8,.5]},"ground lamb":{oz:[80,4.7,0,6.6]},"chicken legs":{ea:[260,28,0,16]},parsnips:{ea:[130,2,31,.5]},"banana oat muffins":{ea:[180,4,28,6]},
+  "large tortillas":{ea:[210,3,40,5]},"roasted red peppers":{cup:[40,1,8,.5]},mustard:{tbsp:[9,.6,.8,.5]},"pork shoulder":{oz:[70,4.8,0,5.5]},"pinto beans":{cup:[245,15,45,1]},"pico de gallo":{cup:[35,1.5,8,.2]},
+  "bbq sauce":{tbsp:[35,.2,8.5,.1]},"pork chops":{oz:[45,6,0,2.2]},"red wine vinegar":{tbsp:[3,0,0,0]},tahini:{tbsp:[89,2.6,3.2,8]},pears:{ea:[100,.6,27,.2]},"turkey sausage":{ea:[60,6,1,3.5]}};
+const IFRAC={"½":.5,"⅓":1/3,"⅔":2/3,"¼":.25,"¾":.75,"⅛":.125};
+function parseIng(line){
+  const m=String(line).replace(/\s*\(certified GF\)/i,"").trim().match(/^(\d+(?:\.\d+)?)?\s*([½⅓⅔¼¾⅛])?\s*(.*)$/);
+  let q=(m[1]?+m[1]:0)+(m[2]?IFRAC[m[2]]:0),rest=m[3],u="ea";if(!m[1]&&!m[2])q=1;
+  const um=rest.match(/^(cups?|tbsp|tsp|oz|lbs?|g|slices?|scoops?|cans?|leaves|stalks?)\s+(.*)$/i);
+  if(um){u=um[1].toLowerCase();rest=um[2]}
+  if(/^cups?$/.test(u))u="cup";else if(u==="tsp"){u="tbsp";q/=3}else if(/^lbs?$/.test(u)){u="oz";q*=16}else if(u==="g"){u="oz";q/=28.35}else if(!/^(tbsp|oz)$/.test(u))u="ea";
+  return{q,u,name:rest.replace(/^can\s+/i,"").trim()}}
+function estIng(line){const{q,u,name}=parseIng(line),n=name.toLowerCase();
+  const f=FOOD[n]||FOOD[n.replace(/es$/,"")]||FOOD[n.replace(/s$/,"")]||FOOD[n+"s"];if(!f)return null;
+  let v=f[u],mul=q;if(!v&&u==="tbsp"&&f.cup){v=f.cup;mul=q/16}else if(!v&&u==="cup"&&f.tbsp){v=f.tbsp;mul=q*16}
+  return v?{k:v[0]*mul,p:v[1]*mul,c:v[2]*mul,f:v[3]*mul}:null}
+// What one line brings to the recipe: its estimate, or a share of what the listed ingredients leave unexplained.
+function ingShare(o,lines,k){const es=lines.map(estIng),known=es.filter(Boolean),unk=es.length-known.length;
+  if(es[k])return es[k];const left=x=>Math.max(0,(o[x]||0)-known.reduce((a,e)=>a+e[x],0))/Math.max(1,unk);
+  return{k:left("k"),p:left("p"),c:left("c"),f:left("f")}}
+function recipeLines(o){return (o.ing&&o.ing.length)?o.ing.slice():(ING[o.n]||[]).map(([n,q,u,,gf])=>`${+(+q).toFixed(2)}${u?" "+u:""} ${n}${gf?" (certified GF)":""}`)}
+// An edited recipe (an ingredient taken out) is kept on this device until Notion has the same version.
+function applyEdits(){const ed=(state&&state.edits)||{};SLOTS.forEach(s=>s.opts.forEach(o=>{const e=ed[o.n];if(e&&!o.skip)Object.assign(o,{ing:e.ing.slice(),k:e.k,p:e.p,c:e.c,f:e.f,nu:e.nu||null})}))}
+function setRecipe(o,v){state.edits={...(state.edits||{}),[o.n]:v};Object.assign(o,{ing:v.ing.slice(),k:v.k,p:v.p,c:v.c,f:v.f,nu:v.nu});save();
+  if(o.id&&notionOn())api("/meals/update",{id:o.id,ingredients:v.ing,calories:v.k,protein:v.p,carbs:v.c,fat:v.f,nutrients:v.nu}).catch(()=>{})}
+function removeIngredient(i,oi,k,after){
+  const o=SLOTS[i].opts[oi],lines=recipeLines(o),line=lines[k];if(line==null||o.skip)return;
+  const before={ing:lines,k:o.k,p:o.p,c:o.c,f:o.f,nu:o.nu?{...o.nu}:null};
+  const e=ingShare(o,lines,k),nk=Math.max(0,Math.round(o.k-e.k)),sc=o.k>0?nk/o.k:1,dn=x=>Math.max(0,Math.round(o[x]-e[x]));
+  setRecipe(o,{ing:lines.filter((_,j)=>j!==k),k:nk,p:dn("p"),c:dn("c"),f:dn("f"),
+    nu:o.nu?Object.fromEntries(Object.entries(o.nu).map(([x,v])=>[x,v==null?null:Math.round(v*sc*100)/100])):null});
+  refreshAfterMark(ui.day);after&&after();
+  toast(`Removed ${parseIng(line).name} from ${o.n} · ${fmt(Math.round(e.k))} calories less`,{kind:"removed",key:"ingrm",ms:6000,action:"Undo",onAction:()=>{setRecipe(o,before);refreshAfterMark(ui.day);after&&after()}})}
 function isFav(n){return (state.favs||[]).includes(n)}
 function isGone(o){return !!o&&(state.hidden||[]).includes(o.n)}
 // Favorites live on the recipe in Notion (its Favorite box), so every browser and the home-screen app share them.
 const favPending={};
 function optByName(n){for(const sl of SLOTS){const o=sl.opts.find(x=>x.n===n);if(o)return o}return null}
 function toggleFav(n){const f=new Set(state.favs||[]);f.has(n)?f.delete(n):f.add(n);state.favs=[...f];save();
-  const o=optByName(n);if(o&&o.id&&notionOn()){const on=f.has(n);favPending[n]=on;api("/meals/fav",{id:o.id,fav:on}).catch(()=>{}).finally(()=>{if(favPending[n]===on)delete favPending[n]})}toast(f.has(n)?`${n} is a favorite`:`${n} is no longer a favorite`,{kind:"ok",key:"fav"})}
+  const o=optByName(n);if(o&&o.id&&notionOn()){const on=f.has(n);favPending[n]=on;api("/meals/fav",{id:o.id,fav:on}).catch(()=>{}).finally(()=>{if(favPending[n]===on)delete favPending[n]})}toast(f.has(n)?`${n} is a favorite`:`${n} is no longer a favorite`,{kind:"ok",key:"fav",icon:f.has(n)?"heartf":"heart"})}
 function setHidden(o,on){state.hidden=on?[...new Set([...(state.hidden||[]),o.n])]:(state.hidden||[]).filter(x=>x!==o.n);save();
   if(o.id&&notionOn())api("/meals/hide",{id:o.id,hide:on}).catch(()=>{})}
 function deleteRecipe(i,oi){const o=SLOTS[i].opts[oi];setHidden(o,true);
   // days still planning it (and not eaten) get another recipe
   state.days.forEach((dy,d)=>{if(dy.picks[i]===oi&&!isDone(d,i)){const alt=SLOTS[i].opts.findIndex((x,k)=>k!==oi&&!x.skip&&!isGone(x));if(alt>=0){dy.picks[i]=alt;rebalanceDay(d,i)}}});
   save();refreshAfterMark(ui.day);toast(`Deleted ${o.n}`,{kind:"removed",key:"rdel",ms:6000,action:"Undo",onAction:()=>{setHidden(o,false);if(!$("sheet").hidden&&$("rbList"))openRecipeBook()}})}
-const RB_FILTERS=[["all","All"],["fav","Favorites"],["b","Breakfast"],["s","Snacks"],["l","Lunch"],["d","Dinner"],["quick","Quick"],["protein","High protein"]];
+const RB_FILTERS=[["all","All","book"],["fav","Favorites","heart"],["b","Breakfast","cup"],["s","Snacks","cookie"],["l","Lunch","pie"],["d","Dinner","flame"],["quick","Quick","clockl"],["protein","High protein","meat"]];
 let rbFilter="all",rbQuery="";
 function recipeRows(){const rows=[];SLOTS.forEach((sl,i)=>sl.opts.forEach((o,oi)=>{if(!o.skip&&!isGone(o))rows.push({i,oi,o})}));return rows}
 function rbMatch(x){const f=rbFilter,i=x.i,sn=SLOTS[i].name.toLowerCase();
@@ -1375,26 +1443,30 @@ function rbMatch(x){const f=rbFilter,i=x.i,sn=SLOTS[i].name.toLowerCase();
 function openRecipeBook(){
   openSheetFresh();$("sheetBox").style.height="calc(100% - 64px)"; // the same height whatever the filter, so it doesn't jump
   $("sheetBox").innerHTML=`${sheetHead("","Recipe book")}
-    <label class="pan-search pk-s"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><input type="search" id="rbSearch" placeholder="Search recipes" aria-label="Search recipes"></label>
-    <div class="rb-chips" role="group" aria-label="Filter">${RB_FILTERS.map(([k,l])=>`<button class="pan-opt" data-f="${k}" aria-pressed="${k===rbFilter}">${l}</button>`).join("")}</div>
-    <div class="pk-list" id="rbList"></div>`;
+    <div class="rb-top"><label class="pan-search pk-s"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><input type="search" id="rbSearch" placeholder="Search recipes" aria-label="Search recipes"></label></div>
+    <div class="pk-list" id="rbList"></div>
+    <div class="sh-acts rb-foot" role="group" aria-label="Filter">${RB_FILTERS.map(([k,l,ic])=>`<button class="act" data-f="${k}" aria-pressed="${k===rbFilter}">${ic?`<svg class="ic" aria-hidden="true"><use href="#i-${ic}"/></svg>`:""}<span>${l}</span></button>`).join("")}</div>`;
   const list=()=>{const rows=recipeRows().filter(rbMatch);
     $("rbList").innerHTML=(rbFilter==="fav"&&!rows.length?`<p class="hint">No favorites yet. Open a recipe and tap Favorite.</p>`:"")+rows.map(x=>`<button class="pk-row" data-i="${x.i}" data-oi="${x.oi}">${isFav(x.o.n)?'<svg class="ic fav-ic" aria-label="Favorite"><use href="#i-heartf"/></svg>':""}<span class="nm">${esc(x.o.n)}</span><span class="mt">${esc(SLOTS[x.i].name)} · ${fmt(x.o.k)} calories · ${fmt(x.o.p)} g protein${prepOf(x.o)?` · ${prepOf(x.o)} min`:""}</span></button>`).join("")||(rbFilter==="fav"?"":`<p class="hint">No recipes match.</p>`);
     $("rbList").querySelectorAll(".pk-row").forEach(b=>b.onclick=()=>openRecipe(+b.dataset.i,+b.dataset.oi))};
-  $("sheetBox").querySelectorAll(".rb-chips .pan-opt").forEach(b=>b.onclick=()=>{rbFilter=b.dataset.f;$("sheetBox").querySelectorAll(".rb-chips .pan-opt").forEach(x=>x.setAttribute("aria-pressed",x===b));list()});
+  $("sheetBox").querySelectorAll(".rb-foot .act").forEach(b=>b.onclick=()=>{rbFilter=b.dataset.f;$("sheetBox").querySelectorAll(".rb-foot .act").forEach(x=>x.setAttribute("aria-pressed",x===b));list();$("sheetBox").scrollTop=0});
   $("rbSearch").value=rbQuery;$("rbSearch").addEventListener("input",e=>{rbQuery=e.target.value.trim().toLowerCase();list()});addClear($("rbSearch"));
   list();showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";$("shClose").onclick=closeDetail;$("shClose").focus();
 }
 function openRecipe(i,oi){
   holdSize();sheetCtx=null;const o=SLOTS[i].opts[oi],d=ui.day,cur=state.days[d].picks[i]===oi;
-  const ing=(o.ing&&o.ing.length)?o.ing.map(x=>`<li><span>${esc(x.replace(/\s*\(certified GF\)/i,""))}</span></li>`).join(""):(ING[o.n]||[]).map(([n,q,u,,gf])=>`<li><span>${esc(n)}${gf?'<span class="gf">check GF label</span>':""}</span><span class="q">${rq(q,u)}</span></li>`).join("");
+  const rm=(k,n)=>`<button class="x-rm rc" data-rm="${k}" aria-label="Remove ${esc(n)} from the recipe"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>`;
+  const ing=(o.ing&&o.ing.length)?o.ing.map((x,k)=>{const n=x.replace(/\s*\(certified GF\)/i,"");return `<li><span>${esc(n)}</span>${rm(k,n)}</li>`}).join(""):(ING[o.n]||[]).map(([n,q,u,,gf],k)=>`<li><span>${esc(n)}${gf?'<span class="gf">check GF label</span>':""}</span><span class="q">${rq(q,u)}</span>${rm(k,n)}</li>`).join("");
   const steps=((o.steps&&o.steps.length)?o.steps:(STEPS[o.n]||[])).map(x=>`<li>${esc(x)}</li>`).join("");
   $("sheetBox").innerHTML=`${sheetHead(esc(SLOTS[i].name),esc(o.n))}<p class="sh-d">${esc(o.d||"")}</p>
     <div class="sh-m"><span><b>${fmt(o.k)}</b> calories</span><span><b>${fmt(o.p)} g</b> protein</span><span><b>${fmt(o.c)} g</b> carbs</span><span><b>${fmt(o.f)} g</b> fat</span>${prepOf(o)?`<span><b>${prepOf(o)}</b> min to make</span>`:""}</div>
-    ${ing?`<h3>Ingredients</h3><ul class="ing">${ing}</ul>`:""}${steps?`<h3>Steps</h3><ol class="steps">${steps}</ol>`:""}${mealNutrition(o)}`;
+    ${ing?`<h3>Ingredients</h3><ul class="ing" id="rcIng">${ing}</ul>`:""}${steps?`<h3>Steps</h3><ol class="steps">${steps}</ol>`:""}${mealNutrition(o)}`;
   showBg($("sheet"));$("sheetBox").scrollTop=0;backBtn(openRecipeBook);
+  if($("rcIng"))$("rcIng").dataset.n=o.n;
+  $("sheetBox").querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{const top=$("sheetBox").scrollTop;
+    removeIngredient(i,oi,+b.dataset.rm,()=>{if(!$("sheet").hidden&&$("rcIng")&&$("rcIng").dataset.n===o.n){openRecipe(i,oi);$("sheetBox").scrollTop=top}})});
   const when=isToday(d)?"today":wk(d,"long");
-  sheetActs([cur?["ok",`Planned for ${SLOTS[i].name.toLowerCase()} ${when}`,()=>{}]:["plusl",`Use for ${SLOTS[i].name.toLowerCase()} ${when}`,()=>{state.days[d].picks[i]=oi;rebalanceDay(d,i);save();refreshAfterMark(d);toast(`${o.n} for ${SLOTS[i].name.toLowerCase()} ${when}`,{kind:"ok",key:"rb"});openRecipe(i,oi)}],
+  sheetActs([cur?["ok",`Planned for ${SLOTS[i].name.toLowerCase()} ${when}`,()=>{}]:["plusl",`Use for ${SLOTS[i].name.toLowerCase()} ${when}`,()=>{state.days[d].picks[i]=oi;rebalanceDay(d,i);save();refreshAfterMark(d);toast(`${o.n} for ${SLOTS[i].name.toLowerCase()} ${when}`,{kind:"ok",key:"rb",icon:"plusl"});openRecipe(i,oi)}],
     [isFav(o.n)?"heartf":"heart",isFav(o.n)?"Favorite":"Add to favorites",()=>{toggleFav(o.n);openRecipe(i,oi)}],
     ["trashl","Delete recipe",()=>{deleteRecipe(i,oi);openRecipeBook()}]]);
 }
@@ -1420,7 +1492,7 @@ function openSaveTemplate(d){
   $("tpSave").onclick=()=>{const name=$("tpName").value.trim();if(!name){$("tpMsg").textContent="Add a name.";$("tpName").focus();return}
     templates=templates.filter(t=>t.name.toLowerCase()!==name.toLowerCase());
     templates.unshift({id:uid(),name,meals:meals.map(o=>o.n),times:SLOTS.map((_,i)=>timeOf(d,i))});saveTemplates();
-    closeDetail();toast(`Saved “${name}”`,{kind:"ok",key:"tpl"})};
+    closeDetail();toast(`Saved “${name}”`,{kind:"ok",key:"tpl",icon:"bookmark"})};
   (touchUI?$("shClose"):$("tpName")).focus();
 }
 function applyTemplate(t,days){
@@ -1437,10 +1509,10 @@ function openTemplates(d){
       <h3>Templates</h3><div class="pk-list">${templates.map((t,k)=>`<div class="tp-row"><button class="pk-row" data-t="${k}"><span class="nm">${esc(t.name)}</span><span class="mt">${tplSummary(t)}</span></button><button class="x-rm" data-del="${k}" aria-label="Delete ${esc(t.name)}"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></div>`).join("")||`<p class="hint">No templates yet.</p>`}</div>`;
     $("shClose").onclick=closeDetail;
     $("sheetBox").querySelectorAll(".tp-day").forEach(b=>b.onclick=()=>{const k=+b.dataset.d;pick.has(k)?pick.delete(k):pick.add(k);b.setAttribute("aria-pressed",pick.has(k))});
-    $("sheetBox").querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{if(!pick.size){toast("Pick at least one day",{key:"tpl"});return}
+    $("sheetBox").querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{if(!pick.size){toast("Pick at least one day",{key:"tpl",icon:"cal"});return}
       const t=templates[+b.dataset.t],ds=[...pick].sort((a,b)=>a-b);applyTemplate(t,ds);closeDetail();
       toast(`“${t.name}” on ${ds.length===1?(isToday(ds[0])?"today":wk(ds[0],"long")):`${ds.length} days`}`,{kind:"ok",key:"tpl"})});
-    $("sheetBox").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{const t=templates[+b.dataset.del];templates=templates.filter(x=>x!==t);saveTemplates();render();toast(`Deleted “${t.name}”`,{key:"tpl"})});
+    $("sheetBox").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{const t=templates[+b.dataset.del];templates=templates.filter(x=>x!==t);saveTemplates();render();toast(`Deleted “${t.name}”`,{key:"tpl",icon:"trashl"})});
   };
   render();showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";$("shClose").focus();
 }
@@ -2203,7 +2275,7 @@ function focusBlk(i,doFocus){const b=document.querySelector(`.blk[data-slot="${i
 // One meal as a list row: time and meal type on the left, the meal and its macros on the right.
 function agendaRow(d,m){
   const b=document.createElement("button");b.className="ag"+(m.o.skip?" skipped":"")+(m.custom?" added":"");
-  b.innerHTML=`<span class="tm"><span></span><span class="sl"></span></span><span><span class="n"></span><span class="d"></span>${m.o.skip?"":`<span class="m"><b>${fmt(m.o.k)}</b> calories &nbsp; <b>${fmt(m.o.p)} g</b> protein &nbsp; ${fmt(m.o.c)} g carbs &nbsp; ${fmt(m.o.f)} g fat</span>`}</span>`;
+  b.innerHTML=`<span class="tm"><span></span><span class="sl"></span></span><span><span class="n"></span><span class="d"></span>${m.o.skip?"":`<span class="m"><b>${fmt(m.o.k)}</b> calories &nbsp; <b>${fmt(m.o.p)} g</b> protein &nbsp; ${fmt(m.o.c)} g carbs &nbsp; ${fmt(m.o.f)} g fat</span>`}</span>${stIcon(m)}`;
   b.querySelector(".tm span").textContent=fmtTime(m.time);
   b.querySelector(".sl").textContent=m.slot;b.classList.toggle("missed",m.missed);b.classList.toggle("eaten",m.done);
   b.querySelector(".n").textContent=m.o.skip?"Skipped":m.o.n;
@@ -2301,9 +2373,9 @@ function buildList(){
 function scopeLabel(){const[a,b]=spanRange();return a===b?longDate(a):`${shortDate(a)} to ${shortDate(b)}`}
 // A pantry item put on the grocery list by hand (Add to grocery list); Undo takes it back off.
 const onGrocery=name=>(state.extraShop||[]).some(x=>x.n.toLowerCase()===name.toLowerCase());
-function addToGrocery(it){if(!state.extraShop)state.extraShop=[];if(onGrocery(it.name)){toast(`${it.name} is already on your grocery list`,{key:"groc"});return}
+function addToGrocery(it){if(!state.extraShop)state.extraShop=[];if(onGrocery(it.name)){toast(`${it.name} is already on your grocery list`,{key:"groc",icon:"shop"});return}
   state.extraShop.push({n:it.name,pid:it.id||""});save();if(ui.tab==="shop")renderShop();
-  toast(`Added ${it.name} to your grocery list`,{kind:"ok",key:"groc",action:"Undo",onAction:()=>removeFromGrocery(it.name,true)})}
+  toast(`Added ${it.name} to your grocery list`,{kind:"ok",key:"groc",icon:"shop",action:"Undo",onAction:()=>removeFromGrocery(it.name,true)})}
 function removeFromGrocery(name,quiet){const x=(state.extraShop||[]).find(y=>y.n===name);state.extraShop=(state.extraShop||[]).filter(y=>y.n!==name);state.checked=state.checked.filter(c=>c!==name);save();if(ui.tab==="shop")renderShop();
   if(!quiet&&x)toast(`Removed ${name} from the list`,{kind:"removed",key:"groc",action:"Undo",onAction:()=>{state.extraShop.push(x);save();if(ui.tab==="shop")renderShop()}})}
 function renderShop(){
@@ -2328,11 +2400,11 @@ function renderShop(){
   });
 }
 // The grocery list's actions live in the ⋯ menu next to its heading; results show as toasts.
-const toastMsg=key=>({set textContent(t){if(t)toast(t,{kind:/couldn't|first/i.test(t)?"error":"ok",key})}});
+const toastMsg=key=>({set textContent(t){if(t)toast(t,{kind:/couldn't|first/i.test(t)?"error":"ok",key,icon:/couldn't|first/i.test(t)?undefined:key==="pdf"?"down":undefined})}});
 function groceryPdf(){savePdf({},toastMsg("pdf"),shopPdf,ui.span===7?`grocery-list-week-${state.startDate}.pdf`:`grocery-list-${iso(dayDate(spanRange()[0]))}${ui.span===3?"-3-days":""}.pdf`)}
 $("shopMore").onclick=()=>{const has=state.checked.length>0;openMenu($("shopMore"),"Grocery list actions",[
   ["pantry","Add checked to pantry",addCheckedToPantry,!has],
-  ["x","Clear checks",()=>{state.checked=[];save();renderShop();toast("Checks cleared",{kind:"ok",key:"shop"})},!has],
+  ["x","Clear checks",()=>{state.checked=[];save();renderShop();toast("Checks cleared",{kind:"ok",key:"shop",icon:"xl"})},!has],
   ["down","Download PDF",groceryPdf,!canPdf()]])};
 
 /* ---------- PDFs ---------- */
@@ -2467,7 +2539,8 @@ function renderSheet(){
     openMenu(b,`${name} options`,[
       ["pantry",l&&!l.replace?"Use a different pantry item":"Use from pantry",()=>pickForIngredient(d,i,name,false)],
       ["sync",l&&l.replace?"Replace with something else":"Replace with…",()=>pickForIngredient(d,i,name,true)],
-      l&&["x",l.replace?"Undo replacement":"Remove pantry link",()=>{setIngLink(o.n,name,null);renderSheetKeep("shAddX")}]])});
+      l&&["x",l.replace?"Undo replacement":"Remove pantry link",()=>{setIngLink(o.n,name,null);renderSheetKeep("shAddX")}],
+      ["trashl","Remove from recipe",()=>removeIngredient(i,state.days[d].picks[i],+b.dataset.ing,()=>{if(!$("sheet").hidden&&sheetCtx&&sheetCtx.d===d&&sheetCtx.i===i){const top=$("sheetBox").scrollTop;renderSheet();$("sheetBox").scrollTop=top}})]])});
 }
 // Back from a picker to the meal it was opened from, keeping the sheet open.
 function backToMeal(d,i,added){holdSize();sheetCtx={d,i};renderSheet();resetSheet($("sheetBox"));showBg($("sheet"));const c=$("shClose");if(c)c.focus();
@@ -2490,7 +2563,7 @@ function setIngLink(recipe,ing,item,replace){
 function pickForIngredient(d,i,name,replace){
   const o=SLOTS[i].opts[state.days[d].picks[i]];
   openPantryPicker({eyebrow:`${o.n} · ${name}`,title:replace?"Replace with":"Use from pantry",query:replace?"":name.replace(/^[\d.\/¼½¾⅓⅔\s]+(cups?|tbsp|tsp|oz|lbs?|g)?\s*/i,"").split(/[ ,(]/)[0],back:()=>backToMeal(d,i),
-    onPick:it=>{setIngLink(o.n,name,it,replace);backToMeal(d,i);toast(replace?`${it.name} replaces ${name}`:`${name}: using ${it.name}`,{kind:"ok",key:"ing"})}});
+    onPick:it=>{setIngLink(o.n,name,it,replace);backToMeal(d,i);toast(replace?`${it.name} replaces ${name}`:`${name}: using ${it.name}`,{kind:"ok",key:"ing",icon:replace?"swap":"pantry"})}});
 }
 function openPantryPicker({eyebrow,title,servings,onPick,back,query:q0}){
   holdSize();sheetCtx=null;let q=1,query=q0||"";
@@ -2515,7 +2588,7 @@ const addonFrom=(it,q)=>{const n=it.nutrition||{};return{id:uid(),pid:it.id,n:it
 function openAddFromPantry(d,i){
   const s=SLOTS[i];
   openPantryPicker({eyebrow:`${s.name}, ${shortDate(d)}`,title:"Add from pantry",servings:true,back:()=>backToMeal(d,i),
-    onPick:(it,q)=>{addExtra(d,i,addonFrom(it,q));backToMeal(d,i,true);toast(`Added ${it.name} to ${s.name}`,{kind:"ok",key:"addon"})}});
+    onPick:(it,q)=>{addExtra(d,i,addonFrom(it,q));backToMeal(d,i,true);toast(`Added ${it.name} to ${s.name}`,{kind:"ok",key:"addon",icon:"plusl"})}});
 }
 // A meal added by hand: anything eaten or planned outside the six slots, typed in or filled from the pantry.
 function openCustom(d,id,pre,back){
@@ -2549,7 +2622,7 @@ function openCustom(d,id,pre,back){
     if(!/^\d{2}:\d{2}/.test(c.time)){$("cmMsg").textContent="Pick a time.";$("cmTime").focus();return}
     if(v.replaces!=null&&!isMissed(d,v.replaces))setMissed(d,v.replaces,true);
     saveCustom(d,{id:x?x.id:uid(),pid:c.pid||"",n:n.slice(0,100),q:1,k:num(c.k),p:num(c.p),c:num(c.c),f:num(c.f),time:c.time.slice(0,5),done:c.done});
-    closeDetail();toast(x?"Meal saved":`Added ${n} to ${isToday(d)?"today":wk(d,"long")}`,{kind:"ok",key:"custom"})};
+    closeDetail();toast(x?"Meal saved":`Added ${n} to ${isToday(d)?"today":wk(d,"long")}`,{kind:"ok",key:"custom",icon:"plusl"})};
   if(x){const m=mealsOf(d).find(y=>y.cid===x.id);sheetActs([
     ["ok",x.done?"Unmark eaten":"Mark eaten",()=>{setCustomDone(d,x.id,!x.done);openCustom(d,x.id)}],
     ["clockl","Remind me",()=>openReminder(d,m),x.done],
@@ -2617,13 +2690,14 @@ function renderAll(smooth=true){
 // Short notes about network calls. A toast with the same key replaces the one on screen, and the same
 // message repeated within `quiet` ms is dropped, so background retries don't pile up.
 const toastSeen={};
-function toast(text,{kind="info",key=text,ms,action,onAction,quiet=0}={}){
+function toast(text,{kind="info",key=text,ms,action,onAction,quiet=0,icon:ic}={}){
   const now=Date.now(),seen=key+"|"+text;if(quiet&&toastSeen[seen]&&now-toastSeen[seen]<quiet)return;toastSeen[seen]=now;
   const box=$("toasts");let el=box.querySelector(`[data-key="${CSS.escape(key)}"]`);
   if(!el){el=document.createElement("div");el.dataset.key=key;box.appendChild(el);while(box.children.length>3)box.firstChild.remove();requestAnimationFrame(()=>el.classList.add("in"))}
   el.className="toast "+kind+(el.classList.contains("in")?" in":"");el.setAttribute("role",kind==="error"?"alert":"status");
-  const icon={error:"warn",ok:"ok",info:"syncl",removed:"trashl"}[kind]||"syncl";
-  el.innerHTML=`<svg class="ic${kind==="info"?" spin":""}" aria-hidden="true"><use href="#i-${icon}"/></svg><span class="msg"></span>`;el.querySelector(".msg").textContent=text;
+  // the icon says what happened; only work still in progress spins
+  const icon=ic||{error:"warn",ok:"okl",info:"syncl",removed:"trashl"}[kind]||"syncl";
+  el.innerHTML=`<svg class="ic${kind==="info"&&!ic?" spin":""}" aria-hidden="true"><use href="#i-${OUTLINE[icon]||icon}"/></svg><span class="msg"></span>`;el.querySelector(".msg").textContent=text;
   if(action){const b=document.createElement("button");b.textContent=action;b.onclick=()=>{dismiss();onAction&&onAction()};el.appendChild(b)}
   const dismiss=()=>{clearTimeout(el._t);el.classList.remove("in");setTimeout(()=>el.remove(),300)};
   el.onclick=e=>{if(e.target.tagName!=="BUTTON")dismiss()};
@@ -2631,7 +2705,7 @@ function toast(text,{kind="info",key=text,ms,action,onAction,quiet=0}={}){
   return{done:(t,k="ok")=>toast(t,{kind:k,key})};
 }
 window.addEventListener("offline",()=>toast("You're offline. Changes are kept on this device.",{kind:"error",key:"net"}));
-window.addEventListener("online",()=>{toast("Back online",{kind:"ok",key:"net"});if(notionOn())notionSync()});
+window.addEventListener("online",()=>{toast("Back online",{kind:"ok",key:"net",icon:"cloud"});if(notionOn())notionSync()});
 
 /* ---------- Notion backend (through your Cloudflare Worker) ---------- */
 // Notion status is a single icon in the header; the full message is its label and shows in Settings.
@@ -2653,7 +2727,7 @@ async function api(path,body){
 async function apiRead(path){try{return await api(path)}catch(e){if(e.code==="network"||e.status>=500){await wait(1200+Math.random()*800);return api(path)}throw e}}
 function remapLibrary(lib){
   const names=state.days.map(dy=>dy.picks.map((p,i)=>(SLOTS[i].opts[p]||{}).n));
-  applyLib(lib);
+  applyLib(lib);applyEdits();
   state.days.forEach((dy,d)=>{let miss=false;
     dy.picks=dy.picks.map((_,i)=>{const k=SLOTS[i].opts.findIndex(o=>o.n===names[d][i]);if(k<0){dy.locked[i]=false;miss=true;return 0}return k});
     if(miss)rebalanceDay(d)});
@@ -2679,6 +2753,8 @@ async function nLoadLibrary(){
     nu:cleanNu(m.nutrients),g:Array.isArray(m.groups)?m.groups.filter(x=>GROUPS.includes(x)):[],dv:typeof m.diversity==="number"&&isFinite(m.diversity)?m.diversity:null,pt:typeof m.prep==="number"&&m.prep>0?Math.round(m.prep):null,fav:typeof m.fav==="boolean"?m.fav:null})).filter(m=>m.n&&m.slot>=0);
   if(!lib.length)return false;
   syncFavs(lib);
+  // an edited recipe goes back to Notion's version once Notion has caught up
+  if(state.edits){let ch=false;lib.forEach(m=>{const e=state.edits[m.n];if(e&&m.id&&m.k===e.k&&JSON.stringify(e.ing)===JSON.stringify(m.ing)){delete state.edits[m.n];ch=true}});if(ch)save()}
   const sig=JSON.stringify(lib);if(sig===libSig)return false;
   libSig=sig;try{localStorage.setItem(LIBKEY,sig)}catch(e){}
   remapLibrary(lib);return true;
@@ -2796,8 +2872,8 @@ async function notionSync(manual){
     else{nSet(`Notion: synced ${new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})}`);
       const pushed=jobs.length>0;
       if(tt)tt.done(pulled||libChanged?"Synced. Updated from Notion":pushed?"Synced. Saved to Notion":"Up to date with Notion");
-      else if(pulled||libChanged)toast("Updated from Notion",{kind:"ok",key:"sync"});
-      else if(pushed)toast("Saved to Notion",{kind:"ok",key:"sync"});}
+      else if(pulled||libChanged)toast("Updated from Notion",{kind:"ok",key:"sync",icon:"cloud"});
+      else if(pushed)toast("Saved to Notion",{kind:"ok",key:"sync",icon:"cloud"});}
   }catch(e){nError(e);if(tt&&e&&e.code==="network")document.querySelector('.toast[data-key="sync"]')?.remove()}
   finally{nState.busy=false;if(nState.again){nState.again=false;scheduleNotion(1500)}}
 }
@@ -2848,8 +2924,11 @@ function removePantryItem(it){
 }
 function savePantryLocal(){try{localStorage.setItem(PANKEY,JSON.stringify(pantry))}catch(e){}}
 function daysLeft(it){if(!it.expires)return Infinity;return Math.floor((new Date(it.expires+"T00:00:00")-new Date(iso(new Date())+"T00:00:00"))/864e5)}
-const expSoon=it=>daysLeft(it)<=3,lowQ=it=>it.quantity!=null&&it.quantity<=1;
-function qtyLabel(it){return it.quantity==null?"":`${+(+it.quantity).toFixed(2)}${it.unit?" "+it.unit:""}`}
+// Running low is measured against a full one (Full amount): a quarter left or less, or the last of several.
+const COUNT_U=/^(|x|ea|each|ct|count|pcs?|pieces?|bags?|cans?|jars?|box(es)?|bottles?|packs?|packages?|cartons?|loaf|loaves|dozen|bunch(es)?|heads?)$/i;
+const expSoon=it=>daysLeft(it)<=3,lowQ=it=>{if(it.quantity==null)return false;const q=+it.quantity,f=Math.max(+it.full||0,q);
+  return q<=0||q<=f*.25||COUNT_U.test((it.unit||"").trim())&&f>=2&&q<=1};
+function qtyLabel(it){if(it.quantity==null)return "";const q=+(+it.quantity).toFixed(2),f=+it.full||0;return `${q}${f>q?` of ${+f.toFixed(2)}`:""}${it.unit?" "+it.unit:""}`}
 // Status tags for an item: expired or expiring within 3 days, and running low.
 function statusTags(it){const t=[],d=daysLeft(it);if(d<0)t.push(["Expired","warn"]);else if(d<=3)t.push(["Expiring soon","warn"]);if(lowQ(it))t.push(["Running low",""]);return t}
 const tagHtml=t=>t.map(([l,c])=>`<span class="tag ${c}">${l}</span>`).join("");
@@ -3014,7 +3093,7 @@ async function pantryWrite(ch){
   savePantryLocal();
   if(bad){$("pMsg").textContent=pErr(bad);if(bad.code!=="network")toast(pErr(bad),{kind:"error",key:"pantry"});return false}
   const n=all.length,what=deletes.length&&!creates.length&&!updates.length?"Removed from pantry":creates.length&&!updates.length&&!deletes.length?(n>1?`Added ${n} items to pantry`:"Added to pantry"):"Pantry saved";
-  toast(what,{kind:"ok",key:"pantry"});
+  toast(what,{kind:"ok",key:"pantry",icon:deletes.length&&!creates.length&&!updates.length?"trashl":"pantry"});
   $("pMsg").textContent="";pLast=0;pantryLoad(true);return true;
 }
 function renderPantryFilters(){
@@ -3158,6 +3237,7 @@ function editPantryItem(it,pre){
       <label for="pfLoc">Where</label><select id="pfLoc">${opt(LOCS,v.location)}</select>
       <label for="pfCat">Category</label><select id="pfCat">${opt(CATS,v.category)}</select>
       <label for="pfQty">Quantity</label><span class="qty"><button class="sq" id="pfMinus" aria-label="One less">−</button><input id="pfQty" type="number" min="0" step="any" inputmode="decimal" value="${v.quantity??""}"><button class="sq" id="pfPlus" aria-label="One more">+</button></span>
+      <label for="pfFull">Full amount</label><input id="pfFull" type="number" min="0" step="any" inputmode="decimal" value="${v.full??""}" placeholder="What a full one holds">
       <label for="pfUnit">Unit</label><input id="pfUnit" type="text" maxlength="20" value="${esc(v.unit||"")}" placeholder="e.g. oz, cups, bag">
       <label for="pfExp">Expires</label><input id="pfExp" type="date" value="${esc(v.expires||"")}">
       <label for="pfLink">Store link</label><span class="link"><input id="pfLink" type="url" inputmode="url" placeholder="Paste a product page or image link" value="${esc(v.link||"")}"><button id="pfGet">Get photo</button></span>
@@ -3249,7 +3329,7 @@ function editPantryItem(it,pre){
     c.innerHTML=`<span></span><button aria-label="Unlink"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>`;c.firstChild.textContent=linkLabel(n);
     c.querySelector("button").setAttribute("aria-label",`Unlink ${linkLabel(n)}`);c.querySelector("button").onclick=()=>{recs=recs.filter(x=>x!==n);showRecs()};box.appendChild(c)})};
   showRecs();$("pfRecAdd").onchange=e=>{const n=e.target.value;if(n&&!recs.includes(n)){recs.push(n);showRecs()}e.target.value=""};
-  const collect=()=>({name:$("pfName").value.trim(),recipes:recs,location:$("pfLoc").value,category:$("pfCat").value,quantity:q.value===""?null:Math.max(0,+q.value),unit:$("pfUnit").value.trim(),expires:$("pfExp").value||"",
+  const collect=()=>({name:$("pfName").value.trim(),recipes:recs,location:$("pfLoc").value,category:$("pfCat").value,quantity:q.value===""?null:Math.max(0,+q.value),full:(()=>{const f=$("pfFull").value,qq=q.value===""?0:Math.max(0,+q.value);return f===""||!(+f>0)?(qq||null):Math.max(+f,qq)})(),unit:$("pfUnit").value.trim(),expires:$("pfExp").value||"",
       link:$("pfLink").value.trim(),image:photo,serving:$("pfServ").value.trim(),
       nutrition:Object.fromEntries([["servings"],...PNUT].map(([k])=>{const x=$("pfN_"+k).value;return [k,x===""?null:Math.max(0,+x)]}))});
   // closing a new item with something typed in discards it, with a moment to take that back
@@ -3276,7 +3356,7 @@ function openAddToMeal(it){
     <div class="pk-list">${ms.map(m=>`<button class="pk-row" data-i="${m.i}"><span class="nm">${esc(m.slot)} · ${fmtTime(m.time)}</span><span class="mt">${esc(m.o.n)}${m.done?" · eaten":""}</span></button>`).join("")||`<p class="hint">No meals planned that day.</p>`}</div>`;
   showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";backBtn(()=>openPantryItem(it));
   const out=$("pkQ"),upd=v=>{q=clamp(Math.round(v*2)/2,0.5,20);out.textContent=+q.toFixed(1)};$("pkMinus").onclick=()=>upd(q-0.5);$("pkPlus").onclick=()=>upd(q+0.5);
-  $("sheetBox").querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>{const i=+b.dataset.i;addExtra(d,i,addonFrom(it,q));closeDetail();toast(`Added ${it.name} to ${SLOTS[i].name}`,{kind:"ok",key:"addon"})});
+  $("sheetBox").querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>{const i=+b.dataset.i;addExtra(d,i,addonFrom(it,q));closeDetail();toast(`Added ${it.name} to ${SLOTS[i].name}`,{kind:"ok",key:"addon",icon:"plusl"})});
 }
 // Shop tab: move bought items into the pantry
 const UNIT_RE=/^([\d.\/¼½¾⅓⅔]+)\s*(cups?|tbsp|tsp|oz|lbs?|g|slices?|cans?|scoops?)?\s+(.+)$/i;
@@ -3286,21 +3366,21 @@ function addCheckedToPantry(){
   buildList().forEach(g=>g.items.forEach(item=>{
     if(!checked.has(item.n))return;
     // something that came from the pantry is restocked: one more of it
-    const own=item.pid&&pantry.find(p=>p.id===item.pid);if(own){updates.push({id:own.id,quantity:+((+own.quantity||0)+1).toFixed(2)});return}
+    const own=item.pid&&pantry.find(p=>p.id===item.pid);if(own){const nq=+((+own.quantity||0)+1).toFixed(2);updates.push({id:own.id,quantity:nq,full:Math.max(+own.full||0,nq)});return}
     let name=item.n,qty=item.q,unit=item.u||"";
     if(qty==null){const m=name.match(UNIT_RE);if(m){qty=(FRAC[m[1]]??parseFloat(m[1]))||1;unit=(m[2]||"").toLowerCase();name=m[3]}else qty=1}
     if(/^(tbsp|tsp)$/.test(unit)){qty=1;unit=""}
     qty=Math.ceil(qty*10)/10;name=name.replace(/\s*\(dry\)/i,"").trim();
     const place=guessPlace(name,item.sec);
     const have=pantry.find(p=>p.name.toLowerCase()===name.toLowerCase()&&p.location===place.location&&(p.unit||"")===unit);
-    if(have)updates.push({id:have.id,quantity:+((+have.quantity||0)+qty).toFixed(2)});
-    else creates.push({name,...place,quantity:qty,unit,expires:"",ref:"r"+Date.now().toString(36)+Math.random().toString(36).slice(2,8)});
+    if(have){const nq=+((+have.quantity||0)+qty).toFixed(2);updates.push({id:have.id,quantity:nq,full:Math.max(+have.full||0,nq)})}
+    else creates.push({name,...place,quantity:qty,full:qty,unit,expires:"",ref:"r"+Date.now().toString(36)+Math.random().toString(36).slice(2,8)});
   }));
   const n=creates.length+updates.length;
   if(!n){toast("Check off what you bought first.",{kind:"error",key:"shop"});return}
   state.extraShop=(state.extraShop||[]).filter(x=>!checked.has(x.n)); // bought: off the list
   state.checked=state.checked.filter(x=>!buildList().some(g=>g.items.some(i=>i.n===x)));save();renderShop();
-  pantryWrite({creates,updates});toast(`Added ${n} item${n===1?"":"s"} to your pantry`,{kind:"ok",key:"pantry"});
+  pantryWrite({creates,updates});toast(`Added ${n} item${n===1?"":"s"} to your pantry`,{kind:"ok",key:"pantry",icon:"pantry"});
 }
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&ui.tab==="pantry")pantryLoad(false);if(P3){document.visibilityState==="visible"&&ui.tab==="pantry"&&ui.pl!=="list"?P3.start():P3.stop()}});
 
@@ -3317,11 +3397,14 @@ function swipeDismiss(bg,close){
     e.preventDefault();const d=Math.max(0,dy);sh.style.transition="none";sh.style.transform=`translateY(${d}px)`;
     bg.style.background=`rgba(0,0,0,${(.38*(1-Math.min(1,d/sh.offsetHeight))).toFixed(3)})`},{passive:false});
   const end=()=>{if(y0==null)return;y0=null;if(!drag)return;drag=false;const v=dy/Math.max(1,Date.now()-t0);
-    if(dy>Math.min(140,sh.offsetHeight*.3)||(v>.6&&dy>30)){close();setTimeout(()=>{sh.style.transform="";sh.style.transition="";bg.style.background=""},320)}
+    if(dy>Math.min(140,sh.offsetHeight*.3)||(v>.6&&dy>30)){
+      // in a sheet opened from another (it has a back arrow), the swipe only goes back to that one
+      if(close()==="back"){sh.style.transition="transform .25s ease";sh.style.transform="";bg.style.background="";setTimeout(()=>{sh.style.transition=""},260);return}
+      setTimeout(()=>{sh.style.transform="";sh.style.transition="";bg.style.background=""},320)}
     else{sh.style.transition="transform .2s ease";sh.style.transform="";bg.style.background="";setTimeout(()=>{sh.style.transition=""},220)}};
   sh.addEventListener("touchend",end);sh.addEventListener("touchcancel",end);
 }
-swipeDismiss($("sheet"),()=>closeDetail());swipeDismiss($("infoBg"),()=>closeInfo());swipeDismiss($("goals"),()=>closeGoals());
+swipeDismiss($("sheet"),()=>{const c=$("shClose");if(c&&c.getAttribute("aria-label")==="Back"){c.click();return "back"}closeDetail()});swipeDismiss($("infoBg"),()=>closeInfo());swipeDismiss($("goals"),()=>closeGoals());
 
 /* ---------- shake to shuffle ---------- */
 const SHAKEKEY="gf-gain-planner-shake";
