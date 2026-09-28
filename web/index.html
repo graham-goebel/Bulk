@@ -1034,7 +1034,7 @@ function normalize(s){
     extras:SLOTS.map((_,i)=>cleanExtras(dy&&Array.isArray(dy.extras)?dy.extras[i]:null)),custom:cleanCustom(dy&&dy.custom)}));
   b.checked=Array.isArray(s.checked)?s.checked.filter(x=>typeof x==="string").slice(0,300):[];
   const names=a=>Array.isArray(a)?[...new Set(a.filter(x=>typeof x==="string"&&x.trim()).map(x=>x.slice(0,120)))].slice(0,300):[];
-  b.favs=names(s.favs);b.hidden=names(s.hidden);
+  b.favs=names(s.favs);b.hidden=names(s.hidden);b.favSync=!!s.favSync;
   b.extraShop=Array.isArray(s.extraShop)?s.extraShop.filter(x=>x&&typeof x.n==="string"&&x.n.trim()).slice(0,100).map(x=>({n:x.n.trim().slice(0,100),pid:typeof x.pid==="string"?x.pid:""})):[];
   b.nsnap={};if(s.nsnap&&typeof s.nsnap==="object")Object.keys(s.nsnap).slice(0,400).forEach(k=>{const v=s.nsnap[k];if(v&&typeof v.meal==="string"&&typeof v.when==="string")b.nsnap[k]={meal:v.meal,when:v.when,locked:!!v.locked,eaten:!!v.eaten,skipped:!!v.skipped,extras:typeof v.extras==="string"?v.extras:""}});
   return b;
@@ -1355,7 +1355,11 @@ function addClear(inp){const b=document.createElement("button");b.type="button";
 // Notion too (its "Hide from planner" box), so nothing is lost, and Undo brings it back.
 function isFav(n){return (state.favs||[]).includes(n)}
 function isGone(o){return !!o&&(state.hidden||[]).includes(o.n)}
-function toggleFav(n){const f=new Set(state.favs||[]);f.has(n)?f.delete(n):f.add(n);state.favs=[...f];save();toast(f.has(n)?`${n} is a favorite`:`${n} is no longer a favorite`,{kind:"ok",key:"fav"})}
+// Favorites live on the recipe in Notion (its Favorite box), so every browser and the home-screen app share them.
+const favPending={};
+function optByName(n){for(const sl of SLOTS){const o=sl.opts.find(x=>x.n===n);if(o)return o}return null}
+function toggleFav(n){const f=new Set(state.favs||[]);f.has(n)?f.delete(n):f.add(n);state.favs=[...f];save();
+  const o=optByName(n);if(o&&o.id&&notionOn()){const on=f.has(n);favPending[n]=on;api("/meals/fav",{id:o.id,fav:on}).catch(()=>{}).finally(()=>{if(favPending[n]===on)delete favPending[n]})}toast(f.has(n)?`${n} is a favorite`:`${n} is no longer a favorite`,{kind:"ok",key:"fav"})}
 function setHidden(o,on){state.hidden=on?[...new Set([...(state.hidden||[]),o.n])]:(state.hidden||[]).filter(x=>x!==o.n);save();
   if(o.id&&notionOn())api("/meals/hide",{id:o.id,hide:on}).catch(()=>{})}
 function deleteRecipe(i,oi){const o=SLOTS[i].opts[oi];setHidden(o,true);
@@ -2657,12 +2661,24 @@ function remapLibrary(lib){
 }
 function cleanNu(x){if(!x||typeof x!=="object")return null;const nu={};let any=false;
   NUTR.forEach(([k])=>{const v=x[k];nu[k]=typeof v==="number"&&isFinite(v)?v:null;if(nu[k]!=null)any=true});return any?nu:null}
+// Notion is the source of truth for favorites. The first time a device sees the Favorite column,
+// the hearts it already had are sent up so nothing is lost.
+function syncFavs(lib){
+  if(!lib.some(m=>m.fav!=null))return;
+  const mine=new Set(state.favs||[]),first=!state.favSync;
+  if(first)lib.forEach(m=>{if(!m.fav&&m.id&&mine.has(m.n)){m.fav=true;api("/meals/fav",{id:m.id,fav:true}).catch(()=>{})}});
+  const next=new Set(lib.filter(m=>m.fav).map(m=>m.n));
+  Object.keys(favPending).forEach(n=>favPending[n]?next.add(n):next.delete(n));
+  const arr=[...next].sort(),same=arr.join("\n")===[...mine].sort().join("\n");
+  if(!same||first){state.favs=arr;state.favSync=true;save()}
+}
 async function nLoadLibrary(){
   const data=await apiRead("/meals");
   const lib=((data&&data.meals)||[]).map(m=>({slot:slotIndex(m.slot),n:String(m.name||"").trim(),d:String(m.description||""),k:+m.calories||0,p:+m.protein||0,c:+m.carbs||0,f:+m.fat||0,
     id:typeof m.id==="string"?m.id:"",ing:Array.isArray(m.ingredients)?m.ingredients:[],steps:Array.isArray(m.steps)?m.steps:[],hide:!!m.hide,url:typeof m.url==="string"?m.url:"",
-    nu:cleanNu(m.nutrients),g:Array.isArray(m.groups)?m.groups.filter(x=>GROUPS.includes(x)):[],dv:typeof m.diversity==="number"&&isFinite(m.diversity)?m.diversity:null,pt:typeof m.prep==="number"&&m.prep>0?Math.round(m.prep):null})).filter(m=>m.n&&m.slot>=0);
+    nu:cleanNu(m.nutrients),g:Array.isArray(m.groups)?m.groups.filter(x=>GROUPS.includes(x)):[],dv:typeof m.diversity==="number"&&isFinite(m.diversity)?m.diversity:null,pt:typeof m.prep==="number"&&m.prep>0?Math.round(m.prep):null,fav:typeof m.fav==="boolean"?m.fav:null})).filter(m=>m.n&&m.slot>=0);
   if(!lib.length)return false;
+  syncFavs(lib);
   const sig=JSON.stringify(lib);if(sig===libSig)return false;
   libSig=sig;try{localStorage.setItem(LIBKEY,sig)}catch(e){}
   remapLibrary(lib);return true;

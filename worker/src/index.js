@@ -87,6 +87,15 @@ export default {
         await notion(env, `/pages/${id}`, "PATCH", { properties: { "Hide from planner": { checkbox: !!body.hide } } });
         return json({ ok: true });
       }
+      if (request.method === "POST" && url.pathname === "/meals/fav") {
+        // favorites are kept on the recipe so every browser and the home-screen app share them
+        let body;
+        try { body = await request.json(); } catch { return json({ error: "bad_request", message: "Body must be JSON." }, 400); }
+        const id = body && typeof body.id === "string" ? body.id : "";
+        if (!/^[0-9a-f-]{32,36}$/i.test(id)) return json({ error: "bad_request", message: "A meal id is required." }, 400);
+        await notion(env, `/pages/${id}`, "PATCH", { properties: { "Favorite": { checkbox: !!body.fav } } });
+        return json({ ok: true });
+      }
       if (request.method === "POST" && url.pathname === "/plan/batch") {
         let body;
         try { body = await request.json(); } catch { return json({ error: "bad_request", message: "Body must be JSON." }, 400); }
@@ -201,6 +210,7 @@ async function listMeals(env) {
         ingredients: lines(text(pr["Ingredients"])),
         steps: lines(text(pr["Steps"])),
         hide: !!(pr["Hide from planner"] && pr["Hide from planner"].checkbox),
+        fav: pr["Favorite"] ? !!pr["Favorite"].checkbox : null, // null until the database has a Favorite column
         nutrients: Object.fromEntries(Object.entries(NUTRIENTS).map(([k, col]) => [k, numOrNull(pr[col])])),
         groups: pr["Food groups"] && Array.isArray(pr["Food groups"].multi_select) ? pr["Food groups"].multi_select.map((o) => o.name) : [],
         prep: numOrNull(pr["Prep (min)"]), // optional; the app estimates from the steps when it's empty

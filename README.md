@@ -133,7 +133,7 @@ A pantry item's **Add to grocery list** puts it in an **Added** section at the t
 
 ## Recipe book, favorites and deleting recipes
 
-**Recipe book** in the Plan tab's ⋯ menu lists every recipe with a search box and filters (Favorites, meals, Quick, High protein). A recipe's chips can use it for that meal, **Add to favorites** or **Delete recipe**; a meal's sheet can favorite it too. Favorites show a star in the book and in Suggestions. Deleting takes the recipe out of the planner, gives any days still planning it another recipe, and ticks **Hide from planner** on its Notion row, so it can come back: tap Undo, or untick the box in Notion.
+**Recipe book** in the Plan tab's ⋯ menu lists every recipe with a search box and filters (Favorites, meals, Quick, High protein). A recipe's chips can use it for that meal, **Add to favorites** or **Delete recipe**; a meal's sheet can favorite it too. Favorites show a heart in the book and in Suggestions. They're saved on the recipe's **Favorite** box in Notion, so Safari, the home-screen app and other devices share them (hearts a device had before the column existed are sent up the first time it syncs). Deleting takes the recipe out of the planner, gives any days still planning it another recipe, and ticks **Hide from planner** on its Notion row, so it can come back: tap Undo, or untick the box in Notion.
 
 ## Day templates
 
