@@ -1238,10 +1238,16 @@ function shuffleMeal(d,i){
 // Menus and action chips draw the outline versions of the icons.
 const OUTLINE={ok:"okl",sync:"syncl",skip:"skipl",lock:"lockl",unlock:"unlockl",trash:"trashl",x:"xl",down:"downl",plus:"plusl",adjust:"edit",warn:"warnl",clock:"clockl"};
 // Sheet actions: a row of chips pinned along the sheet's bottom edge, scrolling sideways when they don't all fit.
+// Footer actions move toward the front the more they're used. An action is known by its icon family, so
+// "Mark eaten" and "Unmark eaten" count together. Counts are kept on this device.
+const ACTKEY="gf-gain-planner-actions";let actUse={};try{actUse=JSON.parse(localStorage.getItem(ACTKEY)||"{}")||{}}catch(e){}
+const actId=icon=>String(icon).replace(/^unlock/,"lock").replace(/(f|l)$/,"").replace(/^trash.*/,"trash").replace(/^x.*/,"x");
 function sheetActs(items){
   const bar=document.createElement("div");bar.className="sh-acts";bar.setAttribute("role","toolbar");bar.setAttribute("aria-label","Actions");
-  items.filter(x=>x&&!x[3]).forEach(([icon,text,fn])=>{const b=document.createElement("button");b.className="act";
-    b.innerHTML=`<svg class="ic" aria-hidden="true"><use href="#i-${OUTLINE[icon]||icon}"/></svg><span></span>`;b.lastChild.textContent=text;b.onclick=fn;bar.appendChild(b)});
+  const list=items.filter(x=>x&&!x[3]).map((x,k)=>({x,k,n:actUse[actId(x[0])]||0})).sort((a,b)=>b.n-a.n||a.k-b.k);
+  list.forEach(({x:[icon,text,fn]})=>{const b=document.createElement("button");b.className="act";
+    b.innerHTML=`<svg class="ic" aria-hidden="true"><use href="#i-${OUTLINE[icon]||icon}"/></svg><span></span>`;b.lastChild.textContent=text;
+    b.onclick=e=>{const id=actId(icon);actUse[id]=(actUse[id]||0)+1;try{localStorage.setItem(ACTKEY,JSON.stringify(actUse))}catch(err){}fn(e)};bar.appendChild(b)});
   if(bar.children.length)$("sheetBox").appendChild(bar);
 }
 // "I ate something else": log what you had instead, and the planned meal counts as skipped.
@@ -1465,18 +1471,33 @@ function rbMatchWith(x,f,q){const sn=SLOTS[x.i].name.toLowerCase();
   if(q&&!(x.o.n+" "+(x.o.d||"")).toLowerCase().includes(q))return false;
   if(/^g\d$/.test(f))return !!((x.o.gm||0)&(1<<+f.slice(1)));
   return f==="all"||f==="fav"&&isFav(x.o.n)||f==="b"&&sn==="breakfast"||f==="l"&&sn==="lunch"||f==="d"&&sn==="dinner"||f==="s"&&/snack/.test(sn)||f==="quick"&&prepOf(x.o)&&prepOf(x.o)<=15||f==="protein"&&x.o.p>=40}
-function openRecipeBook(){
+function openRecipeBook(){if(rbFilter==="fav")rbFilter="all";
   openSheetFresh();$("sheetBox").style.height="calc(100% - 64px)"; // the same height whatever the filter, so it doesn't jump
   $("sheetBox").innerHTML=`${sheetHead("","Recipe book")}
     <div class="rb-top"><label class="pan-search pk-s"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><input type="search" id="rbSearch" placeholder="Search recipes" aria-label="Search recipes"></label></div>
     <div class="pk-list" id="rbList"></div>
-    <div class="sh-acts rb-foot" role="group" aria-label="Filter">${[...RB_FILTERS,...groupFilters()].map(([k,l,ic])=>`<button class="act" data-f="${k}" aria-pressed="${k===rbFilter}">${ic?`<svg class="ic" aria-hidden="true"><use href="#i-${ic}"/></svg>`:""}<span>${l}</span></button>`).join("")}</div>`;
+    <div class="sh-acts rb-foot" role="group" aria-label="Filter">${[...RB_FILTERS.filter(([k])=>k!=="fav"),...groupFilters()].map(([k,l,ic])=>`<button class="act" data-f="${k}" aria-pressed="${k===rbFilter}">${ic?`<svg class="ic" aria-hidden="true"><use href="#i-${ic}"/></svg>`:""}<span>${l}</span></button>`).join("")}</div>`;
   const list=()=>{const rows=recipeRows().filter(rbMatch);
-    $("rbList").innerHTML=(rbFilter==="fav"&&!rows.length?`<p class="hint">No favorites yet. Open a recipe and tap Favorite.</p>`:"")+rows.map(x=>`<button class="pk-row" data-i="${x.i}" data-oi="${x.oi}">${isFav(x.o.n)?'<svg class="ic fav-ic" aria-label="Favorite"><use href="#i-heartf"/></svg>':""}<span class="nm">${esc(x.o.n)}</span><span class="mt">${esc(SLOTS[x.i].name)} · ${fmt(x.o.k)} calories · ${fmt(x.o.p)} g protein${prepOf(x.o)?` · ${prepOf(x.o)} min`:""}</span></button>`).join("")||(rbFilter==="fav"?"":`<p class="hint">No recipes match.</p>`);
+    $("rbList").innerHTML=(rbFilter==="fav"&&!rows.length?`<p class="hint">No favorites yet. Open a recipe and tap Favorite.</p>`:"")+rows.map(x=>`<button class="pk-row" data-i="${x.i}" data-oi="${x.oi}">${isFav(x.o.n)?'<svg class="ic fav-ic" aria-label="Favorite"><use href="#i-heartf"/></svg>':""}<span class="nm">${esc(x.o.n)}</span><span class="mt">${fmt(x.o.k)} calories · ${fmt(x.o.p)} g protein${prepOf(x.o)?` · ${prepOf(x.o)} min`:""}</span></button>`).join("")||(rbFilter==="fav"?"":`<p class="hint">No recipes match.</p>`);
     $("rbList").querySelectorAll(".pk-row").forEach(b=>b.onclick=()=>openRecipe(+b.dataset.i,+b.dataset.oi))};
   $("sheetBox").querySelectorAll(".rb-foot .act").forEach(b=>b.onclick=()=>{rbFilter=b.dataset.f;$("sheetBox").querySelectorAll(".rb-foot .act").forEach(x=>x.setAttribute("aria-pressed",x===b));list();$("sheetBox").scrollTop=0});
   $("rbSearch").value=rbQuery;$("rbSearch").addEventListener("input",e=>{rbQuery=e.target.value.trim().toLowerCase();list()});addClear($("rbSearch"));
   list();showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";$("shClose").onclick=closeDetail;$("shClose").focus();
+}
+// Favorites: the recipes and templates you've hearted, each opening where it lives.
+function openFavorites(){
+  openSheetFresh();$("sheetBox").style.height="calc(100% - 64px)";
+  const recs=recipeRows().filter(x=>isFav(x.o.n)),tps=templates.filter(t=>t.fav);
+  const heart='<svg class="ic fav-ic" aria-hidden="true"><use href="#i-heartf"/></svg>';
+  $("sheetBox").innerHTML=`${sheetHead("","Favorites")}
+    ${!recs.length&&!tps.length?`<p class="hint">Nothing here yet. Tap Add to favorites on a recipe or a template.</p>`:""}
+    ${recs.length?`<h3>Recipes</h3><div class="pk-list">${recs.map((x,k)=>`<button class="pk-row" data-r="${k}">${heart}<span class="nm">${esc(x.o.n)}</span><span class="mt">${esc(SLOTS[x.i].name)} · ${fmt(x.o.k)} calories · ${fmt(x.o.p)} g protein${prepOf(x.o)?` · ${prepOf(x.o)} min`:""}</span></button>`).join("")}</div>`:""}
+    ${tps.length?`<h3>Templates</h3><div class="pk-list">${tps.map((t,k)=>`<button class="pk-row" data-t="${k}">${heart}<span class="nm">${esc(t.name)}</span><span class="mt">${tplSummary(t)}</span></button>`).join("")}</div>`:""}`;
+  showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";$("shClose").onclick=closeDetail;
+  $("shClose").innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>';$("shClose").setAttribute("aria-label","Close");
+  $("sheetBox").querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{const x=recs[+b.dataset.r];openRecipe(x.i,x.oi,openFavorites)});
+  $("sheetBox").querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>openTemplateEditor(tps[+b.dataset.t],()=>{holdSize();openFavorites()}));
+  $("shClose").focus();
 }
 // Pick a recipe: search at the top, meal filters along the bottom. slot limits it to one meal (templates).
 function openRecipePicker({eyebrow="",title="Choose a recipe",slot=null,filter="all",back,onPick,none=null}){
@@ -1487,14 +1508,14 @@ function openRecipePicker({eyebrow="",title="Choose a recipe",slot=null,filter="
     <div class="pk-list" id="rpList"></div>
     ${FL.length?`<div class="sh-acts rb-foot" role="group" aria-label="Filter">${FL.map(([k,l,ic])=>`<button class="act" data-f="${k}" aria-pressed="${k===f}"><svg class="ic" aria-hidden="true"><use href="#i-${ic}"/></svg><span>${l}</span></button>`).join("")}</div>`:""}`;
   const list=()=>{const rows=recipeRows().filter(x=>(slot==null||x.i===slot)&&rbMatchWith(x,f,q));
-    $("rpList").innerHTML=(none?`<button class="pk-row" data-none="1"><span class="nm">${esc(none)}</span></button>`:"")+rows.map(x=>`<button class="pk-row" data-i="${x.i}" data-oi="${x.oi}">${isFav(x.o.n)?'<svg class="ic fav-ic" aria-label="Favorite"><use href="#i-heartf"/></svg>':""}<span class="nm">${esc(x.o.n)}</span><span class="mt">${slot==null?`${esc(SLOTS[x.i].name)} · `:""}${fmt(x.o.k)} calories · ${fmt(x.o.p)} g protein${prepOf(x.o)?` · ${prepOf(x.o)} min`:""}</span></button>`).join("")||`<p class="hint">No recipes match.</p>`;
+    $("rpList").innerHTML=(none?`<button class="pk-row" data-none="1"><span class="nm">${esc(none)}</span></button>`:"")+rows.map(x=>`<button class="pk-row" data-i="${x.i}" data-oi="${x.oi}">${isFav(x.o.n)?'<svg class="ic fav-ic" aria-label="Favorite"><use href="#i-heartf"/></svg>':""}<span class="nm">${esc(x.o.n)}</span><span class="mt">${fmt(x.o.k)} calories · ${fmt(x.o.p)} g protein${prepOf(x.o)?` · ${prepOf(x.o)} min`:""}</span></button>`).join("")||`<p class="hint">No recipes match.</p>`;
     $("rpList").querySelectorAll("[data-oi]").forEach(b=>b.onclick=()=>onPick(+b.dataset.i,+b.dataset.oi));
     const nb=$("rpList").querySelector("[data-none]");if(nb)nb.onclick=()=>onPick(null,null)};
   $("sheetBox").querySelectorAll(".rb-foot .act").forEach(b=>b.onclick=()=>{f=b.dataset.f;$("sheetBox").querySelectorAll(".rb-foot .act").forEach(x=>x.setAttribute("aria-pressed",x===b));list();$("sheetBox").scrollTop=0});
   $("rpSearch").addEventListener("input",e=>{q=e.target.value.trim().toLowerCase();list()});addClear($("rpSearch"));
   list();showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";backBtn(back);$("shClose").focus();
 }
-function openRecipe(i,oi){
+function openRecipe(i,oi,back=openRecipeBook){
   holdSize();sheetCtx=null;const o=SLOTS[i].opts[oi],d=ui.day,cur=state.days[d].picks[i]===oi;
   const rm=(k,n)=>`<button class="x-rm rc" data-rm="${k}" aria-label="Remove ${esc(n)} from the recipe"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>`;
   const ing=(o.ing&&o.ing.length)?o.ing.map((x,k)=>{const n=x.replace(/\s*\(certified GF\)/i,"");return `<li><span>${esc(n)}</span>${rm(k,n)}</li>`}).join(""):(ING[o.n]||[]).map(([n,q,u,,gf],k)=>`<li><span>${esc(n)}${gf?'<span class="gf">check GF label</span>':""}</span><span class="q">${rq(q,u)}</span>${rm(k,n)}</li>`).join("");
@@ -1502,14 +1523,15 @@ function openRecipe(i,oi){
   $("sheetBox").innerHTML=`${sheetHead(esc(SLOTS[i].name),esc(o.n))}<p class="sh-d">${esc(o.d||"")}</p>
     <div class="sh-m"><span><b>${fmt(o.k)}</b> calories</span><span><b>${fmt(o.p)} g</b> protein</span><span><b>${fmt(o.c)} g</b> carbs</span><span><b>${fmt(o.f)} g</b> fat</span>${prepOf(o)?`<span><b>${prepOf(o)}</b> min to make</span>`:""}</div>
     ${ing?`<h3>Ingredients</h3><ul class="ing" id="rcIng">${ing}</ul>`:""}${steps?`<h3>Steps</h3><ol class="steps">${steps}</ol>`:""}${mealNutrition(o)}`;
-  showBg($("sheet"));$("sheetBox").scrollTop=0;backBtn(openRecipeBook);
+  showBg($("sheet"));$("sheetBox").scrollTop=0;
+  if(back)backBtn(back);else{const c=$("shClose");c.innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>';c.setAttribute("aria-label","Close");c.onclick=closeDetail}
   if($("rcIng"))$("rcIng").dataset.n=o.n;
   $("sheetBox").querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{const top=$("sheetBox").scrollTop;
-    removeIngredient(i,oi,+b.dataset.rm,()=>{if(!$("sheet").hidden&&$("rcIng")&&$("rcIng").dataset.n===o.n){openRecipe(i,oi);$("sheetBox").scrollTop=top}})});
+    removeIngredient(i,oi,+b.dataset.rm,()=>{if(!$("sheet").hidden&&$("rcIng")&&$("rcIng").dataset.n===o.n){openRecipe(i,oi,back);$("sheetBox").scrollTop=top}})});
   const when=isToday(d)?"today":wk(d,"long");
-  sheetActs([cur?["ok",`Planned for ${SLOTS[i].name.toLowerCase()} ${when}`,()=>{}]:["plusl",`Use for ${SLOTS[i].name.toLowerCase()} ${when}`,()=>{state.days[d].picks[i]=oi;rebalanceDay(d,i);save();refreshAfterMark(d);toast(`${o.n} for ${SLOTS[i].name.toLowerCase()} ${when}`,{kind:"ok",key:"rb",icon:"plusl"});openRecipe(i,oi)}],
-    [isFav(o.n)?"heartf":"heart",isFav(o.n)?"Favorite":"Add to favorites",()=>{toggleFav(o.n);openRecipe(i,oi)}],
-    ["trashl","Delete recipe",()=>{deleteRecipe(i,oi);openRecipeBook()}]]);
+  sheetActs([cur?["ok",`Planned for ${SLOTS[i].name.toLowerCase()} ${when}`,()=>{}]:["plusl",`Use for ${SLOTS[i].name.toLowerCase()} ${when}`,()=>{state.days[d].picks[i]=oi;rebalanceDay(d,i);save();refreshAfterMark(d);toast(`${o.n} for ${SLOTS[i].name.toLowerCase()} ${when}`,{kind:"ok",key:"rb",icon:"plusl"});openRecipe(i,oi,back)}],
+    [isFav(o.n)?"heartf":"heart",isFav(o.n)?"Favorite":"Add to favorites",()=>{toggleFav(o.n);openRecipe(i,oi,back)}],
+    ["trashl","Delete recipe",()=>{deleteRecipe(i,oi);back?back():closeDetail()}]]);
 }
 
 /* ---------- day templates ----------
@@ -1573,10 +1595,11 @@ function openTemplateEditor(t,back,draft,d0=ui.day){
   // apply what's shown (saved or not) to days
   sheetActs([["copy","Apply to days",()=>{if(!picked.length&&!v.meals.some(Boolean)){toast("Choose a recipe first",{key:"tpl",icon:"book"});return}
       openTemplateApply({name:v.name.trim()||"This template",meals:v.meals.slice(),times:v.times},()=>openTemplateEditor(t,back,v,d0),d0)}],
+    t&&[t.fav?"heartf":"heart",t.fav?"Favorite":"Add to favorites",()=>{t.fav=!t.fav;saveTemplates();toast(t.fav?`${t.name} is a favorite`:`${t.name} is no longer a favorite`,{kind:"ok",key:"fav",icon:t.fav?"heartf":"heart"});const bk=$("shClose").onclick;openTemplateEditor(t,back,v,d0);$("shClose").onclick=bk}],
     t&&["trashl","Delete template",()=>{templates=templates.filter(x=>x!==t);saveTemplates();toast(`Deleted “${t.name}”`,{key:"tpl",icon:"trashl"});back()}]]);
   $("teSave").onclick=()=>{const name=v.name.trim();if(!name){$("teMsg").textContent="Add a name.";$("teName").focus();return}
     // a slot left empty keeps whatever that day already has
-    const tpl={id:t?t.id:uid(),name,meals:v.meals.slice(),times:v.times};
+    const tpl={id:t?t.id:uid(),name,meals:v.meals.slice(),times:v.times,...(t&&t.fav?{fav:true}:{})};
     templates=templates.filter(x=>x!==t&&x.name.toLowerCase()!==name.toLowerCase());templates.unshift(tpl);saveTemplates();
     toast(`Saved “${name}”`,{kind:"ok",key:"tpl",icon:"bookmark"});back()};
 }
@@ -1584,7 +1607,7 @@ function openTemplates(d){
   openSheetFresh();$("sheetBox").style.height="calc(100% - 64px)"; // tall enough for a template's meals when one opens
   const render=()=>{
     $("sheetBox").innerHTML=`${sheetHead("","Templates")}
-      <div class="pk-list">${templates.map((t,k)=>`<div class="tp-row"><button class="pk-row" data-t="${k}"><span class="nm">${esc(t.name)}</span><span class="mt">${tplSummary(t)}</span></button><button class="x-rm" data-del="${k}" aria-label="Delete ${esc(t.name)}"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></div>`).join("")||`<p class="hint">No templates yet. Build one from recipes, or save a day you like.</p>`}</div>`;
+      <div class="pk-list">${templates.map((t,k)=>`<div class="tp-row"><button class="pk-row" data-t="${k}">${t.fav?'<svg class="ic fav-ic" aria-label="Favorite"><use href="#i-heartf"/></svg>':""}<span class="nm">${esc(t.name)}</span><span class="mt">${tplSummary(t)}</span></button><button class="x-rm" data-del="${k}" aria-label="Delete ${esc(t.name)}"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></div>`).join("")||`<p class="hint">No templates yet. Build one from recipes, or save a day you like.</p>`}</div>`;
     $("shClose").onclick=closeDetail;$("shClose").innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>';$("shClose").setAttribute("aria-label","Close");
     sheetActs([["plusl","New template",()=>openTemplateEditor(null,again)],["bookmark",`Save ${isToday(d)?"today":wk(d,"long")} as a template`,()=>openSaveTemplate(d)]]);
     // a template opens to its meals, where it can be changed or applied to days
@@ -1913,7 +1936,7 @@ function openGroupDetail(j){
     ${rows.length?`<div class="pk-list">${rows.map(row).join("")}</div>`:""}
     ${more.length?`<h3>${rows.length?"More":"Recipes"} with ${esc(g.toLowerCase())}</h3><div class="pk-list">${more.slice(0,6).map((x,k)=>`<button class="pk-row" data-r="${k}">${isFav(x.o.n)?'<svg class="ic fav-ic" aria-label="Favorite"><use href="#i-heartf"/></svg>':""}<span class="nm">${esc(x.o.n)}</span><span class="mt">${esc(SLOTS[x.i].name)} · ${fmt(x.o.k)} calories · ${fmt(x.o.p)} g protein</span></button>`).join("")}</div>`:""}`);
   $("infoBox").querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{const x=rows[+b.dataset.m];closeInfo();openMeal(x.d,x.m)});
-  $("infoBox").querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{const x=more[+b.dataset.r];closeInfo();openSheetFresh();document.body.style.overflow="hidden";openRecipe(x.i,x.oi);$("shClose").onclick=closeDetail;$("shClose").innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>';$("shClose").setAttribute("aria-label","Close")});
+  $("infoBox").querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{const x=more[+b.dataset.r];closeInfo();openSheetFresh();document.body.style.overflow="hidden";openRecipe(x.i,x.oi,null)});
 }
 function openNutrientsDetail(){
   const days=spanDays(),dn=rangeNutrition(days),n=days.length;
@@ -2576,14 +2599,18 @@ function resetSheet(box){box.scrollTop=0;box.style.setProperty("--p","0")}
 function refreshBehind(){if(ui.tab==="cal")renderCal();else if(ui.tab==="plan")updatePlan(-1,false)}
 // Moving from one sheet to another inside it (a picker, a form) keeps the sheet the size it was, and the close
 // button becomes a back arrow. The size is let go when the sheet closes.
-function holdSize(){const b=$("sheetBox");if($("sheet").hidden)return;if(!b.style.height)b.style.height=b.offsetHeight+"px";
+// Leaving a sheet for one inside it remembers where it was scrolled (by its title); coming back restores it.
+let sheetScroll={},sheetBacking=false;
+const sheetKey=()=>{const t=$("shTitle");return t?t.textContent:""};
+function holdSize(){const b=$("sheetBox");if($("sheet").hidden)return;if(!sheetBacking&&sheetKey())sheetScroll[sheetKey()]=b.scrollTop;if(!b.style.height)b.style.height=b.offsetHeight+"px";
   // the new content fades in over the old
   if(!reduceMotion){b.classList.add("swap");clearTimeout(b._sw);b._sw=setTimeout(()=>b.classList.remove("swap"),400)}}
-function backBtn(fn){const c=$("shClose");c.innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-back"/></svg>';c.setAttribute("aria-label","Back");c.onclick=fn}
+function backBtn(fn){const c=$("shClose");c.innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-back"/></svg>';c.setAttribute("aria-label","Back");
+  c.onclick=()=>{sheetBacking=true;try{fn()}finally{sheetBacking=false}const y=sheetScroll[sheetKey()];if(y){const b=$("sheetBox");b.scrollTop=y;requestAnimationFrame(()=>{b.scrollTop=y})}}}
 function openDetail(d,i){if($("sheet").hidden)$("sheetBox").style.height="";sheetCtx={d,i};sheetFocus=document.activeElement;renderSheet();resetSheet($("sheetBox"));showBg($("sheet"));document.body.style.overflow="hidden";const c=$("shClose");if(c)c.focus()}
 // A sheet can leave something to say as it closes (a new item's draft, with Undo); it runs once.
 let closeGuard=null;
-function closeDetail(){const g=closeGuard;closeGuard=null;if(g)g();hideBg($("sheet"));setTimeout(()=>{if($("sheet").hidden)$("sheetBox").style.height=""},320);document.body.style.overflow="";sheetCtx=null;if(P3)P3.select(null);
+function closeDetail(){const g=closeGuard;closeGuard=null;if(g)g();sheetScroll={};hideBg($("sheet"));setTimeout(()=>{if($("sheet").hidden)$("sheetBox").style.height=""},320);document.body.style.overflow="";sheetCtx=null;if(P3)P3.select(null);
   const slot=sheetFocus&&sheetFocus.dataset?sheetFocus.dataset.slot:null;
   if(sheetFocus&&document.contains(sheetFocus))sheetFocus.focus();else if(slot!=null)focusBlk(slot,true)}
 function renderSheet(){
@@ -2597,8 +2624,8 @@ function renderSheet(){
     :(ING[o.n]||[]).map(([n,q,u,,gf],k)=>{ingNames.push(n);return ingRow(n,gf,rq(q,u),k)}).join("");
   const steps=((o.steps&&o.steps.length)?o.steps:(STEPS[o.n]||[])).map(x=>`<li>${esc(x)}</li>`).join("");
   const ex=o.skip?[]:exOf(d,i),xs=exSum(ex),tk=o.k+xs.k,tp=o.p+xs.p,tc=o.c+xs.c,tf=o.f+xs.f;
-  const addons=o.skip?"":`<h3>Add-ons</h3>${ex.length?`<ul class="ing addons">${ex.map(x=>`<li><span>${esc(x.n)}${x.q!==1?` <span class="q2">× ${+x.q.toFixed(2)}</span>`:""}</span><span class="q">${fmt(mac(x).k)} calories</span><button class="x-rm" data-x="${x.id}" aria-label="Remove ${esc(x.n)}"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></li>`).join("")}</ul>`:`<p class="hint">Add something from your pantry to this meal, like a yogurt or a piece of fruit.</p>`}
-    <button class="txt with-ic sh-add" id="shAddX"><svg class="ic" aria-hidden="true"><use href="#i-plusl"/></svg>Add from pantry</button>`;
+  // add-ons show once something's been added (adding is in the footer)
+  const addons=o.skip||!ex.length?"":`<h3>Add-ons</h3><ul class="ing addons">${ex.map(x=>`<li><span>${esc(x.n)}${x.q!==1?` <span class="q2">× ${+x.q.toFixed(2)}</span>`:""}</span><span class="q">${fmt(mac(x).k)} calories</span><button class="x-rm" data-x="${x.id}" aria-label="Remove ${esc(x.n)}"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></li>`).join("")}</ul>`;
   box.innerHTML=`
     ${sheetHead([isToday(d)?"":shortDate(d),isDone(d,i)?"Eaten":isMissed(d,i)?"Skipped":""].filter(Boolean).join(" · "),o.skip?"Skipped":esc(o.n))}
     <p class="sh-d">${esc(o.d)}</p>
@@ -2626,7 +2653,6 @@ function renderSheet(){
   $("shTime").onchange=e=>{const v=e.target.value;if(/^\d{2}:\d{2}/.test(v)){setTime(d,i,v.slice(0,5));refreshBehind();renderSheetKeep("shTime")}};
   $("shAll").onclick=()=>{const v=timeOf(d,i);state.times[i]=v;state.days.forEach(dy=>{if(dy.times)dy.times[i]=null});save();renderSettings();refreshBehind();renderSheetKeep("shAll");$("shMsg").textContent=`${SLOTS[i].name} is now ${fmtTime(v)} every day.`};
   if($("shReset"))$("shReset").onclick=()=>{setTime(d,i,state.times[i]);refreshBehind();renderSheetKeep("shTime")};
-  if($("shAddX"))$("shAddX").onclick=()=>openAddFromPantry(d,i);
   box.querySelectorAll("[data-x]").forEach(b=>b.onclick=()=>{removeExtra(d,i,b.dataset.x);renderSheetKeep("shAddX")});
   box.querySelectorAll("[data-ing]").forEach(b=>b.onclick=()=>{const name=ingNames[+b.dataset.ing],l=ingLink(o.n,name);
     openMenu(b,`${name} options`,[
@@ -2718,7 +2744,7 @@ function openCustom(d,id,pre,back){
     onPick:(i,oi)=>{const o=SLOTS[i].opts[oi];openCustom(d,id,{...c,n:o.n,k:o.k,p:o.p,c:o.c,f:o.f,rec:o.n,cat:c.cat||catOf(i),pid:""},back)}})};
   if($("cmRecX"))$("cmRecX").onclick=()=>{openCustom(d,id,{...cur(),rec:""},back)};
   if($("cmRecOpen"))$("cmRecOpen").onclick=()=>{const c=cur(),ix=recIx(c.rec);if(!ix){toast("That recipe isn't in the library any more",{key:"rec",icon:"book"});return}
-    openRecipe(ix[0],ix[1]);backBtn(()=>openCustom(d,id,c,back))};
+    openRecipe(ix[0],ix[1],()=>openCustom(d,id,c,back))};
   const fromPantry=()=>{const c=cur();openPantryPicker({eyebrow:x?x.n:"Add a meal",title:"Fill in from pantry",servings:true,back:()=>openCustom(d,id,c,back),
     onPick:(it,q)=>{const a=addonFrom(it,q),m=mac(a);openCustom(d,id,{...c,n:q===1?it.name:`${it.name} (${+q.toFixed(1)} servings)`,k:m.k,p:m.p,c:m.c,f:m.f,pid:it.id},back)}})};
   const need=()=>{$("cmSave").disabled=!$("cmName").value.trim()};$("cmName").addEventListener("input",need);need();
@@ -2994,7 +3020,7 @@ function openGoals(focusId,tab){goalsFocus=document.activeElement;renderSettings
   setTimeout(()=>{const el=$(focusId||"goalsClose");if(el){el.focus();if(focusId)el.scrollIntoView({block:"center"})}},30)}
 function closeGoals(){hideBg($("goals"));document.body.style.overflow="";if(goalsFocus&&document.contains(goalsFocus))goalsFocus.focus()}
 $("goalsBtn").onclick=()=>openMenu($("goalsBtn"),"Account",[
-  ["book","Recipe book",()=>{rbFilter="all";openRecipeBook()}],["heart","Favorites",()=>{rbFilter="fav";openRecipeBook()}],
+  ["book","Recipe book",()=>{rbFilter="all";openRecipeBook()}],["heart","Favorites",()=>openFavorites()],
   ["copy","Templates",()=>openTemplates(ui.day)],["flame","Goals",()=>openGoals(null,"goals")],["cog","Settings",()=>openGoals(null,"settings")]]);$("goalsClose").onclick=closeGoals;
 $("goals").addEventListener("click",e=>{if(e.target===$("goals"))closeGoals()});
 document.addEventListener("keydown",e=>{
