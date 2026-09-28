@@ -361,6 +361,11 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .sg-best{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:10px;background:var(--soft);font-size:.72rem;font-weight:400;color:var(--ink);vertical-align:2px}
 .ing li.new{animation:newRow 2s ease-out}@keyframes newRow{0%,35%{background:var(--soft)}100%{background:transparent}}
 .sheet.swap>*{animation:swapIn .28s ease-out both}@keyframes swapIn{from{opacity:0;transform:translateY(6px)}}
+/* swiping back in a nested sheet slides its content; the sheet itself stays put */
+.sheet{overflow-x:hidden}.sheet.hdrag>*{transform:translateX(var(--sx,0px));opacity:var(--so,1)}
+.sheet.hout>*{transition:transform .16s ease,opacity .16s ease;transform:translateX(40%);opacity:0}
+.sheet.hback>*{transition:transform .2s ease,opacity .2s ease}
+.sheet.hin>*{animation:hIn .24s ease-out both}@keyframes hIn{from{opacity:0;transform:translateX(-28px)}}
 .sheet.swap>.sh-bar{animation-name:swapBar}@keyframes swapBar{from{opacity:.4}}
 /* Recipe book: the search stays under the header, the filters sit at the bottom like other sheets' actions */
 .rb-top{position:sticky;top:58px;z-index:2;background:var(--bg);margin:0 -24px;padding:4px 24px 8px}.rb-top .pk-s{margin:0}
@@ -1450,19 +1455,22 @@ function deleteRecipe(i,oi){const o=SLOTS[i].opts[oi];setHidden(o,true);
   // days still planning it (and not eaten) get another recipe
   state.days.forEach((dy,d)=>{if(dy.picks[i]===oi&&!isDone(d,i)){const alt=SLOTS[i].opts.findIndex((x,k)=>k!==oi&&!x.skip&&!isGone(x));if(alt>=0){dy.picks[i]=alt;rebalanceDay(d,i)}}});
   save();refreshAfterMark(ui.day);toast(`Deleted ${o.n}`,{kind:"removed",key:"rdel",ms:6000,action:"Undo",onAction:()=>{setHidden(o,false);if(!$("sheet").hidden&&$("rbList"))openRecipeBook()}})}
-const RB_FILTERS=[["all","All","book"],["fav","Favorites","heart"],["b","Breakfast","cup"],["s","Snacks","cookie"],["l","Lunch","pie"],["d","Dinner","flame"],["quick","Quick","clockl"],["protein","High protein","meat"]];
+const RB_FILTERS=[["all","All","book"],["fav","Favorites","heart"],["b","Breakfast","cup"],["s","Snacks","cookie"],["l","Lunch","pie"],["d","Dinner","flame"],["quick","Quick","clockl"],["protein","High protein","flame"]];
+// food group filters (meat, fish, dairy…) follow the meal ones; set up once GROUPS and their icons exist
+const groupFilters=()=>GROUPS.map((g,j)=>["g"+j,g,GROUP_ICON[j]]);
 let rbFilter="all",rbQuery="";
 function recipeRows(){const rows=[];SLOTS.forEach((sl,i)=>sl.opts.forEach((o,oi)=>{if(!o.skip&&!isGone(o))rows.push({i,oi,o})}));return rows}
 function rbMatch(x){return rbMatchWith(x,rbFilter,rbQuery)}
 function rbMatchWith(x,f,q){const sn=SLOTS[x.i].name.toLowerCase();
   if(q&&!(x.o.n+" "+(x.o.d||"")).toLowerCase().includes(q))return false;
+  if(/^g\d$/.test(f))return !!((x.o.gm||0)&(1<<+f.slice(1)));
   return f==="all"||f==="fav"&&isFav(x.o.n)||f==="b"&&sn==="breakfast"||f==="l"&&sn==="lunch"||f==="d"&&sn==="dinner"||f==="s"&&/snack/.test(sn)||f==="quick"&&prepOf(x.o)&&prepOf(x.o)<=15||f==="protein"&&x.o.p>=40}
 function openRecipeBook(){
   openSheetFresh();$("sheetBox").style.height="calc(100% - 64px)"; // the same height whatever the filter, so it doesn't jump
   $("sheetBox").innerHTML=`${sheetHead("","Recipe book")}
     <div class="rb-top"><label class="pan-search pk-s"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><input type="search" id="rbSearch" placeholder="Search recipes" aria-label="Search recipes"></label></div>
     <div class="pk-list" id="rbList"></div>
-    <div class="sh-acts rb-foot" role="group" aria-label="Filter">${RB_FILTERS.map(([k,l,ic])=>`<button class="act" data-f="${k}" aria-pressed="${k===rbFilter}">${ic?`<svg class="ic" aria-hidden="true"><use href="#i-${ic}"/></svg>`:""}<span>${l}</span></button>`).join("")}</div>`;
+    <div class="sh-acts rb-foot" role="group" aria-label="Filter">${[...RB_FILTERS,...groupFilters()].map(([k,l,ic])=>`<button class="act" data-f="${k}" aria-pressed="${k===rbFilter}">${ic?`<svg class="ic" aria-hidden="true"><use href="#i-${ic}"/></svg>`:""}<span>${l}</span></button>`).join("")}</div>`;
   const list=()=>{const rows=recipeRows().filter(rbMatch);
     $("rbList").innerHTML=(rbFilter==="fav"&&!rows.length?`<p class="hint">No favorites yet. Open a recipe and tap Favorite.</p>`:"")+rows.map(x=>`<button class="pk-row" data-i="${x.i}" data-oi="${x.oi}">${isFav(x.o.n)?'<svg class="ic fav-ic" aria-label="Favorite"><use href="#i-heartf"/></svg>':""}<span class="nm">${esc(x.o.n)}</span><span class="mt">${esc(SLOTS[x.i].name)} · ${fmt(x.o.k)} calories · ${fmt(x.o.p)} g protein${prepOf(x.o)?` · ${prepOf(x.o)} min`:""}</span></button>`).join("")||(rbFilter==="fav"?"":`<p class="hint">No recipes match.</p>`);
     $("rbList").querySelectorAll(".pk-row").forEach(b=>b.onclick=()=>openRecipe(+b.dataset.i,+b.dataset.oi))};
@@ -1473,7 +1481,7 @@ function openRecipeBook(){
 // Pick a recipe: search at the top, meal filters along the bottom. slot limits it to one meal (templates).
 function openRecipePicker({eyebrow="",title="Choose a recipe",slot=null,filter="all",back,onPick,none=null}){
   holdSize();sheetCtx=null;let f=slot!=null?"all":filter,q="";
-  const FL=slot!=null?[]:RB_FILTERS.filter(([k])=>k!=="quick"&&k!=="protein");
+  const FL=[...(slot!=null?[["all","All","book"],["fav","Favorites","heart"]]:RB_FILTERS.filter(([k])=>k!=="quick"&&k!=="protein")),...groupFilters()];
   $("sheetBox").innerHTML=`${sheetHead(eyebrow,title)}
     <div class="rb-top"><label class="pan-search pk-s"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><input type="search" id="rpSearch" placeholder="Search recipes" aria-label="Search recipes"></label></div>
     <div class="pk-list" id="rpList"></div>
@@ -1535,11 +1543,24 @@ function applyTemplate(t,days){
   save();renderAll(false);
 }
 // Build a template (or edit one) by picking a recipe for each meal of the day.
-function openTemplateEditor(t,back,draft){
+// Apply a template to the days picked (the day you're on to start with).
+function openTemplateApply(tpl,back,d0){
+  holdSize();sheetCtx=null;const pick=new Set([d0]);
+  $("sheetBox").innerHTML=`${sheetHead(esc(tpl.name),"Apply to days",{action:{id:"taGo",label:"Apply"}})}
+    <div class="tp-days" role="group" aria-label="Days to apply to">${Array.from({length:D},(_,k)=>`<button class="tp-day" data-d="${k}" aria-pressed="${pick.has(k)}"><span>${wk(k)}</span><b>${dayDate(k).getDate()}</b></button>`).join("")}</div>
+    <p class="fine">The template's meals are locked on those days. A meal it leaves empty stays as the day has it.</p>
+    <ul class="ing">${SLOTS.map((sl,i)=>{const o=tplOpt(tpl,i);return `<li><span>${esc(sl.name)}</span><span class="q">${o?esc(o.skip?"Skipped":o.n):"As planned"}</span></li>`}).join("")}</ul>`;
+  showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";backBtn(back);
+  const need=()=>{$("taGo").disabled=!pick.size};need();
+  $("sheetBox").querySelectorAll(".tp-day").forEach(b=>b.onclick=()=>{const k=+b.dataset.d;pick.has(k)?pick.delete(k):pick.add(k);b.setAttribute("aria-pressed",pick.has(k));need()});
+  $("taGo").onclick=()=>{const ds=[...pick].sort((a,b)=>a-b);if(!ds.length)return;applyTemplate(tpl,ds);closeDetail();
+    toast(`“${tpl.name}” on ${ds.length===1?(isToday(ds[0])?"today":wk(ds[0],"long")):`${ds.length} days`}`,{kind:"ok",key:"tpl",icon:"copy"})};
+}
+function openTemplateEditor(t,back,draft,d0=ui.day){
   holdSize();sheetCtx=null;
   const v=draft||{name:t?t.name:"",meals:t?t.meals.slice():SLOTS.map(()=>""),times:t&&t.times?t.times.slice():state.times.slice()};
   const opt=i=>SLOTS[i].opts.find(o=>o.n===v.meals[i]&&!o.skip),picked=SLOTS.map((_,i)=>opt(i)).filter(Boolean),skipped=i=>v.meals[i]===SKIP.n;
-  $("sheetBox").innerHTML=`${sheetHead("",t?"Edit template":"New template",{action:{id:"teSave",label:"Save"}})}
+  $("sheetBox").innerHTML=`${sheetHead(t?"Template":"",t?esc(t.name):"New template",{action:{id:"teSave",label:"Save"}})}
     <p class="msg pf-msg" id="teMsg" role="status"></p>
     <div class="pf"><label for="teName">Name</label><input id="teName" type="text" maxlength="40" value="${esc(v.name)}" placeholder="e.g. Training day"></div>
     <h3>Meals</h3><div>${SLOTS.map((sl,i)=>{const o=opt(i);return `<button class="tp-slot" data-s="${i}"><span class="sl">${esc(sl.name)}</span><span class="nm${o?"":" none"}">${o?esc(o.n):skipped(i)?"Skipped":"Choose a recipe"}</span><svg class="ic" aria-hidden="true"><use href="#i-plusl"/></svg></button>`}).join("")}</div>
@@ -1547,8 +1568,12 @@ function openTemplateEditor(t,back,draft){
   showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";backBtn(back);
   const need=()=>{$("teSave").disabled=!$("teName").value.trim()||!picked.length};$("teName").addEventListener("input",e=>{v.name=e.target.value;need()});need();
   $("sheetBox").querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{const i=+b.dataset.s;
-    openRecipePicker({eyebrow:t?t.name:"New template",title:SLOTS[i].name,slot:i,none:HAS_SKIP[i]?"Skip this one":null,back:()=>openTemplateEditor(t,back,v),
-      onPick:(si,oi)=>{v.meals[i]=oi==null?SKIP.n:SLOTS[i].opts[oi].n;openTemplateEditor(t,back,v)}})});
+    openRecipePicker({eyebrow:t?t.name:"New template",title:SLOTS[i].name,slot:i,none:HAS_SKIP[i]?"Skip this one":null,back:()=>openTemplateEditor(t,back,v,d0),
+      onPick:(si,oi)=>{v.meals[i]=oi==null?SKIP.n:SLOTS[i].opts[oi].n;openTemplateEditor(t,back,v,d0)}})});
+  // apply what's shown (saved or not) to days
+  sheetActs([["copy","Apply to days",()=>{if(!picked.length&&!v.meals.some(Boolean)){toast("Choose a recipe first",{key:"tpl",icon:"book"});return}
+      openTemplateApply({name:v.name.trim()||"This template",meals:v.meals.slice(),times:v.times},()=>openTemplateEditor(t,back,v,d0),d0)}],
+    t&&["trashl","Delete template",()=>{templates=templates.filter(x=>x!==t);saveTemplates();toast(`Deleted “${t.name}”`,{key:"tpl",icon:"trashl"});back()}]]);
   $("teSave").onclick=()=>{const name=v.name.trim();if(!name){$("teMsg").textContent="Add a name.";$("teName").focus();return}
     // a slot left empty keeps whatever that day already has
     const tpl={id:t?t.id:uid(),name,meals:v.meals.slice(),times:v.times};
@@ -1556,18 +1581,14 @@ function openTemplateEditor(t,back,draft){
     toast(`Saved “${name}”`,{kind:"ok",key:"tpl",icon:"bookmark"});back()};
 }
 function openTemplates(d){
-  openSheetFresh();const pick=new Set([d]);
+  openSheetFresh();$("sheetBox").style.height="calc(100% - 64px)"; // tall enough for a template's meals when one opens
   const render=()=>{
     $("sheetBox").innerHTML=`${sheetHead("","Templates")}
-      <h3>Apply to</h3><div class="tp-days" role="group" aria-label="Days to apply to">${Array.from({length:D},(_,k)=>`<button class="tp-day" data-d="${k}" aria-pressed="${pick.has(k)}"><span>${wk(k)}</span><b>${dayDate(k).getDate()}</b></button>`).join("")}</div>
-      <h3>Templates</h3><div class="pk-list">${templates.map((t,k)=>`<div class="tp-row"><button class="pk-row" data-t="${k}"><span class="nm">${esc(t.name)}</span><span class="mt">${tplSummary(t)}</span></button><button class="ed" data-ed="${k}" aria-label="Edit ${esc(t.name)}"><svg class="ic" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="x-rm" data-del="${k}" aria-label="Delete ${esc(t.name)}"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></div>`).join("")||`<p class="hint">No templates yet. Build one from recipes, or save a day you like.</p>`}</div>`;
+      <div class="pk-list">${templates.map((t,k)=>`<div class="tp-row"><button class="pk-row" data-t="${k}"><span class="nm">${esc(t.name)}</span><span class="mt">${tplSummary(t)}</span></button><button class="x-rm" data-del="${k}" aria-label="Delete ${esc(t.name)}"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></div>`).join("")||`<p class="hint">No templates yet. Build one from recipes, or save a day you like.</p>`}</div>`;
     $("shClose").onclick=closeDetail;$("shClose").innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>';$("shClose").setAttribute("aria-label","Close");
     sheetActs([["plusl","New template",()=>openTemplateEditor(null,again)],["bookmark",`Save ${isToday(d)?"today":wk(d,"long")} as a template`,()=>openSaveTemplate(d)]]);
-    $("sheetBox").querySelectorAll("[data-ed]").forEach(b=>b.onclick=()=>openTemplateEditor(templates[+b.dataset.ed],again));
-    $("sheetBox").querySelectorAll(".tp-day").forEach(b=>b.onclick=()=>{const k=+b.dataset.d;pick.has(k)?pick.delete(k):pick.add(k);b.setAttribute("aria-pressed",pick.has(k))});
-    $("sheetBox").querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{if(!pick.size){toast("Pick at least one day",{key:"tpl",icon:"cal"});return}
-      const t=templates[+b.dataset.t],ds=[...pick].sort((a,b)=>a-b);applyTemplate(t,ds);closeDetail();
-      toast(`“${t.name}” on ${ds.length===1?(isToday(ds[0])?"today":wk(ds[0],"long")):`${ds.length} days`}`,{kind:"ok",key:"tpl"})});
+    // a template opens to its meals, where it can be changed or applied to days
+    $("sheetBox").querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>openTemplateEditor(templates[+b.dataset.t],again,null,d));
     $("sheetBox").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{const t=templates[+b.dataset.del];templates=templates.filter(x=>x!==t);saveTemplates();render();toast(`Deleted “${t.name}”`,{key:"tpl",icon:"trashl"})});
   };
   const again=()=>{holdSize();render();showBg($("sheet"))};
@@ -2676,8 +2697,7 @@ function openCustom(d,id,pre,back){
     <p class="msg pf-msg" id="cmMsg" role="status"></p>
     <div class="cm-cats" role="group" aria-label="Meal">${MEAL_CATS.map(([k,l,ic])=>`<button class="pan-opt with-ic" data-cat="${k}" aria-pressed="${v.cat===k}"><svg class="ic" aria-hidden="true"><use href="#i-${ic}"/></svg>${l}</button>`).join("")}</div>
     ${v.rec?`<div class="cm-rec"><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg><button class="txt" id="cmRecOpen">${esc(v.rec)}</button><button class="x-rm" id="cmRecX" aria-label="Unlink the recipe"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></div>`:""}
-    <div class="cm-fill"><button class="txt with-ic sh-add" id="cmRecipe"><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg>${v.rec?"Use a different recipe":"Fill in from a recipe"}</button>
-    <button class="txt with-ic sh-add" id="cmPantry"><svg class="ic" aria-hidden="true"><use href="#i-pantry"/></svg>Fill in from your pantry</button></div>
+
     <div class="pf">
       <label for="cmName">Name</label><input id="cmName" type="text" maxlength="100" value="${esc(v.n)}" placeholder="e.g. Burrito from the café">
       <label for="cmTime">Time</label><input id="cmTime" type="time" step="300" value="${esc(v.time)}">
@@ -2694,12 +2714,12 @@ function openCustom(d,id,pre,back){
   $("sheetBox").querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{v.cat=v.cat===b.dataset.cat?"":b.dataset.cat;$("sheetBox").querySelectorAll("[data-cat]").forEach(y=>y.setAttribute("aria-pressed",y.dataset.cat===v.cat))});
   const recIx=n=>{for(let i=0;i<N;i++){const oi=SLOTS[i].opts.findIndex(o=>o.n===n&&!o.skip);if(oi>=0)return[i,oi]}return null};
   const catOf=i=>{const sn=SLOTS[i].name.toLowerCase();return /snack/.test(sn)?"s":sn==="breakfast"?"b":sn==="lunch"?"l":"d"};
-  $("cmRecipe").onclick=()=>{const c=cur();openRecipePicker({eyebrow:x?x.n:"Add a meal",filter:c.cat||"all",back:()=>openCustom(d,id,c,back),
+  const fromRecipe=()=>{const c=cur();openRecipePicker({eyebrow:x?x.n:"Add a meal",filter:c.cat||"all",back:()=>openCustom(d,id,c,back),
     onPick:(i,oi)=>{const o=SLOTS[i].opts[oi];openCustom(d,id,{...c,n:o.n,k:o.k,p:o.p,c:o.c,f:o.f,rec:o.n,cat:c.cat||catOf(i),pid:""},back)}})};
   if($("cmRecX"))$("cmRecX").onclick=()=>{openCustom(d,id,{...cur(),rec:""},back)};
   if($("cmRecOpen"))$("cmRecOpen").onclick=()=>{const c=cur(),ix=recIx(c.rec);if(!ix){toast("That recipe isn't in the library any more",{key:"rec",icon:"book"});return}
     openRecipe(ix[0],ix[1]);backBtn(()=>openCustom(d,id,c,back))};
-  $("cmPantry").onclick=()=>{const c=cur();openPantryPicker({eyebrow:x?x.n:"Add a meal",title:"Fill in from pantry",servings:true,back:()=>openCustom(d,id,c,back),
+  const fromPantry=()=>{const c=cur();openPantryPicker({eyebrow:x?x.n:"Add a meal",title:"Fill in from pantry",servings:true,back:()=>openCustom(d,id,c,back),
     onPick:(it,q)=>{const a=addonFrom(it,q),m=mac(a);openCustom(d,id,{...c,n:q===1?it.name:`${it.name} (${+q.toFixed(1)} servings)`,k:m.k,p:m.p,c:m.c,f:m.f,pid:it.id},back)}})};
   const need=()=>{$("cmSave").disabled=!$("cmName").value.trim()};$("cmName").addEventListener("input",need);need();
   $("cmSave").onclick=()=>{const c=cur(),n=c.n.trim();if(!n){$("cmMsg").textContent="Add a name.";$("cmName").focus();return}
@@ -2707,10 +2727,12 @@ function openCustom(d,id,pre,back){
     if(v.replaces!=null&&!isMissed(d,v.replaces))setMissed(d,v.replaces,true);
     saveCustom(d,{id:x?x.id:uid(),pid:c.pid||"",n:n.slice(0,100),q:1,k:num(c.k),p:num(c.p),c:num(c.c),f:num(c.f),time:c.time.slice(0,5),done:c.done,cat:c.cat||"",rec:c.rec||""});
     closeDetail();toast(x?"Meal saved":`Added ${n} to ${isToday(d)?"today":wk(d,"long")}`,{kind:"ok",key:"custom",icon:"plusl"})};
+  const fill=[["book",v.rec?"Use a different recipe":"From a recipe",fromRecipe],["pantry","From your pantry",fromPantry]];
   if(x){const m=mealsOf(d).find(y=>y.cid===x.id);sheetActs([
-    ["ok",x.done?"Unmark eaten":"Mark eaten",()=>{setCustomDone(d,x.id,!x.done);openCustom(d,x.id)}],
+    ["ok",x.done?"Unmark eaten":"Mark eaten",()=>{setCustomDone(d,x.id,!x.done);openCustom(d,x.id)}],...fill,
     ["clockl","Remind me",()=>openReminder(d,m),x.done],
     ["trash","Remove meal",()=>{closeDetail();removeCustom(d,x.id)}]])}
+  else sheetActs(fill);
   (x||touchUI?$("shClose"):$("cmName")).focus();
 }
 function renderSheetKeep(id){renderSheet();const el=$(id);if(el)el.focus()}
@@ -3490,13 +3512,15 @@ function swipeDismiss(bg,close,canBack){
       else{if(dy<-6||Math.abs(dx)>14||(!down&&dy>6))y0=null;return}}
     e.preventDefault();sh.style.transition="none";
     if(drag==="y"){const d=Math.max(0,dy);sh.style.transform=`translateY(${d}px)`;bg.style.background=`rgba(0,0,0,${(.38*(1-Math.min(1,d/sh.offsetHeight))).toFixed(3)})`}
-    else{const d=Math.max(0,dx);sh.style.transform=`translateX(${d}px)`;sh.style.opacity=String(1-Math.min(.5,d/sh.offsetWidth))}},{passive:false});
+    else{const d=Math.max(0,dx);sh.classList.add("hdrag");sh.style.setProperty("--sx",d+"px");sh.style.setProperty("--so",String(1-Math.min(.7,d/sh.offsetWidth)))}},{passive:false});
   const end=()=>{if(y0==null)return;y0=null;if(!drag)return;const dir=drag;drag=null;const ms=Math.max(1,Date.now()-t0);
     if(dir==="x"){
       // swiping right in a sheet opened from another goes back to that one
-      if(dx>Math.min(110,sh.offsetWidth*.28)||(dx/ms>.5&&dx>40)){sh.style.transition="transform .16s ease,opacity .16s ease";sh.style.transform=`translateX(${sh.offsetWidth*.35}px)`;sh.style.opacity=".4";
-        setTimeout(()=>{close("back");sh.style.transition="none";sh.style.transform="translateX(-24px)";sh.style.opacity=".4";requestAnimationFrame(()=>reset(220))},160)}
-      else reset(200);return}
+      const clear=()=>{sh.classList.remove("hdrag","hout","hback");sh.style.removeProperty("--sx");sh.style.removeProperty("--so")};
+      if(dx>Math.min(110,sh.offsetWidth*.28)||(dx/ms>.5&&dx>40)){sh.classList.remove("hdrag");sh.classList.add("hout");
+        setTimeout(()=>{clear();close("back");sh.classList.remove("swap");sh.classList.add("hin");setTimeout(()=>sh.classList.remove("hin"),300)},160)}
+      else{sh.classList.add("hback");sh.style.setProperty("--sx","0px");sh.style.setProperty("--so","1");setTimeout(clear,220)}
+      sh.style.transition="";return}
     if(dy>Math.min(140,sh.offsetHeight*.3)||(dy/ms>.6&&dy>30)){
       // in a sheet opened from another (it has a back arrow), swiping down also only goes back to that one
       if(close()==="back"){reset(250);return}
