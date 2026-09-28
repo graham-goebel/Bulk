@@ -4,8 +4,16 @@ A gluten-free weight-gain meal planner that runs on GitHub Pages and stores your
 
 ```
 web/                 the app (published to GitHub Pages)
+  index.html         the page: markup only
+  app.js, app.css    the meal planner itself
+  ui/                the reusable part: kit.css (tokens and components), kit.js (sheets, menus, toasts,
+                     swipe), icons.js (the icon sprite), api.js (client for the Worker), demo.html
 worker/              a small Cloudflare Worker that talks to Notion for the app
+  src/index.js       the app's routes and how meals, the plan and the pantry map to Notion
+  src/lib/           reusable: notion.js (Notion client), http.js (CORS, JSON, passcode),
+                     product.js (store pages and Open Food Facts), ics.js (calendar reminders)
 .github/workflows/   deploy both from GitHub, no terminal needed
+docs/REUSE.md        how to use the UI kit and the Worker pieces in another project
 ```
 
 Why the Worker exists: browsers aren't allowed to call Notion's API directly, and your Notion token has to stay secret. The Worker holds the token, checks a passcode on every request, and only answers requests coming from your site.

@@ -33,9 +33,12 @@ jobs:
           node -e 'require("fs").writeFileSync("web/config.js", "window.GAIN_CONFIG = " + JSON.stringify({ workerUrl: process.env.WORKER_URL.trim() }) + ";\n")'
           cat web/config.js
 
-      # Tag this release so browsers fetch the new pantry scripts instead of cached ones.
+      # Tag this release so browsers fetch the new styles and scripts instead of cached ones.
       - name: Stamp build id
-        run: sed -i "s/__BUILD__/${GITHUB_SHA::8}/g" web/index.html && grep -o 'BUILD="[^"]*"' web/index.html
+        run: |
+          grep -rl __BUILD__ web --include=*.html --include=*.js | xargs sed -i "s/__BUILD__/${GITHUB_SHA::8}/g"
+          grep -o 'BUILD="[^"]*"' web/app.js
+          ! grep -rl __BUILD__ web --include=*.html --include=*.js
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>UI kit demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kit.css">
+<style>/* a demo page's own bits; everything else comes from kit.css */
+main{max-width:520px;margin:0 auto;padding:0 24px 120px}
+section{margin-top:28px}
+.chips-demo{display:flex;flex-wrap:wrap;gap:8px}
+</style>
+</head>
+<body>
+<!-- The kit on its own: copy ui/ into another project and start from this page. -->
+<script src="icons.js"></script>
+<header class="app-head">
+  <div class="h-txt"><h1 class="h-title">UI kit</h1></div>
+  <div class="head-r"><button class="icon-btn" id="acct" aria-haspopup="menu" aria-expanded="false" aria-label="Account"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg></button></div>
+</header>
+<main>
+  <section>
+    <div class="cal-title"><div class="ct-t"><h2>Components</h2></div><div class="ct-btns"><button class="icon-btn bare" id="more" aria-haspopup="menu" aria-expanded="false" aria-label="More"><svg class="ic" aria-hidden="true"><use href="#i-dots"/></svg></button></div></div>
+    <p class="hint">Tap around: a sheet with a nested sheet (swipe right or down to go back), a menu, toasts and chips.</p>
+  </section>
+  <section class="chips-demo">
+    <button class="pan-opt with-ic" id="openSheet"><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg>Open a sheet</button>
+    <button class="pan-opt with-ic" id="okToast"><svg class="ic" aria-hidden="true"><use href="#i-heartf"/></svg>Toast</button>
+    <button class="pan-opt with-ic" id="undoToast"><svg class="ic" aria-hidden="true"><use href="#i-trashl"/></svg>Toast with Undo</button>
+  </section>
+  <section>
+    <label class="pan-search"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><input type="search" id="q" placeholder="Search" aria-label="Search"></label>
+    <div class="pk-list" id="list"></div>
+  </section>
+</main>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<div class="sheet-bg" id="sheet" hidden><div class="sheet" id="sheetBox" role="dialog" aria-modal="true" aria-labelledby="shTitle"></div></div>
+<script src="kit.js"></script>
+<script>
+UI.actionsKey="ui-demo-actions";
+const ITEMS=["Oatmeal","Pancakes","Rice bowl","Tacos","Curry","Salad","Smoothie","Toast","Soup","Pasta","Chili","Wrap"];
+const row=(n,k)=>`<button class="pk-row" data-k="${k}"><span class="nm">${esc(n)}</span><span class="mt">Item ${k+1}</span></button>`;
+function renderList(){const q=$("q").value.trim().toLowerCase();$("list").innerHTML=ITEMS.map(row).filter((_,k)=>ITEMS[k].toLowerCase().includes(q)).join("")||`<p class="hint">Nothing matches.</p>`;
+  $("list").querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{openList();openItem(+b.dataset.k)})}
+$("q").addEventListener("input",renderList);addClear($("q"));renderList();
+
+function closeSheet(){hideBg($("sheet"));sheetScroll={};setTimeout(()=>{if($("sheet").hidden)$("sheetBox").style.height=""},320);document.body.style.overflow=""}
+// level 1: a list
+function openList(){
+  if($("sheet").hidden)$("sheetBox").style.height="";else holdSize();
+  $("sheetBox").innerHTML=`${sheetHead("Demo","All items")}<div class="pk-list">${ITEMS.map(row).join("")}</div>`;
+  showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";
+  const c=$("shClose");c.innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>';c.setAttribute("aria-label","Close");c.onclick=closeSheet;
+  $("sheetBox").querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>openItem(+b.dataset.k));
+  sheetActs([["plusl","Add",()=>toast("Added",{kind:"ok",icon:"plusl"})],["heart","Favorite",()=>toast("Favorited",{kind:"ok",icon:"heartf"})]]);
+}
+// level 2: one item, with a back arrow
+function openItem(k){
+  holdSize();
+  $("sheetBox").innerHTML=`${sheetHead("Item "+(k+1),esc(ITEMS[k]))}<p class="sh-d">A nested sheet: the back arrow, a right swipe or a down swipe returns to the list where you left it.</p>
+    <h3>Details</h3><ul class="ing"><li><span>Calories</span><span class="q">650</span></li><li><span>Protein</span><span class="q">32 g</span></li></ul>`;
+  showBg($("sheet"));resetSheet($("sheetBox"));backBtn(openList);
+  sheetActs([["okl","Done",()=>{closeSheet();toast(`${ITEMS[k]} done`,{kind:"ok"})}],["trashl","Remove",()=>{closeSheet();toast(`Removed ${ITEMS[k]}`,{kind:"removed",action:"Undo",onAction:()=>toast("Put back",{kind:"ok"})})}]]);
+}
+swipeDismiss($("sheet"),()=>{if(nestedSheet()){$("shClose").click();return "back"}closeSheet()},nestedSheet);
+$("sheet").addEventListener("click",e=>{if(e.target===$("sheet"))closeSheet()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("sheet").hidden)closeSheet()});
+
+$("openSheet").onclick=openList;
+$("okToast").onclick=()=>toast("Saved",{kind:"ok",icon:"heartf"});
+$("undoToast").onclick=()=>toast("Deleted it",{kind:"removed",ms:6000,action:"Undo",onAction:()=>toast("Restored",{kind:"ok"})});
+$("acct").onclick=()=>openMenu($("acct"),"Account",[["book","Open a sheet",openList],["cog","Settings",()=>toast("Settings",{icon:"cog"})]]);
+$("more").onclick=()=>openMenu($("more"),"More",[["sparkle","Say hello",()=>toast("Hello",{kind:"ok",icon:"sparkle"})],["x","Not now",()=>{},true]]);
+</script>
+</body>
+</html>
