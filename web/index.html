@@ -367,6 +367,12 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 #sheetBox:has(>.rb-foot){display:flex;flex-direction:column}#sheetBox:has(>.rb-foot)>*{flex:none}.rb-foot{margin-top:auto}
 .sh-acts .act[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 .ing .x-rm.rc{margin-left:auto}
+.cm-cats{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 14px}.cm-cats .ic{width:16px;height:16px}
+.cm-fill{display:flex;flex-wrap:wrap;gap:4px 22px}
+.cm-rec{display:flex;align-items:center;gap:10px;margin:0 0 12px;padding:10px 12px;border-radius:12px;background:var(--soft)}.cm-rec .ic{width:17px;height:17px;flex:none}.cm-rec .txt{flex:1;text-align:left}
+.tp-slot{display:grid;grid-template-columns:minmax(0,38%) 1fr auto;align-items:center;gap:12px;width:100%;padding:12px 0;border-bottom:1px solid var(--line);text-align:left}
+.tp-slot .sl{color:var(--muted);font-size:.88rem}.tp-slot .nm{font-size:.95rem}.tp-slot .nm.none{color:var(--muted)}.tp-slot .ic{width:16px;height:16px;color:var(--muted)}
+.tp-row .ed{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:var(--muted)}.tp-row .ed .ic{width:17px;height:17px}
 .tp-days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:6px 0 4px}
 .tp-day{display:flex;flex-direction:column;align-items:center;gap:1px;padding:8px 0;border-radius:12px;border:1px solid var(--line);font-size:.75rem;color:var(--muted)}
 .tp-day b{font-size:1rem;font-weight:500;color:var(--ink)}.tp-day[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}.tp-day[aria-pressed="true"] b{color:var(--bg)}
@@ -1026,7 +1032,9 @@ const num=v=>{const n=+v;return isFinite(n)&&n>=0?Math.min(5000,Math.round(n*10)
 function cleanAddon(x){if(!x||typeof x!=="object")return null;const n=String(x.n||"").trim().slice(0,100);if(!n)return null;
   return{id:/^[a-z0-9]{4,20}$/.test(x.id)?x.id:uid(),pid:typeof x.pid==="string"?x.pid.slice(0,40):"",n,q:clamp(+x.q||1,0.25,20),k:num(x.k),p:num(x.p),c:num(x.c),f:num(x.f)}}
 function cleanExtras(a){return Array.isArray(a)?a.map(cleanAddon).filter(Boolean).slice(0,12):[]}
-function cleanCustom(a){return Array.isArray(a)?a.map(x=>{const b=cleanAddon(x);return b&&{...b,time:/^\d{2}:\d{2}$/.test(x.time)?x.time:"12:00",done:!!x.done}}).filter(Boolean).slice(0,20):[]}
+const MEAL_CATS=[["b","Breakfast","cup"],["s","Snack","cookie"],["l","Lunch","pie"],["d","Dinner","flame"]];
+function cleanCustom(a){return Array.isArray(a)?a.map(x=>{const b=cleanAddon(x);return b&&{...b,time:/^\d{2}:\d{2}$/.test(x.time)?x.time:"12:00",done:!!x.done,
+  cat:MEAL_CATS.some(([k])=>k===x.cat)?x.cat:"",rec:typeof x.rec==="string"?x.rec.slice(0,120):""}}).filter(Boolean).slice(0,20):[]}
 function normalize(s){
   const b=blank(); if(!s||typeof s!=="object")return null;
   b.updatedAt=+s.updatedAt||0;
@@ -1236,20 +1244,28 @@ function ateInstead(d,i){const fromMeal=!$("sheet").hidden&&sheetCtx&&sheetCtx.d
   openCustom(d,null,{time:timeOf(d,i),done:true,replaces:i},fromMeal?()=>backToMeal(d,i):null)}
 // Suggest another: the slot's other recipes to choose from, the ones that bring the day closest to its goal first.
 // From a meal's sheet it opens in place, with a back arrow.
+let sgMode="best";
 function openSuggest(d,i){
   const fromMeal=!$("sheet").hidden&&sheetCtx&&sheetCtx.d===d&&sheetCtx.i===i;if($("sheet").hidden){sheetFocus=document.activeElement;$("sheetBox").style.height=""}
   holdSize();sheetCtx=null;
   const s=SLOTS[i],cur=state.days[d].picks[i],co=s.opts[cur],t=totals(d);
-  const opts=s.opts.map((o,oi)=>({o,oi})).filter(x=>x.oi!==cur&&!x.o.skip&&!isGone(x.o)).map(x=>({...x,gap:Math.abs(t.k-co.k+x.o.k-state.target)})).sort((a,b)=>a.gap-b.gap);
-  // after the best fit comes the quickest to make
-  if(opts.length>2){const rest=opts.slice(1),f=rest.reduce((a,x)=>prepOf(x.o)<prepOf(a.o)?x:a,rest[0]);if(prepOf(f.o)<prepOf(opts[0].o)){opts.splice(opts.indexOf(f),1);opts.splice(1,0,{...f,fast:true})}}
-  $("sheetBox").innerHTML=`${sheetHead(co.skip?esc(s.name):`Instead of ${esc(co.n)}`,"Suggestions")}
-    <div class="pk-list">${opts.map((x,k)=>`<button class="pk-row sg-row" data-oi="${x.oi}">${isFav(x.o.n)?'<svg class="ic fav-ic" aria-label="Favorite"><use href="#i-heartf"/></svg>':""}<span class="nm">${esc(x.o.n)}${k===0&&opts.length>1?` <span class="sg-best">Best fit for today's goal</span>`:x.fast?` <span class="sg-best">Fastest</span>`:""}</span><span class="mt">${fmt(x.o.k)} calories · ${fmt(x.o.p)} g protein${prepOf(x.o)?` · ${prepOf(x.o)} min`:""}</span>${x.o.d?`<span class="mt">${esc(x.o.d)}</span>`:""}</button>`).join("")||`<p class="hint">No other options for ${esc(s.name.toLowerCase())}.</p>`}</div>`;
-  showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";
+  const all=s.opts.map((o,oi)=>({o,oi})).filter(x=>x.oi!==cur&&!x.o.skip&&!isGone(x.o)).map(x=>({...x,gap:Math.abs(t.k-co.k+x.o.k-state.target)}));
+  // more like this: shares the most food groups with the current meal, then closest in calories and protein
+  const same=o=>{let b=(o.gm||0)&(co.gm||0),n=0;while(b){n+=b&1;b>>=1}return n};
+  const SORTS={best:(a,b)=>a.gap-b.gap,like:(a,b)=>same(b.o)-same(a.o)||(Math.abs(a.o.k-co.k)+4*Math.abs(a.o.p-co.p))-(Math.abs(b.o.k-co.k)+4*Math.abs(b.o.p-co.p)),
+    fast:(a,b)=>(prepOf(a.o)||999)-(prepOf(b.o)||999)||a.gap-b.gap};
+  const F=[["best","Best fit","sparkle"],...(co.skip?[]:[["like","More like this","swap"]]),["fast","Fastest","clockl"]];
+  let mode=sgMode==="like"&&co.skip?"best":sgMode;
+  $("sheetBox").innerHTML=`${sheetHead(co.skip?esc(s.name):`Instead of ${esc(co.n)}`,"Suggestions")}<div class="pk-list" id="sgList"></div>
+    <div class="sh-acts rb-foot" role="group" aria-label="Sort">${F.map(([k,l,ic])=>`<button class="act" data-f="${k}" aria-pressed="${k===mode}"><svg class="ic" aria-hidden="true"><use href="#i-${ic}"/></svg><span>${l}</span></button>`).join("")}</div>`;
+  const list=()=>{const opts=all.slice().sort(SORTS[mode]);
+    $("sgList").innerHTML=opts.map((x,k)=>`<button class="pk-row sg-row" data-oi="${x.oi}">${isFav(x.o.n)?'<svg class="ic fav-ic" aria-label="Favorite"><use href="#i-heartf"/></svg>':""}<span class="nm">${esc(x.o.n)}${k===0&&mode==="best"&&opts.length>1?` <span class="sg-best">Best fit for today's goal</span>`:""}</span><span class="mt">${fmt(x.o.k)} calories · ${fmt(x.o.p)} g protein${prepOf(x.o)?` · ${prepOf(x.o)} min`:""}</span>${x.o.d?`<span class="mt">${esc(x.o.d)}</span>`:""}</button>`).join("")||`<p class="hint">No other options for ${esc(s.name.toLowerCase())}.</p>`;
+    $("sgList").querySelectorAll(".sg-row").forEach(b=>b.onclick=()=>{const oi=+b.dataset.oi,o=s.opts[oi];
+      state.days[d].picks[i]=oi;rebalanceDay(d,i);save();refreshAfterMark(d);
+      if(fromMeal)backToMeal(d,i);else closeDetail();toast(`${o.n} for ${s.name.toLowerCase()}`,{kind:"ok",key:"suggest",icon:"sparkle"})})};
+  $("sheetBox").querySelectorAll(".rb-foot .act").forEach(b=>b.onclick=()=>{mode=sgMode=b.dataset.f;$("sheetBox").querySelectorAll(".rb-foot .act").forEach(x=>x.setAttribute("aria-pressed",x===b));list();$("sheetBox").scrollTop=0});
+  list();showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";
   if(fromMeal)backBtn(()=>backToMeal(d,i));else $("shClose").onclick=closeDetail;
-  $("sheetBox").querySelectorAll(".sg-row").forEach(b=>b.onclick=()=>{const oi=+b.dataset.oi,o=s.opts[oi];
-    state.days[d].picks[i]=oi;rebalanceDay(d,i);save();refreshAfterMark(d);
-    if(fromMeal)backToMeal(d,i);else closeDetail();toast(`${o.n} for ${s.name.toLowerCase()}`,{kind:"ok",key:"suggest",icon:"sparkle"})});
   $("shClose").focus();
 }
 // A small action menu anchored to a button. items: [icon, label, action, disabled]
@@ -1349,7 +1365,7 @@ $("planMore").onclick=()=>openMenu($("planMore"),"Day actions",[
   ["book","Recipe book",()=>openRecipeBook()],
   ["shuffle","Shuffle unlocked meals",()=>{rebalanceDay(ui.day,-1,true);updatePlan();save();toast("Shuffled the unlocked meals",{key:"plan",icon:"shuffle"})}],
   ["bookmark","Save day as template",()=>openSaveTemplate(ui.day)],
-  ["copy","Use a template",()=>openTemplates(ui.day),!templates.length],
+  ["copy","Templates",()=>openTemplates(ui.day)],
   ["unlockl","Unlock day",()=>{state.days[ui.day].locked=Array(N).fill(false);updatePlan();save();toast("Day unlocked",{key:"plan",icon:"unlock"})},!state.days[ui.day].locked.some(Boolean)]]); // meals stay as they are until something changes
 
 // A clear (✕) button inside a search box, shown while there's text in it.
@@ -1437,8 +1453,9 @@ function deleteRecipe(i,oi){const o=SLOTS[i].opts[oi];setHidden(o,true);
 const RB_FILTERS=[["all","All","book"],["fav","Favorites","heart"],["b","Breakfast","cup"],["s","Snacks","cookie"],["l","Lunch","pie"],["d","Dinner","flame"],["quick","Quick","clockl"],["protein","High protein","meat"]];
 let rbFilter="all",rbQuery="";
 function recipeRows(){const rows=[];SLOTS.forEach((sl,i)=>sl.opts.forEach((o,oi)=>{if(!o.skip&&!isGone(o))rows.push({i,oi,o})}));return rows}
-function rbMatch(x){const f=rbFilter,i=x.i,sn=SLOTS[i].name.toLowerCase();
-  if(rbQuery&&!(x.o.n+" "+(x.o.d||"")).toLowerCase().includes(rbQuery))return false;
+function rbMatch(x){return rbMatchWith(x,rbFilter,rbQuery)}
+function rbMatchWith(x,f,q){const sn=SLOTS[x.i].name.toLowerCase();
+  if(q&&!(x.o.n+" "+(x.o.d||"")).toLowerCase().includes(q))return false;
   return f==="all"||f==="fav"&&isFav(x.o.n)||f==="b"&&sn==="breakfast"||f==="l"&&sn==="lunch"||f==="d"&&sn==="dinner"||f==="s"&&/snack/.test(sn)||f==="quick"&&prepOf(x.o)&&prepOf(x.o)<=15||f==="protein"&&x.o.p>=40}
 function openRecipeBook(){
   openSheetFresh();$("sheetBox").style.height="calc(100% - 64px)"; // the same height whatever the filter, so it doesn't jump
@@ -1452,6 +1469,22 @@ function openRecipeBook(){
   $("sheetBox").querySelectorAll(".rb-foot .act").forEach(b=>b.onclick=()=>{rbFilter=b.dataset.f;$("sheetBox").querySelectorAll(".rb-foot .act").forEach(x=>x.setAttribute("aria-pressed",x===b));list();$("sheetBox").scrollTop=0});
   $("rbSearch").value=rbQuery;$("rbSearch").addEventListener("input",e=>{rbQuery=e.target.value.trim().toLowerCase();list()});addClear($("rbSearch"));
   list();showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";$("shClose").onclick=closeDetail;$("shClose").focus();
+}
+// Pick a recipe: search at the top, meal filters along the bottom. slot limits it to one meal (templates).
+function openRecipePicker({eyebrow="",title="Choose a recipe",slot=null,filter="all",back,onPick,none=null}){
+  holdSize();sheetCtx=null;let f=slot!=null?"all":filter,q="";
+  const FL=slot!=null?[]:RB_FILTERS.filter(([k])=>k!=="quick"&&k!=="protein");
+  $("sheetBox").innerHTML=`${sheetHead(eyebrow,title)}
+    <div class="rb-top"><label class="pan-search pk-s"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><input type="search" id="rpSearch" placeholder="Search recipes" aria-label="Search recipes"></label></div>
+    <div class="pk-list" id="rpList"></div>
+    ${FL.length?`<div class="sh-acts rb-foot" role="group" aria-label="Filter">${FL.map(([k,l,ic])=>`<button class="act" data-f="${k}" aria-pressed="${k===f}"><svg class="ic" aria-hidden="true"><use href="#i-${ic}"/></svg><span>${l}</span></button>`).join("")}</div>`:""}`;
+  const list=()=>{const rows=recipeRows().filter(x=>(slot==null||x.i===slot)&&rbMatchWith(x,f,q));
+    $("rpList").innerHTML=(none?`<button class="pk-row" data-none="1"><span class="nm">${esc(none)}</span></button>`:"")+rows.map(x=>`<button class="pk-row" data-i="${x.i}" data-oi="${x.oi}">${isFav(x.o.n)?'<svg class="ic fav-ic" aria-label="Favorite"><use href="#i-heartf"/></svg>':""}<span class="nm">${esc(x.o.n)}</span><span class="mt">${slot==null?`${esc(SLOTS[x.i].name)} · `:""}${fmt(x.o.k)} calories · ${fmt(x.o.p)} g protein${prepOf(x.o)?` · ${prepOf(x.o)} min`:""}</span></button>`).join("")||`<p class="hint">No recipes match.</p>`;
+    $("rpList").querySelectorAll("[data-oi]").forEach(b=>b.onclick=()=>onPick(+b.dataset.i,+b.dataset.oi));
+    const nb=$("rpList").querySelector("[data-none]");if(nb)nb.onclick=()=>onPick(null,null)};
+  $("sheetBox").querySelectorAll(".rb-foot .act").forEach(b=>b.onclick=()=>{f=b.dataset.f;$("sheetBox").querySelectorAll(".rb-foot .act").forEach(x=>x.setAttribute("aria-pressed",x===b));list();$("sheetBox").scrollTop=0});
+  $("rpSearch").addEventListener("input",e=>{q=e.target.value.trim().toLowerCase();list()});addClear($("rpSearch"));
+  list();showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";backBtn(back);$("shClose").focus();
 }
 function openRecipe(i,oi){
   holdSize();sheetCtx=null;const o=SLOTS[i].opts[oi],d=ui.day,cur=state.days[d].picks[i]===oi;
@@ -1501,19 +1534,43 @@ function applyTemplate(t,days){
       if(t.times&&/^\d{2}:\d{2}$/.test(t.times[i]||""))dy.times[i]=t.times[i]===state.times[i]?null:t.times[i]})});
   save();renderAll(false);
 }
+// Build a template (or edit one) by picking a recipe for each meal of the day.
+function openTemplateEditor(t,back,draft){
+  holdSize();sheetCtx=null;
+  const v=draft||{name:t?t.name:"",meals:t?t.meals.slice():SLOTS.map(()=>""),times:t&&t.times?t.times.slice():state.times.slice()};
+  const opt=i=>SLOTS[i].opts.find(o=>o.n===v.meals[i]&&!o.skip),picked=SLOTS.map((_,i)=>opt(i)).filter(Boolean),skipped=i=>v.meals[i]===SKIP.n;
+  $("sheetBox").innerHTML=`${sheetHead("",t?"Edit template":"New template",{action:{id:"teSave",label:"Save"}})}
+    <p class="msg pf-msg" id="teMsg" role="status"></p>
+    <div class="pf"><label for="teName">Name</label><input id="teName" type="text" maxlength="40" value="${esc(v.name)}" placeholder="e.g. Training day"></div>
+    <h3>Meals</h3><div>${SLOTS.map((sl,i)=>{const o=opt(i);return `<button class="tp-slot" data-s="${i}"><span class="sl">${esc(sl.name)}</span><span class="nm${o?"":" none"}">${o?esc(o.n):skipped(i)?"Skipped":"Choose a recipe"}</span><svg class="ic" aria-hidden="true"><use href="#i-plusl"/></svg></button>`}).join("")}</div>
+    <p class="fine">${picked.length} meal${picked.length===1?"":"s"} · ${fmt(picked.reduce((a,o)=>a+o.k,0))} calories · ${fmt(picked.reduce((a,o)=>a+o.p,0))} g protein</p>`;
+  showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";backBtn(back);
+  const need=()=>{$("teSave").disabled=!$("teName").value.trim()||!picked.length};$("teName").addEventListener("input",e=>{v.name=e.target.value;need()});need();
+  $("sheetBox").querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{const i=+b.dataset.s;
+    openRecipePicker({eyebrow:t?t.name:"New template",title:SLOTS[i].name,slot:i,none:HAS_SKIP[i]?"Skip this one":null,back:()=>openTemplateEditor(t,back,v),
+      onPick:(si,oi)=>{v.meals[i]=oi==null?SKIP.n:SLOTS[i].opts[oi].n;openTemplateEditor(t,back,v)}})});
+  $("teSave").onclick=()=>{const name=v.name.trim();if(!name){$("teMsg").textContent="Add a name.";$("teName").focus();return}
+    // a slot left empty keeps whatever that day already has
+    const tpl={id:t?t.id:uid(),name,meals:v.meals.slice(),times:v.times};
+    templates=templates.filter(x=>x!==t&&x.name.toLowerCase()!==name.toLowerCase());templates.unshift(tpl);saveTemplates();
+    toast(`Saved “${name}”`,{kind:"ok",key:"tpl",icon:"bookmark"});back()};
+}
 function openTemplates(d){
   openSheetFresh();const pick=new Set([d]);
   const render=()=>{
     $("sheetBox").innerHTML=`${sheetHead("","Templates")}
       <h3>Apply to</h3><div class="tp-days" role="group" aria-label="Days to apply to">${Array.from({length:D},(_,k)=>`<button class="tp-day" data-d="${k}" aria-pressed="${pick.has(k)}"><span>${wk(k)}</span><b>${dayDate(k).getDate()}</b></button>`).join("")}</div>
-      <h3>Templates</h3><div class="pk-list">${templates.map((t,k)=>`<div class="tp-row"><button class="pk-row" data-t="${k}"><span class="nm">${esc(t.name)}</span><span class="mt">${tplSummary(t)}</span></button><button class="x-rm" data-del="${k}" aria-label="Delete ${esc(t.name)}"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></div>`).join("")||`<p class="hint">No templates yet.</p>`}</div>`;
-    $("shClose").onclick=closeDetail;
+      <h3>Templates</h3><div class="pk-list">${templates.map((t,k)=>`<div class="tp-row"><button class="pk-row" data-t="${k}"><span class="nm">${esc(t.name)}</span><span class="mt">${tplSummary(t)}</span></button><button class="ed" data-ed="${k}" aria-label="Edit ${esc(t.name)}"><svg class="ic" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="x-rm" data-del="${k}" aria-label="Delete ${esc(t.name)}"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></div>`).join("")||`<p class="hint">No templates yet. Build one from recipes, or save a day you like.</p>`}</div>`;
+    $("shClose").onclick=closeDetail;$("shClose").innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>';$("shClose").setAttribute("aria-label","Close");
+    sheetActs([["plusl","New template",()=>openTemplateEditor(null,again)],["bookmark",`Save ${isToday(d)?"today":wk(d,"long")} as a template`,()=>openSaveTemplate(d)]]);
+    $("sheetBox").querySelectorAll("[data-ed]").forEach(b=>b.onclick=()=>openTemplateEditor(templates[+b.dataset.ed],again));
     $("sheetBox").querySelectorAll(".tp-day").forEach(b=>b.onclick=()=>{const k=+b.dataset.d;pick.has(k)?pick.delete(k):pick.add(k);b.setAttribute("aria-pressed",pick.has(k))});
     $("sheetBox").querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{if(!pick.size){toast("Pick at least one day",{key:"tpl",icon:"cal"});return}
       const t=templates[+b.dataset.t],ds=[...pick].sort((a,b)=>a-b);applyTemplate(t,ds);closeDetail();
       toast(`“${t.name}” on ${ds.length===1?(isToday(ds[0])?"today":wk(ds[0],"long")):`${ds.length} days`}`,{kind:"ok",key:"tpl"})});
     $("sheetBox").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{const t=templates[+b.dataset.del];templates=templates.filter(x=>x!==t);saveTemplates();render();toast(`Deleted “${t.name}”`,{key:"tpl",icon:"trashl"})});
   };
+  const again=()=>{holdSize();render();showBg($("sheet"))};
   render();showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";$("shClose").focus();
 }
 
@@ -2611,13 +2668,16 @@ function openCustom(d,id,pre,back){
   if($("sheet").hidden)sheetFocus=document.activeElement;
   if(back)holdSize();sheetCtx=null;
   const now=new Date(),nm=now.getHours()*60+now.getMinutes(),past=iso(dayDate(d))<iso(now);
-  const base=x?{n:x.n,time:x.time,...mac(x),pid:x.pid,done:x.done}:{n:"",time:isToday(d)?toHM(Math.min(23*60+55,Math.round(nm/5)*5)):"12:00",k:"",p:"",c:"",f:"",pid:"",done:null};
+  const base=x?{n:x.n,time:x.time,...mac(x),pid:x.pid,done:x.done,cat:x.cat||"",rec:x.rec||""}:{n:"",time:isToday(d)?toHM(Math.min(23*60+55,Math.round(nm/5)*5)):"12:00",k:"",p:"",c:"",f:"",pid:"",done:null,cat:"",rec:""};
   const v={...base,...(pre||{})};if(v.done==null)v.done=past||isToday(d)&&mins(v.time)<=nm;
   const nv=k=>v[k]===""||v[k]==null?"":+(+v[k]).toFixed(1);
   $("sheetBox").innerHTML=`
     ${sheetHead(v.replaces!=null?`Instead of ${esc(SLOTS[v.replaces].opts[state.days[d].picks[v.replaces]].n)}`:[isToday(d)?"":shortDate(d),x&&x.done?"Eaten":""].filter(Boolean).join(" · "),x?esc(x.n):v.replaces!=null?"What did you eat?":"Add a meal",{action:{id:"cmSave",label:x?"Save":"Add"}})}
     <p class="msg pf-msg" id="cmMsg" role="status"></p>
-    <button class="txt with-ic sh-add" id="cmPantry"><svg class="ic" aria-hidden="true"><use href="#i-pantry"/></svg>Fill in from your pantry</button>
+    <div class="cm-cats" role="group" aria-label="Meal">${MEAL_CATS.map(([k,l,ic])=>`<button class="pan-opt with-ic" data-cat="${k}" aria-pressed="${v.cat===k}"><svg class="ic" aria-hidden="true"><use href="#i-${ic}"/></svg>${l}</button>`).join("")}</div>
+    ${v.rec?`<div class="cm-rec"><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg><button class="txt" id="cmRecOpen">${esc(v.rec)}</button><button class="x-rm" id="cmRecX" aria-label="Unlink the recipe"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></div>`:""}
+    <div class="cm-fill"><button class="txt with-ic sh-add" id="cmRecipe"><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg>${v.rec?"Use a different recipe":"Fill in from a recipe"}</button>
+    <button class="txt with-ic sh-add" id="cmPantry"><svg class="ic" aria-hidden="true"><use href="#i-pantry"/></svg>Fill in from your pantry</button></div>
     <div class="pf">
       <label for="cmName">Name</label><input id="cmName" type="text" maxlength="100" value="${esc(v.n)}" placeholder="e.g. Burrito from the café">
       <label for="cmTime">Time</label><input id="cmTime" type="time" step="300" value="${esc(v.time)}">
@@ -2629,14 +2689,23 @@ function openCustom(d,id,pre,back){
     <label class="rem-all"><input type="checkbox" id="cmDone"${v.done?" checked":""}> I've eaten this</label>
 `;
   showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";if(back)backBtn(back);else{$("shClose").onclick=closeDetail;$("shClose").setAttribute("aria-label","Close")}
-  const cur=()=>({n:$("cmName").value,time:$("cmTime").value||v.time,k:$("cmK").value,p:$("cmP").value,c:$("cmC").value,f:$("cmF").value,pid:v.pid,done:$("cmDone").checked,replaces:v.replaces});
+  const cur=()=>({n:$("cmName").value,time:$("cmTime").value||v.time,k:$("cmK").value,p:$("cmP").value,c:$("cmC").value,f:$("cmF").value,pid:v.pid,done:$("cmDone").checked,replaces:v.replaces,cat:v.cat,rec:v.rec});
+  // a meal category: picking one also narrows the recipe list to it
+  $("sheetBox").querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{v.cat=v.cat===b.dataset.cat?"":b.dataset.cat;$("sheetBox").querySelectorAll("[data-cat]").forEach(y=>y.setAttribute("aria-pressed",y.dataset.cat===v.cat))});
+  const recIx=n=>{for(let i=0;i<N;i++){const oi=SLOTS[i].opts.findIndex(o=>o.n===n&&!o.skip);if(oi>=0)return[i,oi]}return null};
+  const catOf=i=>{const sn=SLOTS[i].name.toLowerCase();return /snack/.test(sn)?"s":sn==="breakfast"?"b":sn==="lunch"?"l":"d"};
+  $("cmRecipe").onclick=()=>{const c=cur();openRecipePicker({eyebrow:x?x.n:"Add a meal",filter:c.cat||"all",back:()=>openCustom(d,id,c,back),
+    onPick:(i,oi)=>{const o=SLOTS[i].opts[oi];openCustom(d,id,{...c,n:o.n,k:o.k,p:o.p,c:o.c,f:o.f,rec:o.n,cat:c.cat||catOf(i),pid:""},back)}})};
+  if($("cmRecX"))$("cmRecX").onclick=()=>{openCustom(d,id,{...cur(),rec:""},back)};
+  if($("cmRecOpen"))$("cmRecOpen").onclick=()=>{const c=cur(),ix=recIx(c.rec);if(!ix){toast("That recipe isn't in the library any more",{key:"rec",icon:"book"});return}
+    openRecipe(ix[0],ix[1]);backBtn(()=>openCustom(d,id,c,back))};
   $("cmPantry").onclick=()=>{const c=cur();openPantryPicker({eyebrow:x?x.n:"Add a meal",title:"Fill in from pantry",servings:true,back:()=>openCustom(d,id,c,back),
     onPick:(it,q)=>{const a=addonFrom(it,q),m=mac(a);openCustom(d,id,{...c,n:q===1?it.name:`${it.name} (${+q.toFixed(1)} servings)`,k:m.k,p:m.p,c:m.c,f:m.f,pid:it.id},back)}})};
   const need=()=>{$("cmSave").disabled=!$("cmName").value.trim()};$("cmName").addEventListener("input",need);need();
   $("cmSave").onclick=()=>{const c=cur(),n=c.n.trim();if(!n){$("cmMsg").textContent="Add a name.";$("cmName").focus();return}
     if(!/^\d{2}:\d{2}/.test(c.time)){$("cmMsg").textContent="Pick a time.";$("cmTime").focus();return}
     if(v.replaces!=null&&!isMissed(d,v.replaces))setMissed(d,v.replaces,true);
-    saveCustom(d,{id:x?x.id:uid(),pid:c.pid||"",n:n.slice(0,100),q:1,k:num(c.k),p:num(c.p),c:num(c.c),f:num(c.f),time:c.time.slice(0,5),done:c.done});
+    saveCustom(d,{id:x?x.id:uid(),pid:c.pid||"",n:n.slice(0,100),q:1,k:num(c.k),p:num(c.p),c:num(c.c),f:num(c.f),time:c.time.slice(0,5),done:c.done,cat:c.cat||"",rec:c.rec||""});
     closeDetail();toast(x?"Meal saved":`Added ${n} to ${isToday(d)?"today":wk(d,"long")}`,{kind:"ok",key:"custom",icon:"plusl"})};
   if(x){const m=mealsOf(d).find(y=>y.cid===x.id);sheetActs([
     ["ok",x.done?"Unmark eaten":"Mark eaten",()=>{setCustomDone(d,x.id,!x.done);openCustom(d,x.id)}],
@@ -2785,8 +2854,8 @@ function parseJSON(t,fb){try{return t?JSON.parse(t):fb}catch(e){return fb}}
 function desiredOf(d,i){const o=SLOTS[i].opts[state.days[d].picks[i]],ex=o.skip?[]:exOf(d,i),x=exSum(ex);
   return{meal:o.skip?"Skipped":o.n,when:`${iso(dayDate(d))} ${timeOf(d,i)}`,locked:!!state.days[d].locked[i],eaten:isDone(d,i),skipped:isMissed(d,i),k:Math.round((o.k||0)+x.k),p:Math.round((o.p||0)+x.p),extras:exJSON(ex)}}
 const ckey=(d,x)=>`${iso(dayDate(d))} c${x.id}`;
-function desiredC(d,x){const m=mac(x);return{meal:x.n,when:`${iso(dayDate(d))} ${x.time}`,locked:false,eaten:!!x.done,skipped:false,k:Math.round(m.k),p:Math.round(m.p),extras:JSON.stringify({k:x.k,p:x.p,c:x.c,f:x.f,q:x.q,pid:x.pid})}}
-function customFromRow(cid,v){const e=parseJSON(v.extras,{})||{};return cleanCustom([{id:cid,n:v.meal,time:v.when.slice(11,16),done:v.eaten,k:e.k,p:e.p,c:e.c,f:e.f,q:e.q||1,pid:e.pid}])[0]}
+function desiredC(d,x){const m=mac(x);return{meal:x.n,when:`${iso(dayDate(d))} ${x.time}`,locked:false,eaten:!!x.done,skipped:false,k:Math.round(m.k),p:Math.round(m.p),extras:JSON.stringify({k:x.k,p:x.p,c:x.c,f:x.f,q:x.q,pid:x.pid,...(x.cat?{cat:x.cat}:{}),...(x.rec?{rec:x.rec}:{})})}}
+function customFromRow(cid,v){const e=parseJSON(v.extras,{})||{};return cleanCustom([{id:cid,n:v.meal,time:v.when.slice(11,16),done:v.eaten,k:e.k,p:e.p,c:e.c,f:e.f,q:e.q||1,pid:e.pid,cat:e.cat,rec:e.rec}])[0]}
 // Times sync as wall-clock HH:MM (the Time column) so devices in different time zones agree.
 // Older rows without it fall back to When in this device's zone, and get Time filled in on the next push.
 function rowVal(r){const t=String(r.time||"").trim(),has=/^\d{2}:\d{2}$/.test(t);
@@ -2902,7 +2971,9 @@ document.querySelectorAll("[data-gt]").forEach(b=>b.onclick=()=>goalsTab(b.datas
 function openGoals(focusId,tab){goalsFocus=document.activeElement;renderSettings();$("gpGoals").scrollTop=$("gpSettings").scrollTop=0;goalsTab(tab||(focusId==="passcode"?"settings":"goals"));showBg($("goals"));document.body.style.overflow="hidden";
   setTimeout(()=>{const el=$(focusId||"goalsClose");if(el){el.focus();if(focusId)el.scrollIntoView({block:"center"})}},30)}
 function closeGoals(){hideBg($("goals"));document.body.style.overflow="";if(goalsFocus&&document.contains(goalsFocus))goalsFocus.focus()}
-$("goalsBtn").onclick=()=>openMenu($("goalsBtn"),"Account",[["flame","Goals",()=>openGoals(null,"goals")],["cog","Settings",()=>openGoals(null,"settings")]]);$("goalsClose").onclick=closeGoals;
+$("goalsBtn").onclick=()=>openMenu($("goalsBtn"),"Account",[
+  ["book","Recipe book",()=>{rbFilter="all";openRecipeBook()}],["heart","Favorites",()=>{rbFilter="fav";openRecipeBook()}],
+  ["copy","Templates",()=>openTemplates(ui.day)],["flame","Goals",()=>openGoals(null,"goals")],["cog","Settings",()=>openGoals(null,"settings")]]);$("goalsClose").onclick=closeGoals;
 $("goals").addEventListener("click",e=>{if(e.target===$("goals"))closeGoals()});
 document.addEventListener("keydown",e=>{
   if($("goals").hidden)return;
@@ -3404,24 +3475,37 @@ document.addEventListener("visibilitychange",()=>{if(document.visibilityState===
 /* ---------- swipe a sheet down to dismiss it (touch screens) ----------
    Starts only when the sheet (or the panel under the finger) is scrolled to the top, and the drag is mostly
    downward. Past about a third of the sheet, or a quick flick, closes it; otherwise it springs back. */
-function swipeDismiss(bg,close){
-  const sh=bg.querySelector(".sheet");let y0=null,x0=0,dy=0,t0=0,drag=false;
+function swipeDismiss(bg,close,canBack){
+  const sh=bg.querySelector(".sheet");let y0=null,x0=0,dy=0,dx=0,t0=0,drag=null,down=false;
   const scrolled=t=>{for(let el=t;el&&el!==bg;el=el.parentElement)if(el.scrollTop>0&&el.scrollHeight>el.clientHeight+1)return true;return false};
-  sh.addEventListener("touchstart",e=>{y0=null;if(e.touches.length!==1||scrolled(e.target)||/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))return;
-    y0=e.touches[0].clientY;x0=e.touches[0].clientX;t0=Date.now();dy=0;drag=false},{passive:true});
-  sh.addEventListener("touchmove",e=>{if(y0==null)return;const t=e.touches[0];dy=t.clientY-y0;
-    if(!drag){if(dy>8&&dy>Math.abs(t.clientX-x0))drag=true;else{if(dy<-6||Math.abs(t.clientX-x0)>12)y0=null;return}}
-    e.preventDefault();const d=Math.max(0,dy);sh.style.transition="none";sh.style.transform=`translateY(${d}px)`;
-    bg.style.background=`rgba(0,0,0,${(.38*(1-Math.min(1,d/sh.offsetHeight))).toFixed(3)})`},{passive:false});
-  const end=()=>{if(y0==null)return;y0=null;if(!drag)return;drag=false;const v=dy/Math.max(1,Date.now()-t0);
-    if(dy>Math.min(140,sh.offsetHeight*.3)||(v>.6&&dy>30)){
-      // in a sheet opened from another (it has a back arrow), the swipe only goes back to that one
-      if(close()==="back"){sh.style.transition="transform .25s ease";sh.style.transform="";bg.style.background="";setTimeout(()=>{sh.style.transition=""},260);return}
-      setTimeout(()=>{sh.style.transform="";sh.style.transition="";bg.style.background=""},320)}
-    else{sh.style.transition="transform .2s ease";sh.style.transform="";bg.style.background="";setTimeout(()=>{sh.style.transition=""},220)}};
+  // a horizontal strip that scrolls (chips, the timeline) keeps its own swipes
+  const hScroll=t=>{for(let el=t;el&&el!==sh;el=el.parentElement)if(el.scrollWidth>el.clientWidth+1&&/(auto|scroll)/.test(getComputedStyle(el).overflowX))return true;return false};
+  const reset=(ms)=>{sh.style.transition=ms?`transform ${ms}ms ease,opacity ${ms}ms ease`:"";sh.style.transform="";sh.style.opacity="";bg.style.background="";if(ms)setTimeout(()=>{sh.style.transition=""},ms+20)};
+  sh.addEventListener("touchstart",e=>{y0=null;if(e.touches.length!==1||/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))return;
+    y0=e.touches[0].clientY;x0=e.touches[0].clientX;t0=Date.now();dy=dx=0;drag=null;down=!scrolled(e.target)},{passive:true});
+  sh.addEventListener("touchmove",e=>{if(y0==null)return;const t=e.touches[0];dy=t.clientY-y0;dx=t.clientX-x0;
+    if(!drag){
+      if(down&&dy>8&&dy>Math.abs(dx))drag="y";
+      else if(dx>10&&dx>Math.abs(dy)*1.3&&canBack&&canBack()&&!hScroll(e.target))drag="x";
+      else{if(dy<-6||Math.abs(dx)>14||(!down&&dy>6))y0=null;return}}
+    e.preventDefault();sh.style.transition="none";
+    if(drag==="y"){const d=Math.max(0,dy);sh.style.transform=`translateY(${d}px)`;bg.style.background=`rgba(0,0,0,${(.38*(1-Math.min(1,d/sh.offsetHeight))).toFixed(3)})`}
+    else{const d=Math.max(0,dx);sh.style.transform=`translateX(${d}px)`;sh.style.opacity=String(1-Math.min(.5,d/sh.offsetWidth))}},{passive:false});
+  const end=()=>{if(y0==null)return;y0=null;if(!drag)return;const dir=drag;drag=null;const ms=Math.max(1,Date.now()-t0);
+    if(dir==="x"){
+      // swiping right in a sheet opened from another goes back to that one
+      if(dx>Math.min(110,sh.offsetWidth*.28)||(dx/ms>.5&&dx>40)){sh.style.transition="transform .16s ease,opacity .16s ease";sh.style.transform=`translateX(${sh.offsetWidth*.35}px)`;sh.style.opacity=".4";
+        setTimeout(()=>{close("back");sh.style.transition="none";sh.style.transform="translateX(-24px)";sh.style.opacity=".4";requestAnimationFrame(()=>reset(220))},160)}
+      else reset(200);return}
+    if(dy>Math.min(140,sh.offsetHeight*.3)||(dy/ms>.6&&dy>30)){
+      // in a sheet opened from another (it has a back arrow), swiping down also only goes back to that one
+      if(close()==="back"){reset(250);return}
+      setTimeout(()=>reset(0),320)}
+    else reset(200)};
   sh.addEventListener("touchend",end);sh.addEventListener("touchcancel",end);
 }
-swipeDismiss($("sheet"),()=>{const c=$("shClose");if(c&&c.getAttribute("aria-label")==="Back"){c.click();return "back"}closeDetail()});swipeDismiss($("infoBg"),()=>closeInfo());swipeDismiss($("goals"),()=>closeGoals());
+const nestedSheet=()=>{const c=$("shClose");return !!c&&c.getAttribute("aria-label")==="Back"};
+swipeDismiss($("sheet"),()=>{if(nestedSheet()){$("shClose").click();return "back"}closeDetail()},nestedSheet);swipeDismiss($("infoBg"),()=>closeInfo());swipeDismiss($("goals"),()=>closeGoals());
 
 /* ---------- shake to shuffle ---------- */
 const SHAKEKEY="gf-gain-planner-shake";

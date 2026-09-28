@@ -139,7 +139,9 @@ An ingredient can be taken out of a recipe with its ✕ in the Recipe book, or *
 
 ## Day templates
 
-In the Plan tab's ⋯ menu, **Save day as template** keeps the day's meals and times under a name. **Use a template** lists them: pick the days to apply one to (the day you're on is picked already) and tap the template. Its meals are locked on those days, so rebalancing leaves them as they were. Templates are kept on this device.
+**Templates** (in the account menu under the person icon, or the Plan tab's ⋯ menu) lists your templates: pick the days to apply one to (the day you're on is picked already) and tap the template. Its meals are locked on those days, so rebalancing leaves them as they were. **New template** builds one from recipes, choosing a recipe (or Skip, for snacks) for each meal; a meal left empty keeps whatever the day already has. The pencil edits a template, and **Save … as a template** keeps a day you like. Templates are kept on this device.
+
+**Add a meal** can be tagged Breakfast, Snack, Lunch or Dinner, and **Fill in from a recipe** picks one from the library (filtered to that meal) to fill in its name and macros; the recipe stays linked, so the meal opens it. **Suggestions** can be sorted by **Best fit** for the day's goal, **More like this** (the most food groups in common, then the closest calories and protein) or **Fastest**. The account menu also opens the Recipe book and Favorites. In a sheet opened from another, swiping right (or down) goes back a level.
 
 ## Shake to shuffle
 
