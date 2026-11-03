@@ -19,10 +19,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="ui/kit.css?v=__BUILD__">
 <link rel="stylesheet" href="app.css?v=__BUILD__">
+<link rel="stylesheet" href="sections.css?v=__BUILD__">
 </head>
 <body>
 <script src="ui/icons.js?v=__BUILD__"></script>
-<header class="app-head">
+<header class="app-head" id="foodHead">
   <div class="h-txt"><h1 class="h-title" id="hTitle" title="Back to top">Today</h1></div>
   <div class="head-r">
     <button class="icon-btn sync-btn" id="notionBtn" hidden aria-label="Notion" title="Notion"><svg class="ic" aria-hidden="true"><use href="#i-cloud"/></svg></button>
@@ -32,7 +33,7 @@
   </div>
 </header>
 
-<main>
+<main id="foodMain">
   <nav class="strip narrow" id="strip" aria-label="Days of the week"></nav>
 
   <!-- PLAN -->
@@ -133,7 +134,7 @@
 <div class="sheet-bg" id="infoBg" hidden><div class="sheet" id="infoBox" role="dialog" aria-modal="true" aria-labelledby="infoTitle"></div></div>
 
 <div class="toasts" id="toasts" aria-live="polite"></div>
-<nav class="tabbar" aria-label="Sections">
+<nav class="tabbar" id="foodTabbar" aria-label="Food views">
   <button data-tab="plan" aria-current="page" aria-label="Plan" title="Plan"><svg class="ic" aria-hidden="true"><use href="#i-plan"/></svg></button>
   <button data-tab="cal" aria-label="Calendar" title="Calendar"><svg class="ic" aria-hidden="true"><use href="#i-cal"/></svg></button>
   <button data-tab="dash" aria-label="Dashboard" title="Dashboard"><svg class="ic" aria-hidden="true"><use href="#i-dash"/></svg></button>
@@ -146,5 +147,7 @@
 <script src="ui/kit.js?v=__BUILD__"></script>
 <script src="ui/api.js?v=__BUILD__"></script>
 <script src="app.js?v=__BUILD__"></script>
+<script src="home.js?v=__BUILD__"></script>
+<script src="sections.js?v=__BUILD__"></script>
 </body>
 </html>
