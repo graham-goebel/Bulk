@@ -31,6 +31,10 @@ function sampleHome(){const T=dISO(dayAt(0)),P=dISO(dayAt(-2)),id=()=>uid();
     {id:id(),n:"Family dinner",date:dISO(dayAt(3)),start:"18:30",end:"20:00",cal:"Family",where:""}]};saveHome()}
 if(/(^|[?&])demo\b/.test(location.search)&&!home.tasks.length&&!home.events.length)sampleHome();
 
+// The week under the header, like the meal planner's: picking a day shows it (Today) or starts the list there (Calendar).
+function weekStrip(){return `<nav class="strip narrow hm-strip" aria-label="Days">${[0,1,2,3,4,5,6].map(k=>{const d=dayAt(k),s=dISO(d),has=eventsOn(s).length||tasksOn(s).length;
+  return `<button data-k="${k}" aria-pressed="${k===homeDay}"${k===0?' class="today"':""}><span>${d.toLocaleDateString("en-US",{weekday:"short"})}</span><b>${d.getDate()}</b>${has?'<i class="has"></i>':""}</button>`}).join("")}</nav>`}
+function bindStrip(root,again){root.querySelectorAll(".hm-strip [data-k]").forEach(b=>b.onclick=()=>{homeDay=+b.dataset.k;again()})}
 /* ---------- Today ---------- */
 function homeToday(body){
   const day=dayAt(homeDay),S=dISO(day),isT=homeDay===0,now=nowMins();
@@ -47,11 +51,10 @@ function homeToday(body){
     :next?`<p class="hm-now-t">Next up: ${esc(next.n)} at ${fmtTime(next.start)}.</p><p class="hm-now-s">In ${ago(mins(next.start)-now,true)}. ${left} task${left===1?"":"s"} open today.</p>`
     :isT?`<p class="hm-now-t">No more events today.</p><p class="hm-now-s">${left} task${left===1?"":"s"} open.</p>`:"";
   body.innerHTML=`
-    <div class="hm-top"><div class="hm-clock">${hh}:${mm}<small>${clock.getHours()>=12?"PM":"AM"}</small></div>
-      <p class="hm-date">${day.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}</p></div>
-    <div class="hm-week">${[0,1,2,3,4,5,6].map(k=>{const d=dayAt(k),s=dISO(d),has=eventsOn(s).length||tasksOn(s).length;
-      return `<button class="hm-wd" data-k="${k}" aria-pressed="${k===homeDay}"><span>${d.toLocaleDateString("en-US",{weekday:"short"})}</span><b>${d.getDate()}</b><i class="${has?"on":""}"></i></button>`}).join("")}</div>
-    <div class="hm-legend">${Object.entries(CALS).map(([n,c])=>`<span>${dot(c)}${n}</span>`).join("")}</div>
+    ${weekStrip()}
+    <div class="hm-page narrow"><div class="hm-top"><div class="hm-clock">${hh}:${mm}<small>${clock.getHours()>=12?"PM":"AM"}</small></div>
+      <p class="hm-date">${day.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}</p>
+      <div class="hm-legend">${Object.entries(CALS).map(([n,c])=>`<span>${dot(c)}${n}</span>`).join("")}</div></div>
     <div class="hm-grid">
       <div class="hm-left">
         <p class="hm-count"><b>${left}</b> task${left===1?"":"s"} to do</p>
@@ -69,8 +72,8 @@ function homeToday(body){
         </div>
       </div>
     </div>
-    ${!home.tasks.length&&!home.events.length?`<p class="hint hm-sample">New here? <button class="txt" id="hmSample">Fill in a sample week</button> to see how it works.</p>`:""}`;
-  body.querySelectorAll(".hm-wd").forEach(b=>b.onclick=()=>{homeDay=+b.dataset.k;homeToday(body)});
+    ${!home.tasks.length&&!home.events.length?`<p class="hint hm-sample">New here? <button class="txt" id="hmSample">Fill in a sample week</button> to see how it works.</p>`:""}</div>`;
+  bindStrip(body,()=>homeToday(body));
   bindRows(body,()=>homeToday(body));
   const fl=body.querySelector(".hm-food");if(fl)fl.onclick=()=>showSection("food");
   if($("hmSample"))$("hmSample").onclick=()=>{sampleHome();homeToday(body)};
@@ -130,18 +133,18 @@ function editEvent(e,again){const v=e||{n:"",date:dISO(dayAt(homeDay)),start:"09
 
 /* ---------- Calendar: the next two weeks, day by day ---------- */
 function homeCalendar(body){const again=()=>homeCalendar(body);
-  body.innerHTML=`<div class="hm-legend">${Object.entries(CALS).map(([n,c])=>`<span>${dot(c)}${n}</span>`).join("")}</div>`+
-    Array.from({length:14},(_,k)=>{const d=dayAt(k),s=dISO(d),evs=eventsOn(s),ts=k?openTasks().filter(t=>t.due===s):tasksOn(s);
+  body.innerHTML=weekStrip()+`<div class="hm-page narrow"><div class="hm-legend">${Object.entries(CALS).map(([n,c])=>`<span>${dot(c)}${n}</span>`).join("")}</div>`+
+    Array.from({length:14},(_,j)=>{const k=homeDay+j,d=dayAt(k),s=dISO(d),evs=eventsOn(s),ts=k?openTasks().filter(t=>t.due===s):tasksOn(s);
       return `<section class="hm-day"><h3>${k===0?"Today":k===1?"Tomorrow":d.toLocaleDateString("en-US",{weekday:"long"})}<span>${d.toLocaleDateString("en-US",{month:"short",day:"numeric"})}</span></h3>
-        ${evs.map(e=>eventRow(e,false)).join("")}${ts.map(taskRow).join("")}${!evs.length&&!ts.length?`<p class="hint">Free</p>`:""}</section>`}).join("");
-  bindRows(body,again)}
+        ${evs.map(e=>eventRow(e,false)).join("")}${ts.map(taskRow).join("")}${!evs.length&&!ts.length?`<p class="hint">Free</p>`:""}</section>`}).join("")+`</div>`;
+  bindRows(body,again);bindStrip(body,again)}
 
 /* ---------- Tasks: everything by when it's due ---------- */
 function homeTasks(body){const again=()=>homeTasks(body),T=todayISO(),all=openTasks().sort((a,b)=>(a.due||"9").localeCompare(b.due||"9"));
   const groups=[["Overdue",all.filter(t=>t.due&&t.due<T)],["Today",all.filter(t=>t.due===T)],["Upcoming",all.filter(t=>t.due>T)],["Anytime",all.filter(t=>!t.due)]];
-  body.innerHTML=(all.length?groups.filter(g=>g[1].length).map(([h,ts])=>`<section class="hm-day"><h3>${h}<span>${ts.length}</span></h3>${ts.map(taskRow).join("")}</section>`).join("")
+  body.innerHTML=`<div class="hm-page narrow">`+(all.length?groups.filter(g=>g[1].length).map(([h,ts])=>`<section class="hm-day"><h3>${h}<span>${ts.length}</span></h3>${ts.map(taskRow).join("")}</section>`).join("")
     :`<div class="sec-empty"><svg class="ic" aria-hidden="true"><use href="#i-okl"/></svg><p class="sec-empty-t">No open tasks</p><p class="hint">Add one with +.</p></div>`)
-    +(home.tasks.some(t=>t.done)?`<p class="hint hm-sample">${home.tasks.filter(t=>t.done).length} done · <button class="txt" id="hmClear">Clear done</button></p>`:"");
+    +(home.tasks.some(t=>t.done)?`<p class="hint hm-sample">${home.tasks.filter(t=>t.done).length} done · <button class="txt" id="hmClear">Clear done</button></p>`:"")+`</div>`;
   bindRows(body,again);if($("hmClear"))$("hmClear").onclick=()=>{home.tasks=home.tasks.filter(t=>!t.done);saveHome();again()}}
 
 window.SECTION_VIEWS=Object.assign(window.SECTION_VIEWS||{},{"home.today":homeToday,"home.calendar":homeCalendar,"home.tasks":homeTasks});

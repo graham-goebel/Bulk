@@ -1,8 +1,9 @@
 /* Sections: the sidebar and the non-food sections (see sections.js) */
 /* only the current section shows: food is the planner's own header, page and tab bar */
 body:not([data-sec="food"]) #foodHead,body:not([data-sec="food"]) #foodMain,body:not([data-sec="food"]) #foodTabbar{display:none!important}
-.sec-main{max-width:960px;margin:0 auto;padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
-.sec-body{padding:6px 24px 0}
+/* the same page width and gutters as the meal planner: main's width from app.css, 24px sides */
+.sec-body{max-width:none!important;padding:0}
+.sec-body>.sec-empty,.hm-page{padding:0 24px}
 
 /* sidebar button in each header (phones) */
 .app-head .rail-open{flex:none;margin-left:-10px;margin-right:2px}
@@ -35,18 +36,16 @@ body:not([data-sec="food"]) #foodHead,body:not([data-sec="food"]) #foodMain,body
 .sec-empty-t{margin:14px 0 4px;font-size:1.15rem}
 
 /* ---------- Home (home.js) ---------- */
-.sec[data-sec="home"] .sec-body{max-width:1180px}
 .hm-dot{display:inline-block;flex:none;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
-.hm-top{margin:-6px 0 22px}
+.hm-top{margin:18px 0 0}
 .hm-clock{font-size:clamp(3.6rem,15vw,5.4rem);font-weight:500;letter-spacing:-0.055em;line-height:1}
 .hm-clock small{margin-left:6px;font-size:.3em;font-weight:400;letter-spacing:0;color:var(--muted)}
 .hm-date{margin:8px 0 0;font-size:1.05rem;color:var(--muted)}
-.hm-week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.hm-wd{display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 0 8px;border-radius:14px;font-size:.78rem;color:var(--muted)}
-.hm-wd b{font-size:1.15rem;font-weight:400;color:var(--ink)}
-.hm-wd i{width:4px;height:4px;margin-top:3px;border-radius:50%;background:transparent}.hm-wd i.on{background:currentColor}
-.hm-wd[aria-pressed="true"]{background:var(--soft);color:var(--ink)}
-.hm-legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin:12px 0 0;font-size:.85rem;color:var(--muted)}
+/* the week strip uses the planner's .strip; the picked day is filled in */
+.hm-strip button[aria-pressed="true"]{background:var(--ink);color:rgba(255,255,255,.6)}.hm-strip button[aria-pressed="true"] b{color:#fff}
+.hm-strip .has{position:absolute;bottom:3px;width:3px;height:3px;border-radius:50%;background:currentColor}.hm-strip button.today::after{display:none}
+.hm-legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin:14px 0 0;font-size:.85rem;color:var(--muted)}
+.hm-page>.hm-legend{margin:14px 0 6px}
 .hm-grid{display:grid;gap:34px;margin-top:34px}
 .hm-count{margin:0;font-size:1.05rem;color:var(--muted)}.hm-count b{margin-right:10px;font-size:3.6rem;font-weight:400;letter-spacing:-0.04em;line-height:1;color:var(--ink)}
 .hm-say{margin:18px 0 0;font-size:clamp(1.7rem,6.6vw,2.4rem);line-height:1.18;letter-spacing:-0.025em}
@@ -87,3 +86,5 @@ body:not([data-sec="food"]) #foodHead,body:not([data-sec="food"]) #foodMain,body
   .hm-grid{grid-template-columns:minmax(0,5fr) minmax(0,9fr);gap:56px}
   .hm-panels{grid-template-columns:1fr 1fr;align-items:start}
 }
+/* wide screens: like the planner, the page uses the full width and the strip lines up with the header */
+@media (min-width:900px){.hm-page.narrow{max-width:none}.hm-strip.narrow{max-width:none;padding:10px 24px 6px}}

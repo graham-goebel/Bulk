@@ -51,8 +51,7 @@ function showSection(id,first){
 }
 function renderSection(s){
   const v=viewOf(s),label=s.views.find(x=>x[0]===v)[1];
-  // Home's Today shows a big clock instead of a title
-  const ti=$("secTitle-"+s.id);ti.textContent=label;ti.style.visibility=s.id==="home"&&v==="today"?"hidden":"";
+  $("secTitle-"+s.id).textContent=label;
   document.querySelectorAll(`#sec-${s.id} [data-view]`).forEach(b=>b.dataset.view===v?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current"));
   const body=$("secBody-"+s.id);body.innerHTML="";(VIEWS[s.id+"."+v]||emptyView(s,label))(body);
 }
