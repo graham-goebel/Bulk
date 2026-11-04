@@ -20,24 +20,25 @@ const viewOf=s=>{const v=sec.view[s.id];return s.views.some(x=>x[0]===v)?v:s.vie
 
 // The sidebar: a rail of icons on wide screens, a drawer on phones (opened from the header's sidebar button).
 document.body.insertAdjacentHTML("beforeend",`
-  <aside class="rail" id="rail" aria-label="Sections">${SECS.map(s=>`<button class="rail-btn" data-sec="${s.id}" aria-label="${s.label}" title="${s.label}"><svg class="ic" aria-hidden="true"><use href="#i-${s.icon}"/></svg><span>${s.label}</span></button>`).join("")}</aside>
+  <aside class="rail" id="rail" aria-label="Sections">${SECS.map(s=>`<button class="rail-btn" data-sec="${s.id}" aria-label="${s.label}" title="${s.label}"><svg class="ic" aria-hidden="true"><use href="#i-${s.icon}"/></svg><span>${s.label}</span></button>`).join("")}
+    <button class="rail-btn rail-acct" id="railAcct" aria-haspopup="menu" aria-expanded="false" aria-label="Account" title="Account"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg><span>Account</span></button></aside>
   <div class="rail-bg" id="railBg" hidden></div>
   ${SECS.filter(s=>s.views).map(s=>`<div class="sec" id="sec-${s.id}" data-sec="${s.id}" hidden>
     <header class="app-head sec-head"><button class="icon-btn rail-open" aria-label="Sections" title="Sections"><svg class="ic" aria-hidden="true"><use href="#i-sidebar"/></svg></button>
       <div class="h-txt"><h1 class="h-title" id="secTitle-${s.id}">${s.label}</h1></div><div class="head-r">${(window.SECTION_ADD||{})[s.id]?`<button class="icon-btn sec-add" data-add="${s.id}" aria-haspopup="menu" aria-expanded="false" aria-label="Add" title="Add"><svg class="ic" aria-hidden="true"><use href="#i-plusl"/></svg></button>`:""}</div></header>
     <main class="sec-main"><div class="narrow sec-body" id="secBody-${s.id}"></div></main>
-    <nav class="tabbar sec-tabbar" aria-label="${s.label} views">${s.views.map(([k,l,ic])=>`<button data-view="${k}" aria-label="${l}" title="${l}"><svg class="ic" aria-hidden="true"><use href="#i-${ic}"/></svg></button>`).join("")}<span class="tb-sep" aria-hidden="true"></span><button class="tb-acct" aria-haspopup="menu" aria-expanded="false" aria-label="Account" title="Account"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg></button></nav>
+    <nav class="tabbar sec-tabbar" aria-label="${s.label} views">${s.views.map(([k,l,ic])=>`<button data-view="${k}" aria-label="${l}" title="${l}"><svg class="ic" aria-hidden="true"><use href="#i-${ic}"/></svg></button>`).join("")}</nav>
   </div>`).join("")}`);
 // the food header gets the same sidebar button, before its title
 $("foodHead").insertAdjacentHTML("afterbegin",`<button class="icon-btn rail-open" aria-label="Sections" title="Sections"><svg class="ic" aria-hidden="true"><use href="#i-sidebar"/></svg></button>`);
 
-// the person button at the end of every tab bar opens the account menu (a shrunk bar opens first)
-document.querySelectorAll(".tb-acct").forEach(b=>b.onclick=()=>{const bar=b.closest(".tabbar");if(bar.classList.contains("min")){bar.classList.remove("min");return}openAccount(b)});
+// the account button, at the bottom of the sidebar in every section; on phones, picking from its menu closes the drawer
+$("railAcct").onclick=()=>openAccount($("railAcct"),()=>openRail(false),{side:matchMedia("(min-width:700px)").matches?"right":""});
 document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{const s=secOf(b.dataset.add);window.SECTION_ADD[s.id](b,()=>renderSection(s))});
 function openRail(on){$("rail").classList.toggle("open",on);$("railBg").hidden=!on}
 document.querySelectorAll(".rail-open").forEach(b=>b.onclick=()=>openRail(true));
 $("railBg").onclick=()=>openRail(false);
-document.querySelectorAll(".rail-btn").forEach(b=>b.onclick=()=>{openRail(false);showSection(b.dataset.sec)});
+document.querySelectorAll(".rail-btn[data-sec]").forEach(b=>b.onclick=()=>{openRail(false);showSection(b.dataset.sec)});
 document.querySelectorAll(".sec-tabbar [data-view]").forEach(b=>b.onclick=()=>{const s=secOf(b.closest(".sec").dataset.sec);
   if(viewOf(s)===b.dataset.view){window.scrollTo({top:0,behavior:reduceMotion?"auto":"smooth"});return}
   sec.view[s.id]=b.dataset.view;saveSec();renderSection(s);window.scrollTo(0,0)});
@@ -45,7 +46,7 @@ document.querySelectorAll(".sec-tabbar [data-view]").forEach(b=>b.onclick=()=>{c
 function showSection(id,first){
   const was=sec.id;sec.id=id;saveSec();
   document.body.dataset.sec=id;
-  document.querySelectorAll(".rail-btn").forEach(b=>b.dataset.sec===id?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current"));
+  document.querySelectorAll(".rail-btn[data-sec]").forEach(b=>b.dataset.sec===id?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current"));
   document.querySelectorAll(".sec").forEach(el=>el.hidden=el.dataset.sec!==id);
   if(id==="food"){if(!first&&was!=="food")renderAll(false)}
   else{if(typeof P3!=="undefined"&&P3)P3.stop();renderSection(secOf(id))}

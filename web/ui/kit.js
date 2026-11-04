@@ -59,7 +59,8 @@ document.addEventListener("scroll",e=>{const t=e.target;if(!(t instanceof Elemen
 /* ---------- menus ---------- */
 let menuFor=null;
 // A small action menu anchored to a button. items: [icon, label, action, disabled]
-function openMenu(btn,label,items){
+// side:"right" opens it beside the button (for a sidebar), bottoms lined up, instead of above or below.
+function openMenu(btn,label,items,{side}={}){
   if(menuFor&&menuFor.btn===btn){closeMenu();return}closeMenu(true);
   if(!items.some(x=>x&&!x[3])){toast("Nothing to do here right now",{key:"menu",icon:"dots"});return}
   const m=document.createElement("div");m.className="menu";m.setAttribute("role","menu");m.setAttribute("aria-label",label);
@@ -68,9 +69,11 @@ function openMenu(btn,label,items){
     b.innerHTML=`<svg class="ic" aria-hidden="true"><use href="#i-${OUTLINE[icon]||icon}"/></svg><span></span>`;b.lastChild.textContent=text;b.onclick=()=>{closeMenu(true);fn()};m.appendChild(b)});
   document.body.appendChild(m);
   const r=btn.getBoundingClientRect(),mh=m.offsetHeight,mw=m.offsetWidth,below=r.bottom+6+mh<window.innerHeight-90;
-  const left=Math.max(12,Math.min(window.innerWidth-mw-12,r.right-mw));m.style.left=left+"px";m.style.top=(below?r.bottom+6:r.top-6-mh)+"px";
-  // it grows out of the button that opened it
-  m.style.transformOrigin=`${Math.round(r.left+r.width/2-left)}px ${below?"-6px":`calc(100% + 6px)`}`;m.classList.add("in");
+  if(side==="right"){const top=Math.max(12,Math.min(window.innerHeight-mh-12,r.bottom-mh));m.style.left=(r.right+8)+"px";m.style.top=top+"px";m.style.transformOrigin=`-8px ${Math.round(r.top+r.height/2-top)}px`}
+  else{const left=Math.max(12,Math.min(window.innerWidth-mw-12,r.right-mw));m.style.left=left+"px";m.style.top=(below?r.bottom+6:r.top-6-mh)+"px";
+    // it grows out of the button that opened it
+    m.style.transformOrigin=`${Math.round(r.left+r.width/2-left)}px ${below?"-6px":`calc(100% + 6px)`}`}
+  m.classList.add("in");
   btn.setAttribute("aria-expanded","true");menuFor={m,btn,y:btn.getBoundingClientRect().top};
   const first=m.querySelector("button:not(:disabled)");if(first)first.focus();
 }

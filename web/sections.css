@@ -18,6 +18,9 @@ body:not([data-sec="food"]) #foodHead,body:not([data-sec="food"]) #foodMain,body
 .rail-btn{display:flex;align-items:center;gap:14px;height:48px;padding:0 14px;border-radius:14px;font-size:1rem;color:var(--muted)}
 .rail-btn .ic{width:22px;height:22px}
 .rail-btn[aria-current="page"]{background:var(--soft);color:var(--ink)}
+/* the account button sits at the bottom of the sidebar; its menu opens over the drawer */
+.rail-acct{margin-top:auto}.rail-acct[aria-expanded="true"]{color:var(--ink)}
+.menu{z-index:50}
 @media (hover:hover){.rail-btn:hover{color:var(--ink)}}
 
 /* wide screens: a slim rail of icons always showing */
