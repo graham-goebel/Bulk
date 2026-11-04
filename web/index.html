@@ -20,6 +20,10 @@
 <link rel="stylesheet" href="ui/kit.css?v=__BUILD__">
 <link rel="stylesheet" href="app.css?v=__BUILD__">
 <link rel="stylesheet" href="sections.css?v=__BUILD__">
+<link rel="stylesheet" href="glass.css?v=__BUILD__">
+<script>/* the glass mockup theme: ?glass turns it on (remembered), ?glass=off turns it off */
+(()=>{const q=new URLSearchParams(location.search).get("glass");try{if(q!==null)localStorage.setItem("gf-glass",q==="off"?"0":"1")}catch(e){}
+  let on=q!==null?q!=="off":false;try{on=localStorage.getItem("gf-glass")==="1"}catch(e){}if(on)document.documentElement.classList.add("glass")})();</script>
 </head>
 <body>
 <script src="ui/icons.js?v=__BUILD__"></script>

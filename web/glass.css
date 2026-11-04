@@ -1,0 +1,41 @@
+/* Glass: frosted, translucent surfaces over a soft gradient. A mockup theme, off unless the page is opened
+   with ?glass (remembered on the device; ?glass=off turns it back off). Everything is scoped to html.glass. */
+html.glass{
+  --glass:rgba(255,255,255,.52);--glass-strong:rgba(255,255,255,.74);--glass-edge:rgba(255,255,255,.75);
+  --glass-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 10px 30px -12px rgba(30,30,60,.16);--blur:blur(22px) saturate(1.7);
+  --line:rgba(25,25,50,.09);--soft:rgba(25,25,50,.055);--card:var(--glass);
+  background:#f4f3f1}
+/* the backdrop: a few large, soft color fields that stay put while the page scrolls */
+html.glass body{background:transparent}
+html.glass body::before{content:"";position:fixed;inset:-10%;z-index:-1;pointer-events:none;
+  background:radial-gradient(48% 42% at 12% 8%,#ffd9c7 0%,transparent 70%),radial-gradient(44% 40% at 92% 14%,#d6e2ff 0%,transparent 70%),
+    radial-gradient(50% 46% at 78% 88%,#d4f1e3 0%,transparent 70%),radial-gradient(40% 36% at 10% 92%,#efe0ff 0%,transparent 70%),#f4f3f1}
+
+/* the glass recipe, on every surface that floats or groups content */
+html.glass :is(.card,.tile,.now-tile,.dayline:not(.day-hero .dayline),.add-meal,.sec-card,.hm-panel,.hm-now,.hm-food,.pan-search,.pan-opt:not([aria-pressed="true"]),.tp-day:not([aria-pressed="true"]),.rem-opt,.gtag:not(.off),.wb,.blk){
+  background:var(--glass);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border-color:var(--glass-edge);box-shadow:var(--glass-shadow)}
+html.glass :is(.tile,.now-tile,.dayline:not(.day-hero .dayline),.hm-food,.sec-card,.add-meal){border:1px solid var(--glass-edge)}
+html.glass .card:not(.sel){background:rgba(255,255,255,.32)}
+html.glass .card.skip,html.glass .gtag.off{background:transparent;box-shadow:inset 0 0 0 1px var(--line)}
+
+/* floating chrome: header, tab bar, sidebar, menus, toasts */
+/* the header frosts in only once the page scrolls under it */
+html.glass .app-head::before{background:rgba(255,255,255,.72);opacity:var(--hc,0)}
+html.glass .tabbar,html.glass .menu{background:var(--glass-strong);border:1px solid var(--glass-edge);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 18px 40px -14px rgba(30,30,60,.25)}
+html.glass .tabbar button[aria-current="page"]{background:rgba(255,255,255,.85);box-shadow:0 2px 8px rgba(30,30,60,.08)}
+html.glass .rail{background:rgba(255,255,255,.45);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border-right-color:var(--glass-edge)}
+html.glass .rail-btn[aria-current="page"]{background:rgba(255,255,255,.8);box-shadow:0 2px 8px rgba(30,30,60,.07)}
+html.glass .icon-btn:not(.bare){background:var(--glass)}
+html.glass .app-head .icon-btn{background:none}
+html.glass .toast{background:rgba(24,24,32,.78);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
+html.glass .nx-chips .act,html.glass .sh-acts .act:not([aria-pressed="true"]){background:rgba(255,255,255,.7);box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 4px 14px -6px rgba(30,30,60,.18)}
+
+/* sheets: frosted panes over a lighter, blurred scrim */
+html.glass .sheet-bg{background:rgba(240,240,248,.25);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+html.glass .sheet{background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(30px) saturate(1.8);backdrop-filter:blur(30px) saturate(1.8);border:1px solid var(--glass-edge);box-shadow:0 30px 80px -20px rgba(30,30,60,.35)}
+html.glass .sh-bar,html.glass .rb-top{background:transparent}
+/* a sheet's bar frosts in as its content scrolls under it (--p, 0 to 1) */
+html.glass .sh-bar{background:rgba(255,255,255,calc(var(--p,0) * .82))}
+html.glass .sh-acts{background:linear-gradient(to top,rgba(255,255,255,.88) 55%,rgba(255,255,255,0))}
+html.glass .sh-x{background:rgba(25,25,50,.06)}
+html.glass .hm-check{background:rgba(255,255,255,.5)}

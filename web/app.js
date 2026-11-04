@@ -1871,8 +1871,9 @@ function renderHead(){
   else t="Pantry";
   $("hTitle").textContent=t;
 }
-{const head=document.querySelector(".app-head");let raf=0;
-  const upd=()=>{raf=0;head.style.setProperty("--hc",Math.min(1,Math.max(0,window.scrollY/56)).toFixed(3))};
+// every page header (the planner's and each section's) compacts as the page scrolls
+{let raf=0;
+  const upd=()=>{raf=0;const v=Math.min(1,Math.max(0,window.scrollY/56)).toFixed(3);document.querySelectorAll(".app-head").forEach(h=>h.style.setProperty("--hc",v))};
   window.addEventListener("scroll",()=>{if(!raf)raf=requestAnimationFrame(upd)},{passive:true});upd()}
 function renderAll(smooth=true){
   renderHead();
