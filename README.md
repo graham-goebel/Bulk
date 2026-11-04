@@ -67,7 +67,7 @@ When it finishes, the log shows the Worker's address, something like `https://ga
 ## 6. Connect on each device
 
 1. Open https://graham-goebel.github.io/Bulk/.
-2. Tap the cloud icon at the top right. It opens Settings. (Goals and Settings are also in the account menu under the person icon, each as its own sheet.) Enter the passcode there. Once connected the icon goes away, and only comes back as a warning if a sync fails (tap it for details). Sync status is always shown in Settings.
+2. Tap the cloud icon at the top right. It opens Settings. (Goals and Settings are also in the account menu under the person icon at the end of the bottom tab bar, each as its own sheet.) Enter the passcode there. Once connected the icon goes away, and only comes back as a warning if a sync fails (tap it for details). Sync status is always shown in Settings.
 3. Enter your passcode and tap **Save**. The status changes to "Notion: synced". The first sync creates the week's 42 rows in Meal Plan.
 
 To install it like an app: on iPhone or iPad, tap Share, then **Add to Home Screen**. On Android, open the browser menu and choose **Install app** or **Add to Home screen**.

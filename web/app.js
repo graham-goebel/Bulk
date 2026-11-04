@@ -2059,9 +2059,11 @@ document.querySelectorAll("[data-gt]").forEach(b=>b.onclick=()=>goalsTab(b.datas
 function openGoals(focusId,tab){goalsFocus=document.activeElement;renderSettings();$("gpGoals").scrollTop=$("gpSettings").scrollTop=0;goalsTab(tab||(focusId==="passcode"?"settings":"goals"));showBg($("goals"));document.body.style.overflow="hidden";
   setTimeout(()=>{const el=$(focusId||"goalsClose");if(el){el.focus();if(focusId)el.scrollIntoView({block:"center"})}},30)}
 function closeGoals(){hideBg($("goals"));document.body.style.overflow="";if(goalsFocus&&document.contains(goalsFocus))goalsFocus.focus()}
-$("goalsBtn").onclick=()=>openMenu($("goalsBtn"),"Account",[
+// the account menu, from the person button at the end of each tab bar (sections.js binds them)
+function openAccount(btn){openMenu(btn,"Account",[
   ["book","Recipe book",()=>{rbFilter="all";openRecipeBook()}],["heart","Favorites",()=>openFavorites()],
-  ["copy","Templates",()=>openTemplates(ui.day)],["flame","Goals",()=>openGoals(null,"goals")],["cog","Settings",()=>openGoals(null,"settings")]]);$("goalsClose").onclick=closeGoals;
+  ["copy","Templates",()=>openTemplates(ui.day)],["flame","Goals",()=>openGoals(null,"goals")],["cog","Settings",()=>openGoals(null,"settings")]])}
+$("goalsClose").onclick=closeGoals;
 $("goals").addEventListener("click",e=>{if(e.target===$("goals"))closeGoals()});
 document.addEventListener("keydown",e=>{
   if($("goals").hidden)return;

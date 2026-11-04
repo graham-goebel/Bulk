@@ -215,6 +215,9 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .tabbar button[aria-current="page"]{transition:flex .32s cubic-bezier(.2,.8,.2,1),opacity .2s,background .35s .12s,color .2s}
 @media (min-width:900px){.tabbar button[data-tab="dash"]{display:none}}
 .tabbar button[aria-current="page"]{background:rgb(var(--ink-rgb) / .07);color:var(--ink)}
+/* the account button closes the bar, after a thin divider */
+.tabbar .tb-sep{flex:none;width:1px;margin:11px 4px;background:var(--line)}.tabbar.min .tb-sep{display:none}
+.tabbar .tb-acct{flex:0 0 54px}.tabbar .tb-acct[aria-expanded="true"]{color:var(--ink)}
 
 /* Toasts: above the tab bar, newest at the bottom */
 /* toasts: above the tab bar, newest at the bottom */

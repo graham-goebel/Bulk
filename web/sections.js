@@ -26,11 +26,13 @@ document.body.insertAdjacentHTML("beforeend",`
     <header class="app-head sec-head"><button class="icon-btn rail-open" aria-label="Sections" title="Sections"><svg class="ic" aria-hidden="true"><use href="#i-sidebar"/></svg></button>
       <div class="h-txt"><h1 class="h-title" id="secTitle-${s.id}">${s.label}</h1></div><div class="head-r">${(window.SECTION_ADD||{})[s.id]?`<button class="icon-btn sec-add" data-add="${s.id}" aria-haspopup="menu" aria-expanded="false" aria-label="Add" title="Add"><svg class="ic" aria-hidden="true"><use href="#i-plusl"/></svg></button>`:""}</div></header>
     <main class="sec-main"><div class="narrow sec-body" id="secBody-${s.id}"></div></main>
-    <nav class="tabbar sec-tabbar" aria-label="${s.label} views">${s.views.map(([k,l,ic])=>`<button data-view="${k}" aria-label="${l}" title="${l}"><svg class="ic" aria-hidden="true"><use href="#i-${ic}"/></svg></button>`).join("")}</nav>
+    <nav class="tabbar sec-tabbar" aria-label="${s.label} views">${s.views.map(([k,l,ic])=>`<button data-view="${k}" aria-label="${l}" title="${l}"><svg class="ic" aria-hidden="true"><use href="#i-${ic}"/></svg></button>`).join("")}<span class="tb-sep" aria-hidden="true"></span><button class="tb-acct" aria-haspopup="menu" aria-expanded="false" aria-label="Account" title="Account"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg></button></nav>
   </div>`).join("")}`);
 // the food header gets the same sidebar button, before its title
 $("foodHead").insertAdjacentHTML("afterbegin",`<button class="icon-btn rail-open" aria-label="Sections" title="Sections"><svg class="ic" aria-hidden="true"><use href="#i-sidebar"/></svg></button>`);
 
+// the person button at the end of every tab bar opens the account menu (a shrunk bar opens first)
+document.querySelectorAll(".tb-acct").forEach(b=>b.onclick=()=>{const bar=b.closest(".tabbar");if(bar.classList.contains("min")){bar.classList.remove("min");return}openAccount(b)});
 document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{const s=secOf(b.dataset.add);window.SECTION_ADD[s.id](b,()=>renderSection(s))});
 function openRail(on){$("rail").classList.toggle("open",on);$("railBg").hidden=!on}
 document.querySelectorAll(".rail-open").forEach(b=>b.onclick=()=>openRail(true));
