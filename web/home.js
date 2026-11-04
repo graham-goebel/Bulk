@@ -65,14 +65,20 @@ const plusDays=(s,n)=>{const d=new Date(s+"T00:00:00");d.setDate(d.getDate()+n);
 const fuLabel=t=>t.fu==="days"?`Every ${t.fuN===1?"day":`${t.fuN||3} days`}`:t.fu==="date"&&t.fuOn?`Again ${shortD(t.fuOn)}`:"";
 
 // sample data, shaped like a real week, for trying it out
-function sampleHome(){const T=dISO(dayAt(0)),P=dISO(dayAt(-2)),id=()=>uid();
+// the switch in Settings → Sample data turns samples off for good on this device
+const samplesOff=()=>{try{return localStorage.getItem("gf-samples-off")==="1"}catch(e){return false}};
+function sampleHome(){if(samplesOff())return;const T=dISO(dayAt(0)),P=dISO(dayAt(-2)),id=()=>uid();
   home={...home,tasks:[{id:id(),n:"Pay water bill",due:P,list:"Home",rep:"monthly"},{id:id(),n:"Pick up dry cleaning",due:T,list:"Errands",rep:""},
     {id:id(),n:"Water the plants",due:T,list:"Home",rep:"daily"},{id:id(),n:"Send project update",due:T,list:"Work",rep:"weekly"},{id:id(),n:"Book flights for December",due:"",list:"Personal",rep:""},
     {id:id(),n:"Follow up with landlord about the sink",due:T,at:"16:00",list:"Home",rep:"",fu:"days",fuN:3,fuCount:1}],
     events:[{id:id(),n:"Standup",date:T,start:"09:00",end:"09:15",cal:"Work",where:""},{id:id(),n:"Dentist",date:T,start:"14:00",end:"15:00",cal:"Family",where:"Main St"},
     {id:id(),n:"Soccer practice",date:T,start:"17:30",end:"18:30",cal:"Kids",where:""},{id:id(),n:"Team review",date:dISO(dayAt(1)),start:"11:00",end:"12:00",cal:"Work",where:""},
-    {id:id(),n:"Family dinner",date:dISO(dayAt(3)),start:"18:30",end:"20:00",cal:"Family",where:""}]};saveHome()}
-if(/(^|[?&])demo\b/.test(location.search)&&!home.tasks.length&&!home.events.length)sampleHome();
+    {id:id(),n:"Family dinner",date:dISO(dayAt(3)),start:"18:30",end:"20:00",cal:"Family",where:""}]};
+  home.tasks.forEach(t=>t.sample=1);home.events.forEach(e=>e.sample=1);saveHome()}
+// sample items: flagged ones, and ones from before the flag (known by name)
+const SAMPLE_TASKS=["Pay water bill","Pick up dry cleaning","Water the plants","Send project update","Book flights for December","Follow up with landlord about the sink"];
+const SAMPLE_EVENTS=["Standup","Dentist","Soccer practice","Team review","Family dinner"];
+if(/(^|[?&])demo\b/.test(location.search)&&!samplesOff()&&!home.tasks.length&&!home.events.length)sampleHome();
 
 // The week under the header, like the meal planner's: picking a day shows it (Today) or starts the list there (Calendar).
 function weekStrip(){return `<nav class="strip narrow hm-strip" aria-label="Days">${[0,1,2,3,4,5,6].map(k=>{const d=dayAt(k),s=dISO(d),has=eventsOn(s).length||tasksOn(s).length;
@@ -108,7 +114,7 @@ function homeToday(body){refreshCals();
       <section class="hm-panel"><h3>Schedule</h3>${evs.length?evs.map(e=>eventRow(e,isT&&e===cur)).join(""):`<p class="hint">Nothing scheduled.</p>`}</section>
       <section class="hm-panel"><h3>Goals<span>${goalsMet(S)} of ${home.goals.length} done</span></h3>${home.goals.map(g=>goalRow(g,S)).join("")||`<p class="hint">No goals yet. Add one with +.</p>`}</section>
     </div>
-    ${!home.tasks.length&&!home.events.length?`<p class="hint hm-sample">New here? <button class="txt" id="hmSample">Fill in a sample week</button> to see how it works.</p>`:""}</div>`;
+    ${!home.tasks.length&&!home.events.length&&!samplesOff()?`<p class="hint hm-sample">New here? <button class="txt" id="hmSample">Fill in a sample week</button> to see how it works.</p>`:""}</div>`;
   bindStrip(body,()=>homeToday(body));
   bindRows(body,()=>homeToday(body));bindGoals(body,S,()=>homeToday(body));
   const fl=body.querySelector(".hm-food");if(fl)fl.onclick=()=>showSection("food");
@@ -311,3 +317,21 @@ function closeGoalsFor(fn){const g=$("goals");if(g&&!g.hidden&&$("goalsClose"))$
 renderCalSettings();
 // keep "now" current while Today is showing
 setInterval(()=>{if(document.body.dataset.sec==="home"&&$("sheet").hidden&&document.visibilityState==="visible"&&document.querySelector("#secBody-home .hm-hero"))homeToday($("secBody-home"))},30000);
+
+/* ---------- Settings → Sample data: take the samples out to start with your own ---------- */
+function clearSamples(){
+  const isT=t=>t.sample||SAMPLE_TASKS.includes(t.n),isE=e=>e.sample||SAMPLE_EVENTS.includes(e.n);
+  const before={home:JSON.stringify(home),fin:JSON.stringify(fin)};
+  const n=home.tasks.filter(isT).length+home.events.filter(isE).length+clearFinSamples(true);
+  home.tasks.filter(isT).forEach(t=>{const el=document.querySelector(`#toasts [data-key="${CSS.escape("remind-"+t.id)}"]`);if(el)el.remove()}); // their reminders go too
+  home.tasks=home.tasks.filter(t=>!isT(t));home.events=home.events.filter(e=>!isE(e));home.log={}; // goal progress so far was trying it out
+  clearFinSamples();saveHome();try{localStorage.setItem("gf-samples-off","1")}catch(e){}
+  const again=()=>{renderSampleSettings();if(document.body.dataset.sec!=="food")renderSection(secOf(document.body.dataset.sec))};again();
+  toast(n?`Removed ${n} sample item${n===1?"":"s"}`:"Samples are off",{kind:"removed",key:"samples",ms:8000,action:"Undo",onAction:()=>{
+    home=JSON.parse(before.home);fin=JSON.parse(before.fin);saveHome();saveFin();try{localStorage.removeItem("gf-samples-off")}catch(e){}again()}})}
+function renderSampleSettings(){const el=$("sampleSet");if(!el)return;const off=samplesOff();
+  el.innerHTML=`<div class="row"><span>${off?"Samples are off. Tasks and Finance only show what you add.":"Take out the sample tasks, events, accounts and bills, and reset goal progress, to start with your own."}</span>
+    ${off?`<button class="txt" id="sampleOn" type="button">Allow samples</button>`:`<button class="btn" id="sampleOff" type="button">Remove</button>`}</div>`;
+  if($("sampleOff"))$("sampleOff").onclick=clearSamples;
+  if($("sampleOn"))$("sampleOn").onclick=()=>{try{localStorage.removeItem("gf-samples-off")}catch(e){}renderSampleSettings()}}
+renderSampleSettings();

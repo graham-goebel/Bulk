@@ -84,7 +84,7 @@ Tapping a task, event, goal, account, bill or charge opens its own sheet first (
 
 **Linked calendars.** Tasks can show your iCloud (or any) calendars: in Settings → **Calendars** (or the Tasks header's **+** → **Link a calendar**), paste a calendar's share link. On iPhone: Calendar app → Calendars → ⓘ next to a calendar → turn on **Public Calendar** → **Share Link**. The Worker reads the link (`POST /calendar`, see `worker/src/lib/feeds.js`, which handles time zones, repeating events and exceptions), so it uses your Notion passcode. Linked events show on Today, the timeline and Calendar in that calendar's color, are read only, and refresh every 15 minutes while the app is open; an event's sheet can make a follow-up task from it. (Notion Calendar's own events aren't available to apps, so the share link is the way in.)
 
-Tasks, goals and finance are kept on this device for now. Add `?demo` to the address to start with a sample week and sample finances, or `?home`, `?food`, `?finance` etc. to open a section. Health has its tab bar and empty views, ready for content.
+Tasks, goals and finance are kept on this device for now. Settings → **Sample data** → **Remove** takes out the sample tasks, events, accounts, bills and charges (and resets goal progress) and keeps them from coming back, so only what you add is left; Undo puts them back. Add `?demo` to the address to start with a sample week and sample finances, or `?home`, `?food`, `?finance` etc. to open a section. Health has its tab bar and empty views, ready for content.
 
 ## Appearance
 

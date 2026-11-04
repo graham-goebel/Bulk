@@ -13,14 +13,18 @@ const owes=a=>a.type==="Credit card"||a.type==="Loan"; // balances that count ag
 const monthKey=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
 const ordinal=n=>n+(["th","st","nd","rd"][(n%100-20)%10]||["th","st","nd","rd"][n%100]||"th");
 
-function sampleFin(){const id=()=>uid(),t=new Date(),iso=k=>{const d=new Date(t);d.setDate(d.getDate()+k);return dISO(d)};
+function sampleFin(){if(samplesOff())return;const id=()=>uid(),t=new Date(),iso=k=>{const d=new Date(t);d.setDate(d.getDate()+k);return dISO(d)};
   fin={accounts:[{id:id(),n:"Everyday checking",type:"Checking",bal:2840.12},{id:id(),n:"High-yield savings",type:"Savings",bal:12500},{id:id(),n:"Visa",type:"Credit card",bal:612.4},{id:id(),n:"Brokerage",type:"Investment",bal:18230.55}],
     bills:[{id:id(),n:"Rent",amt:1850,day:1,auto:false,paid:[monthKey()]},{id:id(),n:"Electric",amt:96,day:12,auto:true,paid:[]},{id:id(),n:"Water",amt:42,day:Math.max(1,t.getDate()-2),auto:false,paid:[]},
       {id:id(),n:"Phone",amt:65,day:22,auto:true,paid:[]},{id:id(),n:"Internet",amt:70,day:Math.min(28,t.getDate()+3),auto:false,paid:[]}],
     subs:[{id:id(),n:"Netflix",amt:15.49,cycle:"monthly",next:iso(6)},{id:id(),n:"Spotify",amt:11.99,cycle:"monthly",next:iso(12)},{id:id(),n:"iCloud+",amt:2.99,cycle:"monthly",next:iso(2)},
-      {id:id(),n:"Gym",amt:39,cycle:"monthly",next:iso(18)},{id:id(),n:"Amazon Prime",amt:139,cycle:"yearly",next:iso(74)}]};saveFin()}
-if(/(^|[?&])demo\b/.test(location.search)&&!fin.accounts.length&&!fin.bills.length&&!fin.subs.length)sampleFin();
-const sampleLink=again=>!fin.accounts.length&&!fin.bills.length&&!fin.subs.length?`<p class="hint hm-sample">New here? <button class="txt" id="finSample">Fill in sample accounts and bills</button> to see how it works.</p>`:"";
+      {id:id(),n:"Gym",amt:39,cycle:"monthly",next:iso(18)},{id:id(),n:"Amazon Prime",amt:139,cycle:"yearly",next:iso(74)}]};
+  [...fin.accounts,...fin.bills,...fin.subs].forEach(x=>x.sample=1);saveFin()}
+const SAMPLE_FIN={accounts:["Everyday checking","High-yield savings","Visa","Brokerage"],bills:["Rent","Electric","Water","Phone","Internet"],subs:["Netflix","Spotify","iCloud+","Gym","Amazon Prime"]};
+// takes out sample accounts, bills and charges (count only, with count=true)
+function clearFinSamples(count){let n=0;Object.keys(SAMPLE_FIN).forEach(k=>{const is=x=>x.sample||SAMPLE_FIN[k].includes(x.n);n+=fin[k].filter(is).length;if(!count)fin[k]=fin[k].filter(x=>!is(x))});if(!count)saveFin();return n}
+if(/(^|[?&])demo\b/.test(location.search)&&!samplesOff()&&!fin.accounts.length&&!fin.bills.length&&!fin.subs.length)sampleFin();
+const sampleLink=again=>!samplesOff()&&!fin.accounts.length&&!fin.bills.length&&!fin.subs.length?`<p class="hint hm-sample">New here? <button class="txt" id="finSample">Fill in sample accounts and bills</button> to see how it works.</p>`:"";
 const bindSample=(root,again)=>{const b=root.querySelector("#finSample");if(b)b.onclick=()=>{sampleFin();again()}};
 const lead=(big,small,say)=>`<div class="hm-lead fin-lead"><p class="hm-count"><b>${big}</b> ${small}</p>${say?`<p class="fin-say">${say}</p>`:""}</div>`;
 
