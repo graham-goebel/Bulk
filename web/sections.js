@@ -62,3 +62,12 @@ function emptyView(s,label){return body=>{body.innerHTML=`<div class="sec-empty"
 const VIEWS=window.SECTION_VIEWS||{};
 
 showSection(sec.id,true);
+
+/* ---------- appearance (Settings): theme and glass ---------- */
+{const get=k=>{try{return localStorage.getItem(k)}catch(e){return null}},set=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+  const sync=()=>{const t=get("gf-theme")||"light",g=get("gf-glass")==="1";
+    document.querySelectorAll("[data-theme-opt]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.themeOpt===t));
+    const gb=$("glassToggle");if(gb){gb.setAttribute("aria-pressed",g);gb.textContent=g?"On":"Off"}};
+  document.querySelectorAll("[data-theme-opt]").forEach(b=>b.onclick=()=>{set("gf-theme",b.dataset.themeOpt);applyTheme();sync()});
+  if($("glassToggle"))$("glassToggle").onclick=()=>{set("gf-glass",get("gf-glass")==="1"?"0":"1");applyTheme();sync()};
+  sync()}

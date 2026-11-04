@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -21,9 +21,14 @@
 <link rel="stylesheet" href="app.css?v=__BUILD__">
 <link rel="stylesheet" href="sections.css?v=__BUILD__">
 <link rel="stylesheet" href="glass.css?v=__BUILD__">
-<script>/* the glass mockup theme: ?glass turns it on (remembered), ?glass=off turns it off */
-(()=>{const q=new URLSearchParams(location.search).get("glass");try{if(q!==null)localStorage.setItem("gf-glass",q==="off"?"0":"1")}catch(e){}
-  let on=q!==null?q!=="off":false;try{on=localStorage.getItem("gf-glass")==="1"}catch(e){}if(on)document.documentElement.classList.add("glass")})();</script>
+<script>/* Appearance, before the page draws: light, dark or the device's setting (gf-theme), and the glass look (gf-glass).
+   ?glass / ?glass=off and ?theme=light|dark|auto in the address set them too. */
+(()=>{const q=new URLSearchParams(location.search),st=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},gt=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+  if(q.has("glass"))st("gf-glass",q.get("glass")==="off"?"0":"1");if(["light","dark","auto"].includes(q.get("theme")))st("gf-theme",q.get("theme"));
+  const mq=matchMedia("(prefers-color-scheme: dark)"),root=document.documentElement;
+  window.applyTheme=()=>{const pref=gt("gf-theme")||"light",dark=pref==="dark"||(pref==="auto"&&mq.matches);root.dataset.theme=dark?"dark":"light";
+    root.classList.toggle("glass",gt("gf-glass")==="1");const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=dark?"#0E0E11":"#FFFFFF"};
+  mq.addEventListener&&mq.addEventListener("change",()=>applyTheme());applyTheme()})();</script>
 </head>
 <body>
 <script src="ui/icons.js?v=__BUILD__"></script>
@@ -120,6 +125,9 @@
         <div class="row"><label for="startDate">Week starts</label><input type="date" id="startDate"></div>
       </div>
       <div class="goal-body sheet-pane" id="gpSettings" role="tabpanel" aria-labelledby="gtSettings" hidden>
+        <p class="subhead">Appearance</p>
+        <div class="row"><span>Theme</span><div class="seg" id="themeSeg" role="group" aria-label="Theme"><button data-theme-opt="light">Light</button><button data-theme-opt="dark">Dark</button><button data-theme-opt="auto">Device</button></div></div>
+        <div class="row"><span>Glass</span><button class="btn" id="glassToggle" type="button" aria-pressed="false">Off</button></div>
         <p class="subhead">Notion</p>
         <div class="row"><span class="sync-line" id="syncLine">Not connected</span><button class="txt" id="syncNow" type="button">Sync now</button></div>
         <p class="hint">Meals and your weekly plan are stored in Notion.</p>

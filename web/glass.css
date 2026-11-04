@@ -39,3 +39,25 @@ html.glass .sh-bar{background:rgba(255,255,255,calc(var(--p,0) * .82))}
 html.glass .sh-acts{background:linear-gradient(to top,rgba(255,255,255,.88) 55%,rgba(255,255,255,0))}
 html.glass .sh-x{background:rgba(25,25,50,.06)}
 html.glass .hm-check{background:rgba(255,255,255,.5)}
+
+/* ---------- smoked glass: the dark version ---------- */
+html.glass[data-theme="dark"]{
+  --glass:rgba(40,40,52,.42);--glass-strong:rgba(34,34,44,.66);--glass-edge:rgba(255,255,255,.09);
+  --glass-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 14px 34px -14px rgba(0,0,0,.6);
+  --line:rgba(255,255,255,.09);--soft:rgba(255,255,255,.07);background:#0b0b10}
+html.glass[data-theme="dark"] body::before{
+  background:radial-gradient(48% 42% at 12% 8%,#3a1f2e 0%,transparent 70%),radial-gradient(44% 40% at 92% 14%,#1b2748 0%,transparent 70%),
+    radial-gradient(50% 46% at 78% 88%,#123230 0%,transparent 70%),radial-gradient(40% 36% at 10% 92%,#2a1d44 0%,transparent 70%),#0b0b10}
+html.glass[data-theme="dark"] .card:not(.sel){background:rgba(40,40,52,.22)}
+html.glass[data-theme="dark"] .app-head::before{background:rgba(14,14,20,.72)}
+html.glass[data-theme="dark"] :is(.tabbar,.menu){box-shadow:0 1px 0 rgba(255,255,255,.08) inset,0 18px 40px -14px rgba(0,0,0,.7)}
+html.glass[data-theme="dark"] :is(.tabbar button[aria-current="page"],.rail-btn[aria-current="page"]){background:rgba(255,255,255,.12);box-shadow:none}
+html.glass[data-theme="dark"] .rail{background:rgba(20,20,28,.5)}
+html.glass[data-theme="dark"] .sheet-bg{background:rgba(0,0,0,.35)}
+html.glass[data-theme="dark"] .sheet{background:rgba(26,26,34,.78);box-shadow:0 30px 80px -20px rgba(0,0,0,.8)}
+html.glass[data-theme="dark"] .sh-bar{background:rgba(26,26,34,calc(var(--p,0) * .85))}
+html.glass[data-theme="dark"] .sh-acts{background:linear-gradient(to top,rgba(26,26,34,.92) 55%,rgba(26,26,34,0))}
+html.glass[data-theme="dark"] .sh-x{background:rgba(255,255,255,.08)}
+html.glass[data-theme="dark"] :is(.nx-chips .act,.sh-acts .act:not([aria-pressed="true"])){background:rgba(255,255,255,.09);box-shadow:0 1px 0 rgba(255,255,255,.06) inset}
+html.glass[data-theme="dark"] .hm-check{background:rgba(255,255,255,.04)}
+html.glass[data-theme="dark"] .toast{background:rgba(44,44,56,.85)}

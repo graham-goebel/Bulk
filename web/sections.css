@@ -42,7 +42,7 @@ body:not([data-sec="food"]) #foodHead,body:not([data-sec="food"]) #foodMain,body
 .hm-clock small{margin-left:6px;font-size:.3em;font-weight:400;letter-spacing:0;color:var(--muted)}
 .hm-date{margin:8px 0 0;font-size:1.05rem;color:var(--muted)}
 /* the week strip uses the planner's .strip; the picked day is filled in */
-.hm-strip button[aria-pressed="true"]{background:var(--ink);color:rgba(255,255,255,.6)}.hm-strip button[aria-pressed="true"] b{color:#fff}
+.hm-strip button[aria-pressed="true"]{background:var(--ink);color:color-mix(in srgb,var(--bg) 60%,transparent)}.hm-strip button[aria-pressed="true"] b{color:var(--bg)}
 .hm-strip .has{position:absolute;bottom:3px;width:3px;height:3px;border-radius:50%;background:currentColor}.hm-strip button.today::after{display:none}
 .hm-legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin:14px 0 0;font-size:.85rem;color:var(--muted)}
 .hm-page>.hm-legend{margin:14px 0 6px}

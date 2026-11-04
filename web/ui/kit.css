@@ -5,13 +5,15 @@
 /* Design tokens: light and dark. Override these in your app to rebrand. */
 :root{--mono:"Geist",ui-sans-serif,system-ui,-apple-system,sans-serif;
   --ink:#141414; --muted:#8A8A8A; --line:#E7E7E7; --bg:#FFFFFF; --soft:#F1F1F1; --card:#F8F8F8;
+  /* ink as r g b, for hairlines and tints that should flip with the theme; translucent chrome; toasts */
+  --ink-rgb:0 0 0; --chrome:rgba(255,255,255,.78); --chrome-bar:rgba(255,255,255,.82); --toast:var(--ink);
   color-scheme:light; box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){--ink:#EDEDED;--muted:#7C7C7C;--line:#2A2A2A;--bg:#0F0F0F;--soft:#181818;--card:#141414;color-scheme:dark}
+  :root:not([data-theme="light"]){--ink:#ECECEE;--muted:#8B8B92;--line:#2A2A2F;--bg:#0E0E11;--soft:#1E1E23;--card:#17171B;--ink-rgb:255 255 255;--chrome:rgba(14,14,17,.78);--chrome-bar:rgba(30,30,36,.82);--toast:#2C2C33;color-scheme:dark}
 }
-:root[data-theme="dark"]{--ink:#EDEDED;--muted:#7C7C7C;--line:#2A2A2A;--bg:#0F0F0F;--soft:#181818;--card:#141414;color-scheme:dark}
+:root[data-theme="dark"]{--ink:#ECECEE;--muted:#8B8B92;--line:#2A2A2F;--bg:#0E0E11;--soft:#1E1E23;--card:#17171B;--ink-rgb:255 255 255;--chrome:rgba(14,14,17,.78);--chrome-bar:rgba(30,30,36,.82);--toast:#2C2C33;color-scheme:dark}
 
 /* Base */
 *,*::before,*::after{box-sizing:border-box}
@@ -33,7 +35,7 @@ body{overflow-x:clip} /* nothing may widen the page, or phones zoom out and let 
 .app-head{--hc:0;position:sticky;top:-16px;z-index:20;
   max-width:960px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:24px 24px 6px}
 .app-head::before{content:"";position:absolute;z-index:-1;top:0;bottom:0;left:50%;width:100vw;transform:translateX(-50%);pointer-events:none;
-  background:rgba(255,255,255,.78);-webkit-backdrop-filter:saturate(1.6) blur(18px);backdrop-filter:saturate(1.6) blur(18px)}
+  background:var(--chrome);-webkit-backdrop-filter:saturate(1.6) blur(18px);backdrop-filter:saturate(1.6) blur(18px)}
 .app-head::after{content:"";position:absolute;left:50%;width:100vw;transform:translateX(-50%);bottom:0;border-bottom:1px solid var(--line);opacity:var(--hc);pointer-events:none}
 .h-txt{min-width:0}
 .h-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0;font-size:2rem;font-weight:500;letter-spacing:-0.04em;line-height:1.1;
@@ -101,7 +103,7 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .sheet{background:var(--bg);width:100%;max-width:560px;max-height:88%;overflow-y:auto;overscroll-behavior:contain;border-radius:18px 18px 0 0;
   padding:0 24px calc(24px + env(safe-area-inset-bottom,0px))}
 .sh-bar{position:sticky;top:0;z-index:2;background:var(--bg);display:grid;grid-template-columns:36px minmax(0,1fr) 36px;align-items:center;gap:10px;
-  margin:0 -12px;padding:14px 12px 10px;box-shadow:0 1px 0 rgb(0 0 0 / calc(var(--p,0) * .08))}
+  margin:0 -12px;padding:14px 12px 10px;box-shadow:0 1px 0 rgb(var(--ink-rgb) / calc(var(--p,0) * .08))}
 .sh-x{width:34px;height:34px;border-radius:50%;background:var(--soft);display:grid;place-items:center;color:var(--ink)}.sh-x .ic{width:16px;height:16px}
 .sh-x:focus-visible{border-radius:50%}
 .sh-bar .more{margin:0}
@@ -200,8 +202,8 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 /* Floating tab bar: shrinks to the current tab's icon while scrolling down */
 .tabbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:15;
   width:min(500px,calc(100% - 20px));display:flex;padding:5px;border-radius:28px;
-  background:rgba(255,255,255,.82);-webkit-backdrop-filter:saturate(1.8) blur(18px);backdrop-filter:saturate(1.8) blur(18px);
-  box-shadow:0 10px 30px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.06)}
+  background:var(--chrome-bar);-webkit-backdrop-filter:saturate(1.8) blur(18px);backdrop-filter:saturate(1.8) blur(18px);
+  box-shadow:0 10px 30px rgba(0,0,0,.12),0 0 0 1px rgb(var(--ink-rgb) / .06)}
 .tabbar button{flex:1;height:46px;border-radius:21px;transition:background .2s,color .2s;font-size:.68rem;color:var(--muted);text-align:center;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0}
 .tabbar button .ic{width:22px;height:22px}
 /* scrolled down: the bar shrinks to the current page's icon; scrolling up, the top, or a tap brings it back */
@@ -212,13 +214,13 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .tabbar.min button[aria-current="page"]{background:transparent}
 .tabbar button[aria-current="page"]{transition:flex .32s cubic-bezier(.2,.8,.2,1),opacity .2s,background .35s .12s,color .2s}
 @media (min-width:900px){.tabbar button[data-tab="dash"]{display:none}}
-.tabbar button[aria-current="page"]{background:rgba(0,0,0,.07);color:var(--ink)}
+.tabbar button[aria-current="page"]{background:rgb(var(--ink-rgb) / .07);color:var(--ink)}
 
 /* Toasts: above the tab bar, newest at the bottom */
 /* toasts: above the tab bar, newest at the bottom */
 .toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(82px + env(safe-area-inset-bottom,0px));z-index:45;width:min(420px,calc(100% - 28px));
   display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
-.toast{pointer-events:auto;display:flex;align-items:center;gap:10px;max-width:100%;padding:10px 12px 10px 14px;border-radius:16px;background:var(--ink);color:#fff;
+.toast{pointer-events:auto;display:flex;align-items:center;gap:10px;max-width:100%;padding:10px 12px 10px 14px;border-radius:16px;background:var(--toast);color:#fff;
   font-size:.86rem;line-height:1.3;box-shadow:0 10px 28px rgba(0,0,0,.2);opacity:0;transform:translateY(8px) scale(.98);transition:opacity .25s,transform .3s cubic-bezier(.3,.7,.2,1)}
 .toast.in{opacity:1;transform:none}
 .toast .ic{width:16px;height:16px;flex:none;opacity:.9}.toast.error .ic{color:#ff8a7a}.toast.ok .ic{color:#6fd3a5}
