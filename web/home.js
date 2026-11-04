@@ -25,12 +25,17 @@ const shortD=s=>new Date(s+"T00:00:00").toLocaleDateString("en-US",{weekday:"sho
 function addPeriod(s,rep){const d=new Date(s+"T00:00:00");if(rep==="daily")d.setDate(d.getDate()+1);else if(rep==="weekly")d.setDate(d.getDate()+7);else if(rep==="monthly")d.setMonth(d.getMonth()+1);return dISO(d)}
 const openTasks=()=>home.tasks.filter(t=>!t.done);
 const eventsOn=s=>home.events.filter(e=>e.date===s).sort((a,b)=>a.start.localeCompare(b.start));
-const tasksOn=s=>openTasks().filter(t=>t.due&&(t.due===s||(s===todayISO()&&t.due<s))).sort((a,b)=>a.due.localeCompare(b.due));
+const tasksOn=s=>openTasks().filter(t=>t.due&&(t.due===s||(s===todayISO()&&t.due<s))).sort((a,b)=>a.due.localeCompare(b.due)||(a.at||"99").localeCompare(b.at||"99"));
+// follow-ups: checking a task off brings it back after a few days (every time) or once on a date
+const FOLLOWS=[["","No follow-up"],["days","Every few days"],["date","Once, on a date"]];
+const plusDays=(s,n)=>{const d=new Date(s+"T00:00:00");d.setDate(d.getDate()+n);return dISO(d)};
+const fuLabel=t=>t.fu==="days"?`Every ${t.fuN===1?"day":`${t.fuN||3} days`}`:t.fu==="date"&&t.fuOn?`Again ${shortD(t.fuOn)}`:"";
 
 // sample data, shaped like a real week, for trying it out
 function sampleHome(){const T=dISO(dayAt(0)),P=dISO(dayAt(-2)),id=()=>uid();
   home={...home,tasks:[{id:id(),n:"Pay water bill",due:P,list:"Home",rep:"monthly"},{id:id(),n:"Pick up dry cleaning",due:T,list:"Errands",rep:""},
-    {id:id(),n:"Water the plants",due:T,list:"Home",rep:"daily"},{id:id(),n:"Send project update",due:T,list:"Work",rep:"weekly"},{id:id(),n:"Book flights for December",due:"",list:"Personal",rep:""}],
+    {id:id(),n:"Water the plants",due:T,list:"Home",rep:"daily"},{id:id(),n:"Send project update",due:T,list:"Work",rep:"weekly"},{id:id(),n:"Book flights for December",due:"",list:"Personal",rep:""},
+    {id:id(),n:"Follow up with landlord about the sink",due:T,at:"16:00",list:"Home",rep:"",fu:"days",fuN:3,fuCount:1}],
     events:[{id:id(),n:"Standup",date:T,start:"09:00",end:"09:15",cal:"Work",where:""},{id:id(),n:"Dentist",date:T,start:"14:00",end:"15:00",cal:"Family",where:"Main St"},
     {id:id(),n:"Soccer practice",date:T,start:"17:30",end:"18:30",cal:"Kids",where:""},{id:id(),n:"Team review",date:dISO(dayAt(1)),start:"11:00",end:"12:00",cal:"Work",where:""},
     {id:id(),n:"Family dinner",date:dISO(dayAt(3)),start:"18:30",end:"20:00",cal:"Family",where:""}]};saveHome()}
@@ -86,7 +91,9 @@ function timeline(evs,now){const A=7*60,B=22*60,pc=m=>`${((Math.min(B,Math.max(A
 function foodLine(){let d=state.days.findIndex((_,k)=>isToday(k));if(d<0)return "";
   const ms=mealsOf(d),eaten=ms.filter(m=>m.done).reduce((a,m)=>a+m.o.k,0),n=nowMins(),nx=ms.find(m=>!m.done&&!m.missed&&!m.o.skip&&mins(m.time)>=n-30);
   return `<button class="hm-food"><svg class="ic" aria-hidden="true"><use href="#i-apple"/></svg><span><b>${fmt(eaten)}</b> of ${fmt(state.target)} calories${nx?` · next, ${esc(nx.o.n)} at ${fmtTime(nx.time)}`:""}</span></button>`}
-function taskRow(t){const T=todayISO(),late=t.due&&t.due<T,meta=[late?`<span class="late">${shortD(t.due)}</span>`:t.due&&t.due!==T?shortD(t.due):"",`${dot(LISTS[t.list]||"var(--muted)")}${esc(t.list||"")}`,t.rep?`<svg class="ic" aria-hidden="true"><use href="#i-syncl"/></svg>${repLabel(t.rep)}`:""].filter(Boolean);
+function taskRow(t){const T=todayISO(),late=t.due&&t.due<T,when=[t.due&&t.due!==T?shortD(t.due):"",t.at?fmtTime(t.at):""].filter(Boolean).join(", ");
+  const meta=[when?(late?`<span class="late">${when}</span>`:when):"",`${dot(LISTS[t.list]||"var(--muted)")}${esc(t.list||"")}`,t.rep&&!t.fu?`<svg class="ic" aria-hidden="true"><use href="#i-syncl"/></svg>${repLabel(t.rep)}`:"",
+    t.fu?`<svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg>${fuLabel(t)}`:"",t.fuCount?`followed up ${t.fuCount}×`:""].filter(Boolean);
   return `<div class="hm-task"><button class="hm-check" data-done="${t.id}" aria-label="Complete ${esc(t.n)}"></button><button class="hm-tx" data-task="${t.id}"><span class="nm">${esc(t.n)}</span><span class="mt">${meta.join('<span class="sep">·</span>')}</span></button></div>`}
 function eventRow(e,cur){return `<button class="hm-ev${cur?" cur":""}" data-ev="${e.id}"><span class="tm"><b>${fmtTime(e.start)}</b>${cur?"Now":e.end?fmtTime(e.end):""}</span><span class="nm">${dot(CALS[e.cal]||"var(--muted)")}<span>${esc(e.n)}${e.where?`<small>${esc(e.where)}</small>`:""}</span></span></button>`}
 function bindRows(root,again){
@@ -94,10 +101,20 @@ function bindRows(root,again){
   root.querySelectorAll("[data-task]").forEach(b=>b.onclick=()=>editTask(home.tasks.find(t=>t.id===b.dataset.task),again));
   root.querySelectorAll("[data-ev]").forEach(b=>b.onclick=()=>editEvent(home.events.find(e=>e.id===b.dataset.ev),again));
 }
-// Done: a repeating task moves to its next date; either way, Undo puts it back.
-function completeTask(id,again){const t=home.tasks.find(x=>x.id===id);if(!t)return;const before={...t};
-  if(t.rep&&t.due)t.due=addPeriod(t.due<todayISO()?todayISO():t.due,t.rep);else t.done=true;saveHome();again();
-  toast(t.rep&&!t.done?`${t.n}: next on ${shortD(t.due)}`:`Done: ${t.n}`,{kind:"ok",key:"task",icon:"okl",action:"Undo",ms:6000,onAction:()=>{Object.assign(t,before);saveHome();again()}})}
+// Done: a follow-up comes back after its days (or on its date, once); a repeating task moves to its
+// next date; anything else is done. Undo puts it back either way. "Done for good" in the task's sheet ends a follow-up.
+function completeTask(id,again){const t=home.tasks.find(x=>x.id===id);if(!t)return;const before={...t},T=todayISO();let say;
+  if(t.fu==="days"){t.due=plusDays(T,Math.max(1,t.fuN||3));t.fuCount=(t.fuCount||0)+1;t.fuLast=T;delete t.reminded;say=`Following up ${shortD(t.due)}`}
+  else if(t.fu==="date"&&t.fuOn&&t.fuOn>T){t.due=t.fuOn;t.fu="";t.fuCount=(t.fuCount||0)+1;t.fuLast=T;delete t.reminded;say=`Following up ${shortD(t.due)}`}
+  else if(t.rep&&t.due){t.due=addPeriod(t.due<T?T:t.due,t.rep);delete t.reminded;say=`${t.n}: next on ${shortD(t.due)}`}
+  else{t.done=true;say=`Done: ${t.n}`}
+  saveHome();again();
+  toast(say,{kind:"ok",key:"task",icon:t.done?"okl":"bell",action:"Undo",ms:6000,onAction:()=>{Object.keys(t).forEach(k=>delete t[k]);Object.assign(t,before);saveHome();again()}})}
+// reminders: when a task's time comes (and the app is open), a toast says so, once
+function remindTasks(){if(document.visibilityState!=="visible")return;const T=todayISO(),n=nowMins();
+  openTasks().filter(t=>t.at&&t.due&&t.due<=T&&(t.due<T||mins(t.at)<=n)&&t.reminded!==t.due+" "+t.at).slice(0,3).forEach(t=>{t.reminded=t.due+" "+t.at;saveHome();
+    toast(`${t.fu||t.fuCount?"Follow up":"Reminder"}: ${t.n}`,{key:"remind-"+t.id,icon:"bell",ms:12000,action:"Done",onAction:()=>completeTask(t.id,()=>{if(document.body.dataset.sec==="home")renderSection(secOf("home"))})})})}
+setTimeout(remindTasks,1500);setInterval(remindTasks,30000);document.addEventListener("visibilitychange",remindTasks);
 
 /* ---------- goals ---------- */
 const goalVal=(g,s)=>+((home.log[s]||{})[g.id]||0);
@@ -125,23 +142,36 @@ function editGoal(g,again){const v=g||{n:"",target:1,unit:"",step:1};
     g?()=>{home.goals=home.goals.filter(x=>x!==g);toast(`Deleted ${g.n}`,{kind:"removed",key:"goal",action:"Undo",ms:6000,onAction:()=>{home.goals.push(g);saveHome();again()}});again()}:null)}
 
 /* ---------- adding and editing ---------- */
-function formSheet(title,html,onSave,onDelete){
+function formSheet(title,html,onSave,onDelete,acts=[]){
   if($("sheet").hidden){sheetFocus=document.activeElement;$("sheetBox").style.height=""}else holdSize();sheetCtx=null;
   $("sheetBox").innerHTML=`${sheetHead("",title,{action:{id:"hmSave",label:"Save"}})}<div class="pf">${html}</div>`;
   showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";$("shClose").onclick=closeDetail;
   const name=$("hmName"),need=()=>{$("hmSave").disabled=!name.value.trim()};name.addEventListener("input",need);need();
   $("hmSave").onclick=()=>{if(!name.value.trim())return;onSave();saveHome();closeDetail()};
-  if(onDelete)sheetActs([["trashl","Delete",()=>{onDelete();saveHome();closeDetail()}]]);
+  const all=acts.map(([i,l,f])=>[i,l,()=>{f();saveHome();closeDetail()}]);if(onDelete)all.push(["trashl","Delete",()=>{onDelete();saveHome();closeDetail()}]);if(all.length)sheetActs(all);
   if(!touchUI)name.focus();
 }
 const hmOpts=(list,sel)=>list.map(([v,l])=>`<option value="${esc(v)}"${v===sel?" selected":""}>${esc(l)}</option>`).join("");
 function editTask(t,again,pre={}){const v=t||{n:"",due:dISO(dayAt(homeDay)),list:"Home",rep:"",...pre};
   formSheet(t?"Edit task":"New task",`<label for="hmName">Task</label><input id="hmName" type="text" maxlength="120" value="${esc(v.n)}" placeholder="e.g. Pay water bill">
     <label for="hmDue">Due</label><input id="hmDue" type="date" value="${esc(v.due||"")}">
+    <label for="hmAt">Remind at</label><input id="hmAt" type="time" step="300" value="${esc(v.at||"")}">
     <label for="hmList">List</label><select id="hmList">${hmOpts(Object.keys(LISTS).map(k=>[k,k]),v.list)}</select>
-    <label for="hmRep">Repeats</label><select id="hmRep">${hmOpts(REPEATS,v.rep)}</select>`,
-    ()=>{const x={n:$("hmName").value.trim(),due:$("hmDue").value||"",list:$("hmList").value,rep:$("hmRep").value};if(t)Object.assign(t,x);else home.tasks.push({id:uid(),...x});toast(t?"Task saved":`Added ${x.n}`,{kind:"ok",key:"task",icon:"okl"});again()},
-    t?()=>{home.tasks=home.tasks.filter(x=>x!==t);toast(`Deleted ${t.n}`,{kind:"removed",key:"task",action:"Undo",ms:6000,onAction:()=>{home.tasks.push(t);saveHome();again()}});again()}:null);}
+    <label for="hmRep">Repeats</label><select id="hmRep">${hmOpts(REPEATS,v.rep)}</select>
+    <label for="hmFu">Follow up</label><select id="hmFu">${hmOpts(FOLLOWS,v.fu||"")}</select>
+    <div class="pf-row" id="hmFuDays"><label for="hmFuN">After</label><span class="qty"><input id="hmFuN" type="number" min="1" max="365" inputmode="numeric" value="${v.fuN||3}"> days, each time</span></div>
+    <div class="pf-row" id="hmFuDate"><label for="hmFuOn">On</label><input id="hmFuOn" type="date" value="${esc(v.fuOn||plusDays(v.due||todayISO(),7))}"></div>
+    <p class="hint pf-note" id="hmFuNote"></p>
+    ${t&&t.fuCount?`<p class="hint pf-note">Followed up ${t.fuCount} time${t.fuCount>1?"s":""}${t.fuLast?`, last on ${shortD(t.fuLast)}`:""}.</p>`:""}`,
+    ()=>{const fu=$("hmFu").value,x={n:$("hmName").value.trim(),due:$("hmDue").value||"",at:$("hmAt").value||"",list:$("hmList").value,rep:$("hmRep").value,fu,
+        fuN:Math.min(365,Math.max(1,Math.round(+$("hmFuN").value||3))),fuOn:fu==="date"?$("hmFuOn").value||"":""};
+      if(fu&&!x.due)x.due=todayISO();if(!x.at||x.at!==(t&&t.at)||x.due!==(t&&t.due))x.reminded="";
+      if(t)Object.assign(t,x);else home.tasks.push({id:uid(),...x});toast(t?"Task saved":`Added ${x.n}`,{kind:"ok",key:"task",icon:"okl"});again()},
+    t?()=>{home.tasks=home.tasks.filter(x=>x!==t);toast(`Deleted ${t.n}`,{kind:"removed",key:"task",action:"Undo",ms:6000,onAction:()=>{home.tasks.push(t);saveHome();again()}});again()}:null,
+    t&&!t.done&&(t.fu||t.rep)?[["okl","Done for good",()=>{const before={...t};t.done=true;toast(`Done: ${t.n}`,{kind:"ok",key:"task",icon:"okl",action:"Undo",ms:6000,onAction:()=>{Object.assign(t,before);t.done=false;saveHome();again()}});again()}]]:[]);
+  const sync=()=>{const f=$("hmFu").value,n=Math.max(1,Math.round(+$("hmFuN").value||3));$("hmFuDays").hidden=f!=="days";$("hmFuDate").hidden=f!=="date";
+    $("hmFuNote").textContent=f==="days"?`Checking it off brings it back ${n===1?"tomorrow":`in ${n} days`}, until you mark it done for good.`:f==="date"?"Checking it off brings it back once, on that date.":"";$("hmFuNote").hidden=!f};
+  $("hmFu").onchange=sync;$("hmFuN").oninput=sync;sync()}
 function editEvent(e,again){const v=e||{n:"",date:dISO(dayAt(homeDay)),start:"09:00",end:"10:00",cal:"Family",where:""};
   formSheet(e?"Edit event":"New event",`<label for="hmName">Event</label><input id="hmName" type="text" maxlength="120" value="${esc(v.n)}" placeholder="e.g. Dentist">
     <label for="hmDate">Date</label><input id="hmDate" type="date" value="${esc(v.date)}">

@@ -85,6 +85,11 @@ body:not([data-sec="food"]) #foodHead,body:not([data-sec="food"]) #foodMain,body
 /* wide screens: like the planner, the page uses the full width and the strip lines up with the header */
 @media (min-width:900px){.hm-page.narrow{max-width:none}.hm-strip.narrow{max-width:none;padding:10px 24px 6px}}
 
+/* task form: rows that come and go with the follow-up choice */
+.pf .pf-row{display:contents}.pf .pf-row[hidden]{display:none}
+.pf .pf-note{grid-column:1/-1;margin:-4px 0 0}.pf .pf-note[hidden]{display:none}
+.pf .qty{color:var(--muted);font-size:.85rem}
+
 /* goals: a meter each, with − and + */
 .hm-panel h3 span{color:var(--muted)}
 .hm-goal{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line)}.hm-panel .hm-goal:last-child{border-bottom:0}
