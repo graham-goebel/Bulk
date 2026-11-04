@@ -9,6 +9,11 @@ const LISTS={Home:"#ec8a3a",Errands:"#e3b21f",Work:"#4c7be0",Personal:"#d9579b",
 const REPEATS=[["","Doesn't repeat"],["daily","Daily"],["weekly","Weekly"],["monthly","Monthly"]];
 let home={tasks:[],events:[]},homeDay=0; // homeDay: days from today shown on Today
 try{const v=JSON.parse(localStorage.getItem(HOMEKEY)||"null");if(v&&Array.isArray(v.tasks)&&Array.isArray(v.events))home=v}catch(e){}
+// daily goals, each with a target and a step for its + button; the log keeps each day's progress
+const GOAL_COLORS=["#3f8fe0","#3fae7a","#d9579b","#e3a21f","#8a6be0","#ec8a3a"];
+if(!Array.isArray(home.goals))home.goals=[{id:"water",n:"Water",target:8,unit:"glasses",step:1,c:GOAL_COLORS[0]},{id:"walk",n:"Walking",target:8000,unit:"steps",step:1000,c:GOAL_COLORS[1]},
+  {id:"skin",n:"Skincare",target:2,unit:"routines",step:1,c:GOAL_COLORS[2]},{id:"stretch",n:"Stretch",target:10,unit:"minutes",step:5,c:GOAL_COLORS[3]}];
+if(!home.log||typeof home.log!=="object")home.log={};
 const saveHome=()=>{try{localStorage.setItem(HOMEKEY,JSON.stringify(home))}catch(e){}};
 const dISO=dt=>`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
 const dayAt=k=>{const t=new Date();t.setHours(0,0,0,0);t.setDate(t.getDate()+k);return t};
@@ -24,7 +29,7 @@ const tasksOn=s=>openTasks().filter(t=>t.due&&(t.due===s||(s===todayISO()&&t.due
 
 // sample data, shaped like a real week, for trying it out
 function sampleHome(){const T=dISO(dayAt(0)),P=dISO(dayAt(-2)),id=()=>uid();
-  home={tasks:[{id:id(),n:"Pay water bill",due:P,list:"Home",rep:"monthly"},{id:id(),n:"Pick up dry cleaning",due:T,list:"Errands",rep:""},
+  home={...home,tasks:[{id:id(),n:"Pay water bill",due:P,list:"Home",rep:"monthly"},{id:id(),n:"Pick up dry cleaning",due:T,list:"Errands",rep:""},
     {id:id(),n:"Water the plants",due:T,list:"Home",rep:"daily"},{id:id(),n:"Send project update",due:T,list:"Work",rep:"weekly"},{id:id(),n:"Book flights for December",due:"",list:"Personal",rep:""}],
     events:[{id:id(),n:"Standup",date:T,start:"09:00",end:"09:15",cal:"Work",where:""},{id:id(),n:"Dentist",date:T,start:"14:00",end:"15:00",cal:"Family",where:"Main St"},
     {id:id(),n:"Soccer practice",date:T,start:"17:30",end:"18:30",cal:"Kids",where:""},{id:id(),n:"Team review",date:dISO(dayAt(1)),start:"11:00",end:"12:00",cal:"Work",where:""},
@@ -49,29 +54,25 @@ function homeToday(body){
   const nowCard=cur?`<p class="hm-now-t">${esc(cur.n)} started ${ago(now-mins(cur.start))}.</p><p class="hm-now-s">It runs until <b>${fmtTime(cur.end||cur.start)}</b>. ${left} task${left===1?"":"s"} still open today.</p>`
     :next?`<p class="hm-now-t">Next up: ${esc(next.n)} at ${fmtTime(next.start)}.</p><p class="hm-now-s">In ${ago(mins(next.start)-now,true)}. ${left} task${left===1?"":"s"} open today.</p>`
     :isT?`<p class="hm-now-t">No more events today.</p><p class="hm-now-s">${left} task${left===1?"":"s"} open.</p>`:"";
+  // the count and the sentence lead, then the day on a line with what's on now, then three columns:
+  // tasks, schedule and goals
   body.innerHTML=`
     ${weekStrip()}
     <div class="hm-page narrow">
-    <div class="hm-grid">
-      <div class="hm-left">
-        <p class="hm-count"><b>${left}</b> task${left===1?"":"s"} to do</p>
-        <p class="hm-say">${say}</p>
-        ${timeline(evs,isT?now:null)}
-        ${nowCard?`<div class="hm-now">${nowCard}</div>`:""}
-        ${isT?foodLine():""}
-      </div>
-      <div class="hm-right">
-        <div class="hm-rh"><h2>${isT?"Today":day.toLocaleDateString("en-US",{weekday:"long"})}</h2><span>${evs.length} event${evs.length===1?"":"s"} and ${left} task${left===1?"":"s"}</span></div>
-        <div class="hm-panels">
-          <section class="hm-panel"><h3>Tasks</h3>${due.length||any.length?due.map(taskRow).join(""):`<p class="hint">No tasks due.</p>`}
-            ${any.length?`<h3 class="hm-sub">Anytime</h3>${any.map(taskRow).join("")}`:""}</section>
-          <section class="hm-panel"><h3>Schedule</h3>${evs.length?evs.map(e=>eventRow(e,isT&&e===cur)).join(""):`<p class="hint">Nothing scheduled.</p>`}</section>
-        </div>
-      </div>
+    <div class="hm-hero">
+      <div class="hm-lead"><p class="hm-count"><b>${left}</b> task${left===1?"":"s"} to do</p><p class="hm-say">${say}</p></div>
+      <div class="hm-day-now">${timeline(evs,isT?now:null)}${nowCard?`<div class="hm-now">${nowCard}</div>`:""}${isT?foodLine():""}</div>
+    </div>
+    <div class="hm-rh"><h2>${isT?"Today":day.toLocaleDateString("en-US",{weekday:"long"})}</h2><span>${evs.length} event${evs.length===1?"":"s"} and ${left} task${left===1?"":"s"}</span></div>
+    <div class="hm-panels">
+      <section class="hm-panel"><h3>Tasks</h3>${due.length||any.length?due.map(taskRow).join(""):`<p class="hint">No tasks due.</p>`}
+        ${any.length?`<h3 class="hm-sub">Anytime</h3>${any.map(taskRow).join("")}`:""}</section>
+      <section class="hm-panel"><h3>Schedule</h3>${evs.length?evs.map(e=>eventRow(e,isT&&e===cur)).join(""):`<p class="hint">Nothing scheduled.</p>`}</section>
+      <section class="hm-panel"><h3>Goals<span>${goalsMet(S)} of ${home.goals.length} done</span></h3>${home.goals.map(g=>goalRow(g,S)).join("")||`<p class="hint">No goals yet. Add one with +.</p>`}</section>
     </div>
     ${!home.tasks.length&&!home.events.length?`<p class="hint hm-sample">New here? <button class="txt" id="hmSample">Fill in a sample week</button> to see how it works.</p>`:""}</div>`;
   bindStrip(body,()=>homeToday(body));
-  bindRows(body,()=>homeToday(body));
+  bindRows(body,()=>homeToday(body));bindGoals(body,S,()=>homeToday(body));
   const fl=body.querySelector(".hm-food");if(fl)fl.onclick=()=>showSection("food");
   if($("hmSample"))$("hmSample").onclick=()=>{sampleHome();homeToday(body)};
 }
@@ -97,6 +98,31 @@ function bindRows(root,again){
 function completeTask(id,again){const t=home.tasks.find(x=>x.id===id);if(!t)return;const before={...t};
   if(t.rep&&t.due)t.due=addPeriod(t.due<todayISO()?todayISO():t.due,t.rep);else t.done=true;saveHome();again();
   toast(t.rep&&!t.done?`${t.n}: next on ${shortD(t.due)}`:`Done: ${t.n}`,{kind:"ok",key:"task",icon:"okl",action:"Undo",ms:6000,onAction:()=>{Object.assign(t,before);saveHome();again()}})}
+
+/* ---------- goals ---------- */
+const goalVal=(g,s)=>+((home.log[s]||{})[g.id]||0);
+const goalsMet=s=>home.goals.filter(g=>goalVal(g,s)>=g.target).length;
+const gfmt=n=>n>=1000?fmt(n):+(+n).toFixed(1);
+function goalRow(g,s){const v=goalVal(g,s),p=Math.min(1,g.target?v/g.target:0),done=v>=g.target;
+  return `<div class="hm-goal${done?" done":""}" style="--c:${g.c||"var(--ink)"}"><button class="hm-gx" data-goal="${g.id}"><span class="nm">${esc(g.n)}</span><span class="mt"><b>${gfmt(v)}</b> of ${gfmt(g.target)} ${esc(g.unit||"")}</span>
+    <span class="hm-meter" role="progressbar" aria-valuemin="0" aria-valuemax="${g.target}" aria-valuenow="${v}"><i style="width:${(p*100).toFixed(1)}%"></i></span></button>
+    <button class="hm-gb" data-gminus="${g.id}" aria-label="Less ${esc(g.n)}"${v<=0?" disabled":""}>−</button><button class="hm-gb plus" data-gplus="${g.id}" aria-label="More ${esc(g.n)}">+</button></div>`}
+function bindGoals(root,s,again){
+  const bump=(id,dir)=>{const g=home.goals.find(x=>x.id===id);if(!g)return;const day=home.log[s]=home.log[s]||{},was=+(day[g.id]||0);
+    day[g.id]=Math.max(0,+(was+dir*(g.step||1)).toFixed(2));saveHome();again();
+    if(dir>0&&was<g.target&&day[g.id]>=g.target)toast(`${g.n}: done for the day`,{kind:"ok",key:"goal",icon:"okl"})};
+  root.querySelectorAll("[data-gplus]").forEach(b=>b.onclick=()=>bump(b.dataset.gplus,1));
+  root.querySelectorAll("[data-gminus]").forEach(b=>b.onclick=()=>bump(b.dataset.gminus,-1));
+  root.querySelectorAll("[data-goal]").forEach(b=>b.onclick=()=>editGoal(home.goals.find(g=>g.id===b.dataset.goal),again));
+}
+function editGoal(g,again){const v=g||{n:"",target:1,unit:"",step:1};
+  formSheet(g?"Edit goal":"New goal",`<label for="hmName">Goal</label><input id="hmName" type="text" maxlength="40" value="${esc(v.n)}" placeholder="e.g. Read">
+    <label for="hmTarget">Each day</label><input id="hmTarget" type="number" min="0" step="any" inputmode="decimal" value="${v.target}">
+    <label for="hmUnit">Unit</label><input id="hmUnit" type="text" maxlength="20" value="${esc(v.unit||"")}" placeholder="e.g. pages">
+    <label for="hmStep">Each tap adds</label><input id="hmStep" type="number" min="0" step="any" inputmode="decimal" value="${v.step||1}">`,
+    ()=>{const x={n:$("hmName").value.trim(),target:Math.max(0,+$("hmTarget").value||1),unit:$("hmUnit").value.trim(),step:Math.max(0.1,+$("hmStep").value||1)};
+      if(g)Object.assign(g,x);else home.goals.push({id:uid(),c:GOAL_COLORS[home.goals.length%GOAL_COLORS.length],...x});toast(g?"Goal saved":`Added ${x.n}`,{kind:"ok",key:"goal",icon:"okl"});again()},
+    g?()=>{home.goals=home.goals.filter(x=>x!==g);toast(`Deleted ${g.n}`,{kind:"removed",key:"goal",action:"Undo",ms:6000,onAction:()=>{home.goals.push(g);saveHome();again()}});again()}:null)}
 
 /* ---------- adding and editing ---------- */
 function formSheet(title,html,onSave,onDelete){
@@ -146,6 +172,6 @@ function homeTasks(body){const again=()=>homeTasks(body),T=todayISO(),all=openTa
 
 window.SECTION_VIEWS=Object.assign(window.SECTION_VIEWS||{},{"home.today":homeToday,"home.calendar":homeCalendar,"home.tasks":homeTasks});
 // the header's + adds a task or an event; the view refreshes after
-window.SECTION_ADD=Object.assign(window.SECTION_ADD||{},{home:(btn,refresh)=>openMenu(btn,"Add",[["okl","New task",()=>editTask(null,refresh)],["cal","New event",()=>editEvent(null,refresh)]])});
+window.SECTION_ADD=Object.assign(window.SECTION_ADD||{},{home:(btn,refresh)=>openMenu(btn,"Add",[["okl","New task",()=>editTask(null,refresh)],["cal","New event",()=>editEvent(null,refresh)],["flame","New goal",()=>editGoal(null,refresh)]])});
 // keep "now" current while Today is showing
-setInterval(()=>{if(document.body.dataset.sec==="home"&&$("sheet").hidden&&document.visibilityState==="visible"&&document.querySelector("#secBody-home .hm-grid"))homeToday($("secBody-home"))},30000);
+setInterval(()=>{if(document.body.dataset.sec==="home"&&$("sheet").hidden&&document.visibilityState==="visible"&&document.querySelector("#secBody-home .hm-hero"))homeToday($("secBody-home"))},30000);

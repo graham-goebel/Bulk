@@ -42,7 +42,7 @@ body:not([data-sec="food"]) #foodHead,body:not([data-sec="food"]) #foodMain,body
 .hm-strip .has{position:absolute;bottom:3px;width:3px;height:3px;border-radius:50%;background:currentColor}.hm-strip button.today::after{display:none}
 .hm-legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin:14px 0 0;font-size:.85rem;color:var(--muted)}
 .hm-page>.hm-legend{margin:14px 0 6px}
-.hm-grid{display:grid;gap:34px;margin-top:22px}
+.hm-hero{display:grid;gap:8px;margin-top:22px}
 .hm-count{margin:0;font-size:1.05rem;color:var(--muted)}.hm-count b{margin-right:10px;font-size:3.6rem;font-weight:400;letter-spacing:-0.04em;line-height:1;color:var(--ink)}
 .hm-say{margin:18px 0 0;font-size:clamp(1.7rem,6.6vw,2.4rem);line-height:1.18;letter-spacing:-0.025em}
 .hm-say em{font-style:normal;color:#e0603e}.hm-say .hm-mute{color:var(--muted)}
@@ -59,7 +59,7 @@ body:not([data-sec="food"]) #foodHead,body:not([data-sec="food"]) #foodMain,body
 .hm-food{display:flex;align-items:center;gap:10px;width:100%;margin-top:12px;padding:14px 20px;border-radius:18px;border:1px solid var(--line);font-size:.92rem;color:var(--muted);text-align:left}
 .hm-food .ic{width:18px;height:18px;color:var(--ink);flex:none}.hm-food b{font-weight:500;color:var(--ink)}
 @media (hover:hover){.hm-food:hover{border-color:var(--ink)}}
-.hm-rh{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px}
+.hm-rh{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:34px 0 14px}
 .hm-rh h2{margin:0;font-size:1.6rem;font-weight:400;letter-spacing:-0.02em}.hm-rh span{font-size:.88rem;color:var(--muted)}
 .hm-panels{display:grid;gap:14px}
 .hm-panel{padding:6px 18px 10px;border-radius:20px;background:var(--card)}
@@ -79,8 +79,31 @@ body:not([data-sec="food"]) #foodHead,body:not([data-sec="food"]) #foodMain,body
 .hm-day{margin-bottom:18px}.hm-day h3 span{color:var(--muted)}
 .hm-sample{margin-top:22px}
 @media (min-width:900px){
-  .hm-grid{grid-template-columns:minmax(0,5fr) minmax(0,9fr);gap:56px}
-  .hm-panels{grid-template-columns:1fr 1fr;align-items:start}
+  .hm-hero{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:56px;align-items:end}
+  .hm-panels{grid-template-columns:repeat(3,minmax(0,1fr));align-items:start}
 }
 /* wide screens: like the planner, the page uses the full width and the strip lines up with the header */
 @media (min-width:900px){.hm-page.narrow{max-width:none}.hm-strip.narrow{max-width:none;padding:10px 24px 6px}}
+
+/* goals: a meter each, with − and + */
+.hm-panel h3 span{color:var(--muted)}
+.hm-goal{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line)}.hm-panel .hm-goal:last-child{border-bottom:0}
+.hm-gx{flex:1;min-width:0;display:grid;grid-template-columns:1fr auto;gap:4px 10px;padding:12px 0;text-align:left}
+.hm-gx .nm{font-size:1rem}.hm-gx .mt{font-size:.82rem;color:var(--muted);align-self:center}.hm-gx .mt b{font-weight:500;color:var(--ink)}
+.hm-meter{grid-column:1/-1;height:6px;border-radius:3px;background:var(--soft);overflow:hidden}
+.hm-meter i{display:block;height:100%;border-radius:3px;background:var(--c);transition:width .35s cubic-bezier(.2,.8,.2,1)}
+.hm-goal.done .nm::after{content:" ✓";color:var(--c)}
+.hm-gb{flex:none;display:grid;place-items:center;width:32px;height:32px;padding:0;border-radius:50%;background:var(--soft);font-size:1.15rem;line-height:1;text-align:center;color:var(--ink)}
+.hm-gb:disabled{opacity:.35;cursor:default}.hm-gb.plus{background:var(--ink);color:var(--bg)}
+
+/* ---------- Finance (finance.js) ---------- */
+.fin-lead{margin-top:22px}.fin-say{margin:14px 0 0;font-size:clamp(1.25rem,4.8vw,1.6rem);line-height:1.3;letter-spacing:-0.015em}.fin-say em{font-style:normal;color:#e0603e}
+.fin-cols{display:grid;gap:14px;margin-top:30px}
+@media (min-width:900px){.fin-cols{grid-template-columns:repeat(auto-fill,minmax(320px,1fr));align-items:start}}
+.fin-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:13px 0;border-bottom:1px solid var(--line);text-align:left}
+.hm-panel .fin-row:last-child{border-bottom:0}
+.fin-row .nm{display:flex;flex-direction:column;font-size:1rem}.fin-row .nm small{margin-top:2px;font-size:.82rem;color:var(--muted)}
+.fin-row .v,.fin-amt{font-variant-numeric:tabular-nums;font-size:1rem}.fin-row .v.neg{color:#e0603e}
+.fin-amt{flex:none;padding-left:10px}
+.fin-bill.paid .nm,.fin-bill.paid .fin-amt{color:var(--muted)}.fin-bill.paid .nm{text-decoration:line-through;text-decoration-thickness:1px}
+.hm-check.on{display:grid;place-items:center;background:var(--ink);box-shadow:none;color:var(--bg)}.hm-check.on .ic{width:16px;height:16px}

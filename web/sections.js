@@ -5,9 +5,9 @@
    few lines below. Which section and view you were on is remembered on this device. */
 const SECKEY="gf-gain-planner-sections";
 const SECS=[
-  {id:"home",label:"Home",icon:"home",views:[["today","Today","sun"],["calendar","Calendar","cal"],["tasks","Tasks","okl"]]},
+  {id:"home",label:"Tasks",icon:"okl",views:[["today","Today","sun"],["calendar","Calendar","cal"],["tasks","All tasks","list"]]},
   {id:"food",label:"Food",icon:"apple"},
-  {id:"finance",label:"Finance",icon:"wallet",views:[["overview","Overview","pie"],["spending","Spending","wallet"],["budget","Budget","list"]]},
+  {id:"finance",label:"Finance",icon:"wallet",views:[["accounts","Accounts","wallet"],["bills","Bills","clockl"],["recurring","Recurring","syncl"]]},
   {id:"health",label:"Health",icon:"pulse",views:[["overview","Overview","pulse"],["body","Body","flame"],["activity","Activity","clockl"]]},
 ];
 let sec={id:"food",view:{}};

@@ -38,7 +38,7 @@ html.glass .sh-bar,html.glass .rb-top{background:transparent}
 html.glass .sh-bar{background:rgba(255,255,255,calc(var(--p,0) * .82))}
 html.glass .sh-acts{background:linear-gradient(to top,rgba(255,255,255,.88) 55%,rgba(255,255,255,0))}
 html.glass .sh-x{background:rgba(25,25,50,.06)}
-html.glass .hm-check{background:rgba(255,255,255,.5)}
+html.glass .hm-check:not(.on){background:rgba(255,255,255,.5)}
 
 /* ---------- smoked glass: the dark version ---------- */
 html.glass[data-theme="dark"]{
@@ -59,5 +59,5 @@ html.glass[data-theme="dark"] .sh-bar{background:rgba(26,26,34,calc(var(--p,0) *
 html.glass[data-theme="dark"] .sh-acts{background:linear-gradient(to top,rgba(26,26,34,.92) 55%,rgba(26,26,34,0))}
 html.glass[data-theme="dark"] .sh-x{background:rgba(255,255,255,.08)}
 html.glass[data-theme="dark"] :is(.nx-chips .act,.sh-acts .act:not([aria-pressed="true"])){background:rgba(255,255,255,.09);box-shadow:0 1px 0 rgba(255,255,255,.06) inset}
-html.glass[data-theme="dark"] .hm-check{background:rgba(255,255,255,.04)}
+html.glass[data-theme="dark"] .hm-check:not(.on){background:rgba(255,255,255,.04)}
 html.glass[data-theme="dark"] .toast{background:rgba(44,44,56,.85)}

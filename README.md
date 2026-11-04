@@ -6,8 +6,9 @@ A gluten-free weight-gain meal planner that runs on GitHub Pages and stores your
 web/                 the app (published to GitHub Pages)
   index.html         the page: markup only
   app.js, app.css    the meal planner itself (the Food section)
-  sections.js/.css   the left sidebar and the Home, Finance and Health sections, each with its own tab bar
-  home.js            Home: today's dashboard, calendar and tasks
+  sections.js/.css   the left sidebar and the Tasks, Finance and Health sections, each with its own tab bar
+  home.js            Tasks: today's dashboard (tasks, schedule, goals), calendar and all tasks
+  finance.js         Finance: accounts, bills and recurring charges
   ui/                the reusable part: kit.css (tokens and components), kit.js (sheets, menus, toasts,
                      swipe), icons.js (the icon sprite), api.js (client for the Worker), demo.html
 worker/              a small Cloudflare Worker that talks to Notion for the app
@@ -73,7 +74,13 @@ To install it like an app: on iPhone or iPad, tap Share, then **Add to Home Scre
 
 ## Sections
 
-A sidebar (a rail of icons on wide screens, a drawer from the header's sidebar button on phones) switches between **Home**, **Food** (the meal planner), **Finance** and **Health**. Each has its own floating tab bar. **Home → Today** shows the time, the week, how many tasks are left and what to start with, the day's events on a timeline, what's on now, today's food, and the day's tasks and schedule; **Calendar** lists the next two weeks and **Tasks** everything by due date. The header's **+** adds a task (with a list and a repeat) or an event (with a calendar). Completing a repeating task moves it to its next date. Tasks and events are kept on this device for now. Add `?demo` to the address to start with a sample week, or `?home`, `?food` etc. to open a section. Finance and Health have their tab bars and empty views, ready for content.
+A sidebar (a rail of icons on wide screens, a drawer from the header's sidebar button on phones) switches between **Tasks**, **Food** (the meal planner), **Finance** and **Health**. Each has its own floating tab bar.
+
+**Tasks → Today** opens with how many tasks are left and what to start with, beside the day's events on a timeline, what's on now and today's food. Below, three columns: the day's **Tasks**, its **Schedule** and **Goals** — daily targets like water, walking, skincare and stretching, each with a progress meter and − / + buttons (tap a goal to change its target, unit, step or color; the header's **+** adds one). **Calendar** lists the next two weeks and **All tasks** everything by due date. The header's **+** also adds a task (with a list and a repeat) or an event (with a calendar). Completing a repeating task moves it to its next date.
+
+**Finance** has **Accounts** (balances grouped by type, with net worth — credit cards and loans count against it), **Bills** (what's left to pay this month, past-due bills called out, tap the circle to mark one paid for the month) and **Recurring** (subscriptions and other charges by weekly, monthly, quarterly or yearly cycle, with the monthly and yearly cost; next dates roll forward on their own). The header's **+** adds an account, bill or recurring charge.
+
+Tasks, goals and finance are kept on this device for now. Add `?demo` to the address to start with a sample week and sample finances, or `?home`, `?food`, `?finance` etc. to open a section. Health has its tab bar and empty views, ready for content.
 
 ## Appearance
 
