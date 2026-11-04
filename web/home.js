@@ -5,7 +5,8 @@
    Views register with sections.js through window.SECTION_VIEWS. */
 const HOMEKEY="gf-home";
 const CALS={Family:"#e5674a",Work:"#4c7be0",Kids:"#4bb07a"};
-const LISTS={Home:"#ec8a3a",Errands:"#e3b21f",Work:"#4c7be0",Personal:"#d9579b",Kids:"#4bb07a",Family:"#e5674a"};
+const LISTS={Home:"#ec8a3a",Errands:"#e3b21f",Work:"#4c7be0",Personal:"#d9579b",Health:"#3fae7a",Finance:"#8a6be0",Roland:"#a07650",Housekeeping:"#7b8794",Kids:"#4bb07a",Family:"#e5674a"};
+const PRIS=[["","No priority"],["High","High"],["Medium","Medium"],["Low","Low"]];
 const REPEATS=[["","Doesn't repeat"],["daily","Daily"],["weekly","Weekly"],["monthly","Monthly"]];
 let home={tasks:[],events:[]},homeDay=0; // homeDay: days from today shown on Today
 try{const v=JSON.parse(localStorage.getItem(HOMEKEY)||"null");if(v&&Array.isArray(v.tasks)&&Array.isArray(v.events))home=v}catch(e){}
@@ -14,7 +15,8 @@ const GOAL_COLORS=["#3f8fe0","#3fae7a","#d9579b","#e3a21f","#8a6be0","#ec8a3a"];
 if(!Array.isArray(home.goals))home.goals=[{id:"water",n:"Water",target:8,unit:"glasses",step:1,c:GOAL_COLORS[0]},{id:"walk",n:"Walking",target:8000,unit:"steps",step:1000,c:GOAL_COLORS[1]},
   {id:"skin",n:"Skincare",target:2,unit:"routines",step:1,c:GOAL_COLORS[2]},{id:"stretch",n:"Stretch",target:10,unit:"minutes",step:5,c:GOAL_COLORS[3]}];
 if(!home.log||typeof home.log!=="object")home.log={};
-const saveHome=()=>{try{localStorage.setItem(HOMEKEY,JSON.stringify(home))}catch(e){}};
+// every save also sends changed tasks to Notion shortly after (fromSync: the sync's own saves)
+const saveHome=fromSync=>{try{localStorage.setItem(HOMEKEY,JSON.stringify(home))}catch(e){}if(fromSync!==true&&typeof queueTaskPush==="function")queueTaskPush()};
 const dISO=dt=>`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
 const dayAt=k=>{const t=new Date();t.setHours(0,0,0,0);t.setDate(t.getDate()+k);return t};
 const todayISO=()=>dISO(new Date());
@@ -85,7 +87,7 @@ function weekStrip(){return `<nav class="strip narrow hm-strip" aria-label="Days
   return `<button data-k="${k}" aria-pressed="${k===homeDay}"${k===0?' class="today"':""}><span>${d.toLocaleDateString("en-US",{weekday:"short"})}</span><b>${d.getDate()}</b>${has?'<i class="has"></i>':""}</button>`}).join("")}</nav>`}
 function bindStrip(root,again){root.querySelectorAll(".hm-strip [data-k]").forEach(b=>b.onclick=()=>{homeDay=+b.dataset.k;again()})}
 /* ---------- Today ---------- */
-function homeToday(body){refreshCals();
+function homeToday(body){refreshCals();syncTasks();
   const day=dayAt(homeDay),S=dISO(day),isT=homeDay===0,now=nowMins();
   const evs=eventsOn(S),due=tasksOn(S),any=isT?openTasks().filter(t=>!t.due):[],T=todayISO();
   const overdue=isT?due.filter(t=>t.due<T):[],left=due.length+any.length;
@@ -132,7 +134,7 @@ function foodLine(){let d=state.days.findIndex((_,k)=>isToday(k));if(d<0)return 
   return `<button class="hm-food"><svg class="ic" aria-hidden="true"><use href="#i-apple"/></svg><span><b>${fmt(eaten)}</b> of ${fmt(state.target)} calories${nx?` · next, ${esc(nx.o.n)} at ${fmtTime(nx.time)}`:""}</span></button>`}
 function taskRow(t){const T=todayISO(),late=t.due&&t.due<T,when=[t.due&&t.due!==T?shortD(t.due):"",t.at?fmtTime(t.at):""].filter(Boolean).join(", ");
   const meta=[when?(late?`<span class="late">${when}</span>`:when):"",`${dot(LISTS[t.list]||"var(--muted)")}${esc(t.list||"")}`,t.rep&&!t.fu?`<svg class="ic" aria-hidden="true"><use href="#i-syncl"/></svg>${repLabel(t.rep)}`:"",
-    t.fu?`<svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg>${fuLabel(t)}`:"",t.fuCount?`followed up ${t.fuCount}×`:""].filter(Boolean);
+    t.fu?`<svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg>${fuLabel(t)}`:"",t.fuCount?`followed up ${t.fuCount}×`:"",t.pri==="High"?`<span class="late">High priority</span>`:""].filter(Boolean);
   return `<div class="hm-task"><button class="hm-check" data-done="${t.id}" aria-label="Complete ${esc(t.n)}"></button><button class="hm-tx" data-task="${t.id}"><span class="nm">${esc(t.n)}</span><span class="mt">${meta.join('<span class="sep">·</span>')}</span></button></div>`}
 function eventRow(e,cur){return `<button class="hm-ev${cur?" cur":""}" data-ev="${esc(e.id)}"><span class="tm">${e.allDay?"<b>All day</b>":`<b>${fmtTime(e.start)}</b>${cur?"Now":e.end?fmtTime(e.end):""}`}</span><span class="nm">${dot(calColor(e))}<span>${esc(e.n)}${e.where?`<small>${esc(e.where)}</small>`:""}</span></span></button>`}
 function bindRows(root,again){
@@ -210,7 +212,7 @@ function viewTask(t,again){if(!t)return;const T=todayISO(),re=()=>viewTask(t,aga
   viewSheet(kick(LISTS[t.list]||"var(--muted)",t.list||"Task"),t.n,[
     ["Due",t.due?`<span class="${late?"late":""}">${t.due===T?"Today":shortD(t.due)}</span>`:"Anytime"],["Remind at",t.at?fmtTime(t.at):""],
     ["Repeats",t.rep?repLabel(t.rep):""],["Follow up",t.fu?esc(fuLabel(t)):""],
-    ["Followed up",t.fuCount?`${t.fuCount} time${t.fuCount>1?"s":""}${t.fuLast?`, last ${shortD(t.fuLast)}`:""}`:""],["Status",t.done?"Done":""]],
+    ["Followed up",t.fuCount?`${t.fuCount} time${t.fuCount>1?"s":""}${t.fuLast?`, last ${shortD(t.fuLast)}`:""}`:""],["Priority",t.pri||""],["Notes",esc(t.notes||"")],["Status",t.done?"Done":""]],
     [t.done?["syncl","Reopen",()=>{t.done=false;saveHome();again();re()}]:["okl",t.fu||t.rep?"Check off":"Complete",()=>{closeDetail();completeTask(t.id,again)}],
      ["edit","Edit",()=>editTask(t,again,{},re)],
      !t.done&&(t.fu||t.rep)?["lock","Done for good",()=>{const before={...t};t.done=true;saveHome();closeDetail();again();
@@ -241,14 +243,16 @@ function editTask(t,again,pre={},back=null){const v=t||{n:"",due:dISO(dayAt(home
   formSheet(t?"Edit task":"New task",`<label for="hmName">Task</label><input id="hmName" type="text" maxlength="120" value="${esc(v.n)}" placeholder="e.g. Pay water bill">
     <label for="hmDue">Due</label><input id="hmDue" type="date" value="${esc(v.due||"")}">
     <label for="hmAt">Remind at</label><input id="hmAt" type="time" step="300" value="${esc(v.at||"")}">
-    <label for="hmList">List</label><select id="hmList">${hmOpts(Object.keys(LISTS).map(k=>[k,k]),v.list)}</select>
+    <label for="hmList">List</label><select id="hmList">${hmOpts([...new Set([...Object.keys(LISTS),...home.tasks.map(x=>x.list).filter(Boolean)])].map(k=>[k,k]),v.list)}</select>
+    <label for="hmPri">Priority</label><select id="hmPri">${hmOpts(PRIS,v.pri||"")}</select>
     <label for="hmRep">Repeats</label><select id="hmRep">${hmOpts(REPEATS,v.rep)}</select>
     <label for="hmFu">Follow up</label><select id="hmFu">${hmOpts(FOLLOWS,v.fu||"")}</select>
     <div class="pf-row" id="hmFuDays"><label for="hmFuN">After</label><span class="qty"><input id="hmFuN" type="number" min="1" max="365" inputmode="numeric" value="${v.fuN||3}"> days, each time</span></div>
     <div class="pf-row" id="hmFuDate"><label for="hmFuOn">On</label><input id="hmFuOn" type="date" value="${esc(v.fuOn||plusDays(v.due||todayISO(),7))}"></div>
     <p class="hint pf-note" id="hmFuNote"></p>
+    <label for="hmNotes">Notes</label><input id="hmNotes" type="text" maxlength="500" value="${esc(v.notes||"")}" placeholder="Optional">
     ${t&&t.fuCount?`<p class="hint pf-note">Followed up ${t.fuCount} time${t.fuCount>1?"s":""}${t.fuLast?`, last on ${shortD(t.fuLast)}`:""}.</p>`:""}`,
-    ()=>{const fu=$("hmFu").value,x={n:$("hmName").value.trim(),due:$("hmDue").value||"",at:$("hmAt").value||"",list:$("hmList").value,rep:$("hmRep").value,fu,
+    ()=>{const fu=$("hmFu").value,x={n:$("hmName").value.trim(),due:$("hmDue").value||"",at:$("hmAt").value||"",list:$("hmList").value,pri:$("hmPri").value,notes:$("hmNotes").value.trim(),rep:$("hmRep").value,fu,
         fuN:Math.min(365,Math.max(1,Math.round(+$("hmFuN").value||3))),fuOn:fu==="date"?$("hmFuOn").value||"":""};
       if(fu&&!x.due)x.due=todayISO();if(!x.at||x.at!==(t&&t.at)||x.due!==(t&&t.due))x.reminded="";
       if(t)Object.assign(t,x);else home.tasks.push({id:uid(),...x});toast(t?"Task saved":`Added ${x.n}`,{kind:"ok",key:"task",icon:"okl"});again()},
@@ -277,7 +281,7 @@ function homeCalendar(body){refreshCals();const again=()=>homeCalendar(body);
   bindRows(body,again);bindStrip(body,again)}
 
 /* ---------- Tasks: everything by when it's due ---------- */
-function homeTasks(body){const again=()=>homeTasks(body),T=todayISO(),all=openTasks().sort((a,b)=>(a.due||"9").localeCompare(b.due||"9"));
+function homeTasks(body){syncTasks();const again=()=>homeTasks(body),T=todayISO(),all=openTasks().sort((a,b)=>(a.due||"9").localeCompare(b.due||"9"));
   const groups=[["Overdue",all.filter(t=>t.due&&t.due<T)],["Today",all.filter(t=>t.due===T)],["Upcoming",all.filter(t=>t.due>T)],["Anytime",all.filter(t=>!t.due)]];
   body.innerHTML=`<div class="hm-page narrow">`+(all.length?groups.filter(g=>g[1].length).map(([h,ts])=>`<section class="hm-day"><h3>${h}<span>${ts.length}</span></h3>${ts.map(taskRow).join("")}</section>`).join("")
     :`<div class="sec-empty"><svg class="ic" aria-hidden="true"><use href="#i-okl"/></svg><p class="sec-empty-t">No open tasks</p><p class="hint">Add one with +.</p></div>`)
@@ -335,3 +339,66 @@ function renderSampleSettings(){const el=$("sampleSet");if(!el)return;const off=
   if($("sampleOff"))$("sampleOff").onclick=clearSamples;
   if($("sampleOn"))$("sampleOn").onclick=()=>{try{localStorage.removeItem("gf-samples-off")}catch(e){}renderSampleSettings()}}
 renderSampleSettings();
+
+/* ---------- tasks sync with Notion (the Planner Tasks database, through the Worker) ----------
+   home.synced remembers each Notion task as it was last agreed (page id → its fields), so a change on this
+   device is anything that differs from that, and a task gone from here with an entry there was deleted.
+   Samples stay on the device. Reading takes Notion's version unless this device has a change still to send. */
+const TF=["n","due","at","list","rep","pri","notes","done","fu","fuN","fuOn","fuCount","fuLast"];
+const tPick=t=>Object.fromEntries(TF.map(k=>[k,t[k]??(k==="done"?false:k==="fuN"?3:k==="fuCount"?0:"")]));
+const tKey=t=>JSON.stringify(TF.map(k=>tPick(t)[k]));
+const nidOf=id=>String(id||"").replace(/-/g,"");
+const isSampleTask=t=>!t.nid&&(t.sample||SAMPLE_TASKS.includes(t.n));
+if(!home.synced||typeof home.synced!=="object")home.synced={};
+let tSync={busy:false,t:0,err:"",at:0,last:0};
+const canSyncTasks=()=>!!(API.url&&passcode());
+function queueTaskPush(){if(!canSyncTasks())return;clearTimeout(tSync.t);tSync.t=setTimeout(()=>syncTasks(true),1200)}
+async function pushTasks(){
+  const tz=(Intl.DateTimeFormat().resolvedOptions()||{}).timeZone||"";
+  // a task whose Notion page was already deleted (brought back with Undo) is made again
+  home.tasks.forEach(t=>{if(t.nid&&home.synced[t.nid]===undefined)delete t.nid});
+  for(let round=0;round<15;round++){
+    const live=home.tasks.filter(t=>!isSampleTask(t)),have=new Set(home.tasks.map(t=>t.nid).filter(Boolean));
+    const creates=live.filter(t=>!t.nid).map(t=>({...tPick(t),ref:t.id,tz}));
+    const updates=live.filter(t=>t.nid&&tKey(t)!==home.synced[t.nid]).map(t=>({...tPick(t),id:t.nid,tz}));
+    const deletes=Object.keys(home.synced).filter(n=>!have.has(n));
+    const batch={creates:creates.slice(0,20)},room=()=>20-batch.creates.length-(batch.updates||[]).length;
+    batch.updates=updates.slice(0,room());batch.deletes=deletes.slice(0,room());
+    if(!batch.creates.length&&!batch.updates.length&&!batch.deletes.length)return;
+    const sent=new Map([...batch.creates.map(c=>[c.ref,tKey(c)]),...batch.updates.map(u=>[u.id,tKey(u)])]);
+    const r=await api("/tasks/batch",batch);
+    (r.created||[]).forEach(c=>{const t=home.tasks.find(x=>x.id===c.ref);if(t){t.nid=nidOf(c.id);home.synced[t.nid]=sent.get(c.ref)}});
+    (r.ok||[]).forEach(id=>{id=nidOf(id);if(sent.has(id))home.synced[id]=sent.get(id);else delete home.synced[id]});
+    saveHome(true);
+    if((r.failed||[]).length){tSync.err=r.failed[0].message;return}
+  }
+}
+async function pullTasks(){
+  const r=await api("/tasks"),remote=(r.tasks||[]).map(x=>({...x,id:nidOf(x.id)}));
+  const byNid=new Map(home.tasks.filter(t=>t.nid).map(t=>[t.nid,t])),gone=new Set(Object.keys(home.synced).filter(n=>!byNid.has(n)));
+  const out=[],synced={};
+  remote.forEach(x=>{if(gone.has(x.id)){synced[x.id]=home.synced[x.id];return} // deleted here, not sent yet
+    const l=byNid.get(x.id);
+    if(l&&home.synced[x.id]!==undefined&&tKey(l)!==home.synced[x.id]){out.push(l);synced[x.id]=home.synced[x.id];return} // changed here, not sent yet
+    out.push({...(l||{}),...tPick(x),id:l?l.id:uid(),nid:x.id});synced[x.id]=tKey(x)});
+  home.tasks.filter(t=>!t.nid).forEach(t=>out.push(t)); // new here (or samples)
+  home.tasks=out;home.synced=synced;saveHome(true);
+}
+// send what changed, then read everything back; at most once a minute unless asked
+async function syncTasks(force){
+  if(!canSyncTasks()||tSync.busy)return;if(!force&&Date.now()-tSync.last<60e3)return;
+  tSync.busy=true;tSync.last=Date.now();const before=tKeyAll();
+  try{await pushTasks();await pullTasks();tSync.err="";tSync.at=Date.now()}
+  catch(e){tSync.err=e.code==="notion_access"?"Notion can't open Planner Tasks. In Notion, open Planner Tasks → ⋯ → Connections and add this app's connection."
+    :e.code==="server_not_configured"?"The server isn't set up for tasks yet.":e.code==="bad_passcode"?"Wrong Notion passcode.":e.message||"Couldn't sync tasks."}
+  finally{tSync.busy=false;renderTaskSettings();
+    if(tKeyAll()!==before&&document.body.dataset.sec==="home"&&$("sheet").hidden)renderSection(secOf("home"))}
+}
+const tKeyAll=()=>home.tasks.map(t=>t.id+tKey(t)).join("|");
+setTimeout(()=>syncTasks(true),1200);setInterval(()=>{if(document.visibilityState==="visible")syncTasks(true)},3*60e3);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")syncTasks()});
+// Settings → Tasks: how the sync is doing
+function renderTaskSettings(){const el=$("taskSet");if(!el)return;const n=home.tasks.filter(t=>t.nid).length;
+  el.innerHTML=`<div class="row"><span class="sync-line">${!canSyncTasks()?"Add your Notion passcode below to sync tasks.":tSync.err?`<span class="late">${esc(tSync.err)}</span>`:tSync.at?`Synced with Planner Tasks · ${n} task${n===1?"":"s"}`:"Syncing…"}</span>${canSyncTasks()?`<button class="txt" id="taskNow" type="button">Sync now</button>`:""}</div>`;
+  if($("taskNow"))$("taskNow").onclick=()=>syncTasks(true)}
+renderTaskSettings();

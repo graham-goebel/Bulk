@@ -8,6 +8,9 @@
 //   GET  /plan?from=YYYY-MM-DD -> { rows: [...] }       planned meals from that date on
 //        Each row's "time" is the wall-clock time (HH:MM) it was planned for, so devices in
 //        different time zones agree; "when" is the same moment as a full date for Notion's calendar.
+//   GET  /tasks              -> { tasks: [...] }        open tasks, and ones finished in the last 30 days (tasks.js)
+//   POST /tasks/batch        -> { created: [{ref, id}], ok: [ids], failed: [{ref, message}] }
+//        body: { creates: [task + ref], updates: [task + id], deletes: [ids] }  (max 20 in all)
 //   POST /calendar           -> { feeds: [{url, name, events} | {url, error}] }
 //        body: { urls: [webcal or https .ics links], from, to }  events between two dates (see lib/feeds.js)
 //   POST /plan/batch         -> { ok: [keys], failed: [{key, message}] }
@@ -37,6 +40,7 @@ import { cors as corsFor, jsonResponse, readJson, sameSecret } from "./lib/http.
 import { readProduct, proxyImage, webUrl } from "./lib/product.js";
 import { icsResponse } from "./lib/ics.js";
 import { readFeeds } from "./lib/feeds.js";
+import { listTasks, writeTasks } from "./tasks.js";
 
 const SLOTS = ["Breakfast", "Morning snack", "Lunch", "Afternoon snack", "Dinner", "Before bed"];
 const MAX_ITEMS = 20;
@@ -83,6 +87,12 @@ export default {
       // an ingredient taken out of a recipe in the app: its new ingredient list, macros and nutrients
       if (route("POST", "/meals/update")) { const b = await body(); await patchPage(env, mealId(b), mealUpdateProps(b)); return json({ ok: true }); }
       if (route("POST", "/plan/batch")) return json(await writePlan(env, await body()));
+      // tasks, in the Planner Tasks database
+      if (url.pathname === "/tasks" || url.pathname === "/tasks/batch") {
+        if (!env.TASKS_DB) return json({ error: "server_not_configured", message: "Set TASKS_DB." }, 500);
+        if (route("GET", "/tasks")) return json({ tasks: await listTasks(env) });
+        if (route("POST", "/tasks/batch")) return json(await writeTasks(env, await body()));
+      }
       // calendar feeds (an iCloud calendar's share link): their events between two dates
       if (route("POST", "/calendar")) {
         const b = await body(), d = (v, k) => (/^\d{4}-\d{2}-\d{2}$/.test(v || "") ? v : new Date(Date.now() + k * 864e5).toISOString().slice(0, 10));
