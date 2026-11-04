@@ -9,7 +9,7 @@
 //        Each row's "time" is the wall-clock time (HH:MM) it was planned for, so devices in
 //        different time zones agree; "when" is the same moment as a full date for Notion's calendar.
 //   POST /calendar           -> { feeds: [{url, name, events} | {url, error}] }
-//        body: { urls: [webcal or https .ics links], from, to }  events between two dates (see ics.js)
+//        body: { urls: [webcal or https .ics links], from, to }  events between two dates (see lib/feeds.js)
 //   POST /plan/batch         -> { ok: [keys], failed: [{key, message}] }
 //        body: { creates: [item], updates: [item + id], deletes: [{id, key}] }  (max 20 in total)
 //        Planned meals are keyed "YYYY-MM-DD <slot number>"; meals added by hand are "YYYY-MM-DD c<id>"
@@ -27,7 +27,6 @@
 //
 // Optional history cleanup: when KEEP_WEEKS is set above 0, a daily cron moves
 // Meal Plan rows older than that many weeks to Notion's trash (restorable for 30 days).
-import { readFeeds } from "./ics.js";
 
 //
 // Reusable pieces live in lib/: notion.js (Notion client), http.js (CORS, JSON, secrets),
@@ -37,6 +36,7 @@ import { notion, dataSourceId, queryAll, patchPage, isPageId, text, richText, nu
 import { cors as corsFor, jsonResponse, readJson, sameSecret } from "./lib/http.js";
 import { readProduct, proxyImage, webUrl } from "./lib/product.js";
 import { icsResponse } from "./lib/ics.js";
+import { readFeeds } from "./lib/feeds.js";
 
 const SLOTS = ["Breakfast", "Morning snack", "Lunch", "Afternoon snack", "Dinner", "Before bed"];
 const MAX_ITEMS = 20;
