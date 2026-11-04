@@ -78,7 +78,7 @@ a.txt{color:inherit}
 input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:8px;padding:5px 8px;min-height:34px}
 .pf{display:grid;grid-template-columns:auto 1fr;gap:12px 16px;align-items:center;margin-top:18px;font-size:.92rem}
 .pf label{color:var(--muted);font-size:.85rem}
-.pf input,.pf select{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:8px;padding:6px 9px;min-height:36px;width:100%;min-width:0}
+.pf input,.pf select,.pf .dd{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:8px;padding:6px 9px;min-height:36px;width:100%;min-width:0}
 .pf .qty{display:flex;align-items:center;gap:6px}.pf .qty input{width:5.5em;text-align:center}
 .pf .link{display:flex;gap:8px;min-width:0}.pf .link input{flex:1}
 .pf .link button{flex:none;border:1px solid var(--ink);border-radius:999px;padding:0 14px;font-size:.84rem;white-space:nowrap}
@@ -232,3 +232,16 @@ input[type="time"],input[type="date"],input[type="password"]{font:inherit;color:
 .ic{width:1em;height:1em;flex:none;vertical-align:-0.14em}
 .ic.spin{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
 .with-ic{display:inline-flex;align-items:center;gap:6px}
+
+/* dropdowns (kit.js): a button that opens a list; the real select stays hidden under it */
+select.dd-native{display:none!important}
+.dd{display:flex;align-items:center;justify-content:space-between;gap:8px;font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:8px;padding:6px 9px;min-height:36px;width:100%;min-width:0;text-align:left;cursor:pointer}
+.dd .dd-v{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dd.dd-empty .dd-v{color:var(--muted)}
+.dd .dd-chev{flex:none;width:16px;height:16px;color:var(--muted);transition:transform .2s ease}.dd[aria-expanded="true"] .dd-chev{transform:rotate(180deg)}
+.dd[aria-expanded="true"],.dd:focus-visible{border-color:var(--ink);outline:none}.dd:disabled{opacity:.5;cursor:default}
+@media (hover:hover){.dd:hover{border-color:var(--muted)}}
+.dd-menu{overflow-y:auto;overscroll-behavior:contain}
+.dd-menu button{justify-content:space-between}.dd-menu button[aria-selected="true"]{font-weight:500}
+.dd-menu .ic{flex:none;width:16px;height:16px}
+.dd-menu .dd-h{margin:8px 12px 2px;font-size:.75rem;color:var(--muted)}
+.dd-sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:10px;vertical-align:0}

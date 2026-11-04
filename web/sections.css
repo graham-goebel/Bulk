@@ -112,3 +112,16 @@ body:not([data-sec="food"]) #foodHead,body:not([data-sec="food"]) #foodMain,body
 .fin-amt{flex:none;padding-left:10px}
 .fin-bill.paid .nm,.fin-bill.paid .fin-amt{color:var(--muted)}.fin-bill.paid .nm{text-decoration:line-through;text-decoration-thickness:1px}
 .hm-check.on{display:grid;place-items:center;background:var(--ink);box-shadow:none;color:var(--bg)}.hm-check.on .ic{width:16px;height:16px}
+
+/* an item's sheet (home.js viewSheet): its details as label / value rows */
+.hm-info{margin-top:14px}.hm-info .q .late{color:#e0603e}.hm-info .hm-mute{color:var(--muted)}
+.sh-sl .hm-dot{vertical-align:1px}
+/* a goal's last seven days */
+.hm-week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;height:96px;margin-top:18px}
+.hm-week span{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;min-height:0}
+.hm-week b{flex:1;display:flex;align-items:flex-end;width:100%;max-width:28px;border-radius:6px;background:var(--soft);overflow:hidden}
+.hm-week i{display:block;width:100%;border-radius:6px;background:color-mix(in srgb,var(--c) 55%,transparent)}
+.hm-week .met i{background:var(--c)}.hm-week small{font-size:.72rem;color:var(--muted)}
+/* Settings → Calendars */
+.cal-set{display:grid;gap:10px}.cal-set .row .hint{margin:0;text-align:right}.cal-set .late{color:#e0603e}
+.hm-feed{display:inline-flex;align-items:center;color:var(--ink)}

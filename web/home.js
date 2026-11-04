@@ -24,7 +24,40 @@ const repLabel=r=>(REPEATS.find(x=>x[0]===r)||["",""])[1];
 const shortD=s=>new Date(s+"T00:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
 function addPeriod(s,rep){const d=new Date(s+"T00:00:00");if(rep==="daily")d.setDate(d.getDate()+1);else if(rep==="weekly")d.setDate(d.getDate()+7);else if(rep==="monthly")d.setMonth(d.getMonth()+1);return dISO(d)}
 const openTasks=()=>home.tasks.filter(t=>!t.done);
-const eventsOn=s=>home.events.filter(e=>e.date===s).sort((a,b)=>a.start.localeCompare(b.start));
+// linked calendars (an iCloud calendar's share link, read by the Worker): their events, kept on this device
+const CALKEY="gf-calendars",FEED_COLORS=[["#e5674a","Coral"],["#4c7be0","Blue"],["#4bb07a","Green"],["#8a6be0","Purple"],["#e3a21f","Gold"],["#d9579b","Pink"],["#7b8794","Slate"]];
+let cals={feeds:[],events:[],at:0,err:{}};
+try{const v=JSON.parse(localStorage.getItem(CALKEY)||"null");if(v&&Array.isArray(v.feeds))cals={feeds:v.feeds,events:Array.isArray(v.events)?v.events:[],at:+v.at||0,err:v.err||{}}}catch(e){}
+const saveCals=()=>{feedCache=null;try{localStorage.setItem(CALKEY,JSON.stringify(cals))}catch(e){}};
+let feedCache=null;
+const hm2=d=>`${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+// a feed's events in the app's shape, in this device's time; an all-day event shows on each day it covers
+function feedEvents(){if(feedCache)return feedCache;
+  feedCache=cals.events.flatMap(ev=>{const f=cals.feeds.find(x=>x.id===ev.f);if(!f||f.off)return [];
+    const base={n:ev.n,where:ev.where||"",cal:f.n,c:f.c,src:f.id};
+    if(ev.allDay){const out=[];for(let d=ev.start;d<(ev.end||plusDays(ev.start,1))&&out.length<31;d=plusDays(d,1))out.push({...base,id:ev.id+"|"+d,date:d,allDay:true,start:"00:00",end:"",from:ev.start,to:plusDays(ev.end||plusDays(ev.start,1),-1)});return out}
+    const a=new Date(ev.start),b=new Date(ev.end||ev.start);if(isNaN(a))return [];
+    return [{...base,id:ev.id,date:dISO(a),start:hm2(a),end:dISO(b)===dISO(a)?hm2(b):"23:59"}]});
+  return feedCache}
+const allEvents=()=>home.events.concat(feedEvents());
+const eventsOn=s=>allEvents().filter(e=>e.date===s).sort((a,b)=>(b.allDay?1:0)-(a.allDay?1:0)||a.start.localeCompare(b.start));
+const timedOn=s=>eventsOn(s).filter(e=>!e.allDay);
+const calColor=e=>e.c||CALS[e.cal]||"var(--muted)";
+let calBusy=null;
+async function refreshCals(force){
+  if(!cals.feeds.length||!API.url||!passcode())return;if(!force&&Date.now()-cals.at<15*60e3)return;if(calBusy)return calBusy;
+  calBusy=(async()=>{try{
+      const r=await api("/calendar",{urls:cals.feeds.map(f=>f.url),from:dISO(dayAt(-14)),to:dISO(dayAt(90))});const evs=[];cals.err={};
+      (r.feeds||[]).forEach((x,i)=>{const f=cals.feeds[i];if(!f)return;
+        if(x.error){cals.err[f.id]=x.error;evs.push(...cals.events.filter(e=>e.f===f.id))}
+        else{if(x.name&&!f.named)f.n=x.name;evs.push(...x.events.map(e=>({...e,f:f.id})))}});
+      cals.events=evs;cals.at=Date.now();saveCals();
+      if(force)toast(Object.keys(cals.err).length?"Some calendars couldn't be read":"Calendars up to date",{kind:Object.keys(cals.err).length?"error":"ok",key:"cal",icon:"cal"});
+    }catch(e){if(force)toast(e.code==="bad_passcode"?"Add your Notion passcode in Settings first":"Couldn't reach your calendars",{kind:"error",key:"cal",icon:"cal"})}
+    finally{calBusy=null;renderCalSettings();if(document.body.dataset.sec==="home"&&$("sheet").hidden)renderSection(secOf("home"))}})();
+  return calBusy}
+setTimeout(()=>refreshCals(),2000);setInterval(()=>{if(document.visibilityState==="visible")refreshCals()},5*60e3);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")refreshCals()});
 const tasksOn=s=>openTasks().filter(t=>t.due&&(t.due===s||(s===todayISO()&&t.due<s))).sort((a,b)=>a.due.localeCompare(b.due)||(a.at||"99").localeCompare(b.at||"99"));
 // follow-ups: checking a task off brings it back after a few days (every time) or once on a date
 const FOLLOWS=[["","No follow-up"],["days","Every few days"],["date","Once, on a date"]];
@@ -46,11 +79,11 @@ function weekStrip(){return `<nav class="strip narrow hm-strip" aria-label="Days
   return `<button data-k="${k}" aria-pressed="${k===homeDay}"${k===0?' class="today"':""}><span>${d.toLocaleDateString("en-US",{weekday:"short"})}</span><b>${d.getDate()}</b>${has?'<i class="has"></i>':""}</button>`}).join("")}</nav>`}
 function bindStrip(root,again){root.querySelectorAll(".hm-strip [data-k]").forEach(b=>b.onclick=()=>{homeDay=+b.dataset.k;again()})}
 /* ---------- Today ---------- */
-function homeToday(body){
+function homeToday(body){refreshCals();
   const day=dayAt(homeDay),S=dISO(day),isT=homeDay===0,now=nowMins();
   const evs=eventsOn(S),due=tasksOn(S),any=isT?openTasks().filter(t=>!t.due):[],T=todayISO();
   const overdue=isT?due.filter(t=>t.due<T):[],left=due.length+any.length;
-  const cur=isT?evs.find(e=>mins(e.start)<=now&&now<mins(e.end||e.start)):null,next=isT?evs.find(e=>mins(e.start)>now):null;
+  const tev=evs.filter(e=>!e.allDay),cur=isT?tev.find(e=>mins(e.start)<=now&&now<mins(e.end||e.start)):null,next=isT?tev.find(e=>mins(e.start)>now):null;
   // the sentence: what's overdue, else what's first
   const first=overdue[0]||due[0]||any[0];
   const say=!left?`Nothing to do${isT?" today":""}. <span class="hm-mute">Enjoy the space.</span>`
@@ -66,7 +99,7 @@ function homeToday(body){
     <div class="hm-page narrow">
     <div class="hm-hero">
       <div class="hm-lead"><p class="hm-count"><b>${left}</b> task${left===1?"":"s"} to do</p><p class="hm-say">${say}</p></div>
-      <div class="hm-day-now">${timeline(evs,isT?now:null)}${nowCard?`<div class="hm-now">${nowCard}</div>`:""}${isT?foodLine():""}</div>
+      <div class="hm-day-now">${timeline(tev,isT?now:null)}${nowCard?`<div class="hm-now">${nowCard}</div>`:""}${isT?foodLine():""}</div>
     </div>
     <div class="hm-rh"><h2>${isT?"Today":day.toLocaleDateString("en-US",{weekday:"long"})}</h2><span>${evs.length} event${evs.length===1?"":"s"} and ${left} task${left===1?"":"s"}</span></div>
     <div class="hm-panels">
@@ -85,7 +118,7 @@ function ago(m,future){m=Math.max(0,Math.round(m));const h=Math.floor(m/60),r=m%
 // the day's events on a line from 7 AM to 10 PM, with a mark for now
 function timeline(evs,now){const A=7*60,B=22*60,pc=m=>`${((Math.min(B,Math.max(A,m))-A)/(B-A)*100).toFixed(2)}%`;
   return `<div class="hm-tl"><div class="hm-tl-line">${[9,12,15,18,21].map(h=>`<i class="tk" style="left:${pc(h*60)}"></i><span class="tl" style="left:${pc(h*60)}">${h%12||12} ${h<12?"AM":"PM"}</span>`).join("")}
-    ${evs.map(e=>`<button class="mk${now!=null&&mins(e.start)<=now&&now<mins(e.end||e.start)?" cur":""}" data-ev="${e.id}" style="left:${pc(mins(e.start))};--c:${CALS[e.cal]||"var(--ink)"}" aria-label="${esc(e.n)} at ${fmtTime(e.start)}"></button><span class="ml" style="left:${pc(mins(e.start))}">${esc(e.n)}</span>`).join("")}
+    ${evs.map(e=>`<button class="mk${now!=null&&mins(e.start)<=now&&now<mins(e.end||e.start)?" cur":""}" data-ev="${esc(e.id)}" style="left:${pc(mins(e.start))};--c:${calColor(e)}" aria-label="${esc(e.n)} at ${fmtTime(e.start)}"></button><span class="ml" style="left:${pc(mins(e.start))}">${esc(e.n)}</span>`).join("")}
     ${now!=null&&now>=A&&now<=B?`<i class="nw" style="left:${pc(now)}"></i>`:""}</div></div>`}
 // food, from the meal planner
 function foodLine(){let d=state.days.findIndex((_,k)=>isToday(k));if(d<0)return "";
@@ -95,11 +128,11 @@ function taskRow(t){const T=todayISO(),late=t.due&&t.due<T,when=[t.due&&t.due!==
   const meta=[when?(late?`<span class="late">${when}</span>`:when):"",`${dot(LISTS[t.list]||"var(--muted)")}${esc(t.list||"")}`,t.rep&&!t.fu?`<svg class="ic" aria-hidden="true"><use href="#i-syncl"/></svg>${repLabel(t.rep)}`:"",
     t.fu?`<svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg>${fuLabel(t)}`:"",t.fuCount?`followed up ${t.fuCount}×`:""].filter(Boolean);
   return `<div class="hm-task"><button class="hm-check" data-done="${t.id}" aria-label="Complete ${esc(t.n)}"></button><button class="hm-tx" data-task="${t.id}"><span class="nm">${esc(t.n)}</span><span class="mt">${meta.join('<span class="sep">·</span>')}</span></button></div>`}
-function eventRow(e,cur){return `<button class="hm-ev${cur?" cur":""}" data-ev="${e.id}"><span class="tm"><b>${fmtTime(e.start)}</b>${cur?"Now":e.end?fmtTime(e.end):""}</span><span class="nm">${dot(CALS[e.cal]||"var(--muted)")}<span>${esc(e.n)}${e.where?`<small>${esc(e.where)}</small>`:""}</span></span></button>`}
+function eventRow(e,cur){return `<button class="hm-ev${cur?" cur":""}" data-ev="${esc(e.id)}"><span class="tm">${e.allDay?"<b>All day</b>":`<b>${fmtTime(e.start)}</b>${cur?"Now":e.end?fmtTime(e.end):""}`}</span><span class="nm">${dot(calColor(e))}<span>${esc(e.n)}${e.where?`<small>${esc(e.where)}</small>`:""}</span></span></button>`}
 function bindRows(root,again){
   root.querySelectorAll("[data-done]").forEach(b=>b.onclick=()=>completeTask(b.dataset.done,again));
-  root.querySelectorAll("[data-task]").forEach(b=>b.onclick=()=>editTask(home.tasks.find(t=>t.id===b.dataset.task),again));
-  root.querySelectorAll("[data-ev]").forEach(b=>b.onclick=()=>editEvent(home.events.find(e=>e.id===b.dataset.ev),again));
+  root.querySelectorAll("[data-task]").forEach(b=>b.onclick=()=>viewTask(home.tasks.find(t=>t.id===b.dataset.task),again));
+  root.querySelectorAll("[data-ev]").forEach(b=>b.onclick=()=>viewEvent(allEvents().find(e=>e.id===b.dataset.ev),again));
 }
 // Done: a follow-up comes back after its days (or on its date, once); a repeating task moves to its
 // next date; anything else is done. Undo puts it back either way. "Done for good" in the task's sheet ends a follow-up.
@@ -124,35 +157,81 @@ function goalRow(g,s){const v=goalVal(g,s),p=Math.min(1,g.target?v/g.target:0),d
   return `<div class="hm-goal${done?" done":""}" style="--c:${g.c||"var(--ink)"}"><button class="hm-gx" data-goal="${g.id}"><span class="nm">${esc(g.n)}</span><span class="mt"><b>${gfmt(v)}</b> of ${gfmt(g.target)} ${esc(g.unit||"")}</span>
     <span class="hm-meter" role="progressbar" aria-valuemin="0" aria-valuemax="${g.target}" aria-valuenow="${v}"><i style="width:${(p*100).toFixed(1)}%"></i></span></button>
     <button class="hm-gb" data-gminus="${g.id}" aria-label="Less ${esc(g.n)}"${v<=0?" disabled":""}>−</button><button class="hm-gb plus" data-gplus="${g.id}" aria-label="More ${esc(g.n)}">+</button></div>`}
+function bumpGoal(g,s,dir){const day=home.log[s]=home.log[s]||{},was=+(day[g.id]||0);
+  day[g.id]=Math.max(0,+(was+dir*(g.step||1)).toFixed(2));saveHome();
+  if(dir>0&&was<g.target&&day[g.id]>=g.target)toast(`${g.n}: done for the day`,{kind:"ok",key:"goal",icon:"okl"})}
 function bindGoals(root,s,again){
-  const bump=(id,dir)=>{const g=home.goals.find(x=>x.id===id);if(!g)return;const day=home.log[s]=home.log[s]||{},was=+(day[g.id]||0);
-    day[g.id]=Math.max(0,+(was+dir*(g.step||1)).toFixed(2));saveHome();again();
-    if(dir>0&&was<g.target&&day[g.id]>=g.target)toast(`${g.n}: done for the day`,{kind:"ok",key:"goal",icon:"okl"})};
+  const bump=(id,dir)=>{const g=home.goals.find(x=>x.id===id);if(!g)return;bumpGoal(g,s,dir);again()};
   root.querySelectorAll("[data-gplus]").forEach(b=>b.onclick=()=>bump(b.dataset.gplus,1));
   root.querySelectorAll("[data-gminus]").forEach(b=>b.onclick=()=>bump(b.dataset.gminus,-1));
-  root.querySelectorAll("[data-goal]").forEach(b=>b.onclick=()=>editGoal(home.goals.find(g=>g.id===b.dataset.goal),again));
+  root.querySelectorAll("[data-goal]").forEach(b=>b.onclick=()=>viewGoal(home.goals.find(g=>g.id===b.dataset.goal),s,again));
 }
-function editGoal(g,again){const v=g||{n:"",target:1,unit:"",step:1};
+function editGoal(g,again,back){const v=g||{n:"",target:1,unit:"",step:1};
   formSheet(g?"Edit goal":"New goal",`<label for="hmName">Goal</label><input id="hmName" type="text" maxlength="40" value="${esc(v.n)}" placeholder="e.g. Read">
     <label for="hmTarget">Each day</label><input id="hmTarget" type="number" min="0" step="any" inputmode="decimal" value="${v.target}">
     <label for="hmUnit">Unit</label><input id="hmUnit" type="text" maxlength="20" value="${esc(v.unit||"")}" placeholder="e.g. pages">
     <label for="hmStep">Each tap adds</label><input id="hmStep" type="number" min="0" step="any" inputmode="decimal" value="${v.step||1}">`,
     ()=>{const x={n:$("hmName").value.trim(),target:Math.max(0,+$("hmTarget").value||1),unit:$("hmUnit").value.trim(),step:Math.max(0.1,+$("hmStep").value||1)};
-      if(g)Object.assign(g,x);else home.goals.push({id:uid(),c:GOAL_COLORS[home.goals.length%GOAL_COLORS.length],...x});toast(g?"Goal saved":`Added ${x.n}`,{kind:"ok",key:"goal",icon:"okl"});again()},
-    g?()=>{home.goals=home.goals.filter(x=>x!==g);toast(`Deleted ${g.n}`,{kind:"removed",key:"goal",action:"Undo",ms:6000,onAction:()=>{home.goals.push(g);saveHome();again()}});again()}:null)}
+      if(g)Object.assign(g,x);else home.goals.push({id:uid(),c:GOAL_COLORS[home.goals.length%GOAL_COLORS.length],...x});toast(g?"Goal saved":`Added ${x.n}`,{kind:"ok",key:"goal",icon:"okl"});again()},null,[],back)}
+function deleteGoal(g,again){const k=home.goals.indexOf(g);home.goals=home.goals.filter(x=>x!==g);saveHome();again();
+  toast(`Deleted ${g.n}`,{kind:"removed",key:"goal",action:"Undo",ms:6000,onAction:()=>{home.goals.splice(k,0,g);saveHome();again()}})}
 
 /* ---------- adding and editing ---------- */
-function formSheet(title,html,onSave,onDelete,acts=[]){
+// A form in the sheet. Opened from an item's sheet (back), it has a back arrow and returns there on Save.
+// Only a new item's name is focused (and not on touch screens), so nothing opens straight into typing.
+function formSheet(title,html,onSave,onDelete,acts=[],back=null){
   if($("sheet").hidden){sheetFocus=document.activeElement;$("sheetBox").style.height=""}else holdSize();sheetCtx=null;
   $("sheetBox").innerHTML=`${sheetHead("",title,{action:{id:"hmSave",label:"Save"}})}<div class="pf">${html}</div>`;
-  showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";$("shClose").onclick=closeDetail;
+  showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";
+  // a form is usually longer than the sheet it came from: let it grow
+  if(back)requestAnimationFrame(()=>{$("sheetBox").style.height=""});
+  if(back)backBtn(back);else{const c=$("shClose");c.innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>';c.setAttribute("aria-label","Close");c.onclick=closeDetail}
   const name=$("hmName"),need=()=>{$("hmSave").disabled=!name.value.trim()};name.addEventListener("input",need);need();
-  $("hmSave").onclick=()=>{if(!name.value.trim())return;onSave();saveHome();closeDetail()};
+  $("hmSave").onclick=()=>{if(!name.value.trim())return;onSave();saveHome();if(back){sheetBacking=true;try{back()}finally{sheetBacking=false}}else closeDetail()};
   const all=acts.map(([i,l,f])=>[i,l,()=>{f();saveHome();closeDetail()}]);if(onDelete)all.push(["trashl","Delete",()=>{onDelete();saveHome();closeDetail()}]);if(all.length)sheetActs(all);
-  if(!touchUI)name.focus();
+  if(!touchUI&&!back&&!name.value)name.focus();
+}
+// An item's own sheet: what it is, with its actions (Edit among them) along the bottom.
+function viewSheet(kicker,title,rows,acts,extra=""){
+  if($("sheet").hidden){sheetFocus=document.activeElement;$("sheetBox").style.height=""}else holdSize();sheetCtx=null;
+  $("sheetBox").innerHTML=`${sheetHead(kicker,esc(title))}${extra}<ul class="ing hm-info">${rows.filter(r=>r&&r[1]!=null&&r[1]!=="").map(([l,v])=>`<li><span>${l}</span><span class="q">${v}</span></li>`).join("")}</ul>`;
+  showBg($("sheet"));resetSheet($("sheetBox"));document.body.style.overflow="hidden";
+  const c=$("shClose");c.innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>';c.setAttribute("aria-label","Close");c.onclick=closeDetail;
+  sheetActs(acts);
+}
+const kick=(c,t)=>`${dot(c)}${esc(t)}`;
+function viewTask(t,again){if(!t)return;const T=todayISO(),re=()=>viewTask(t,again),late=t.due&&t.due<T&&!t.done;
+  viewSheet(kick(LISTS[t.list]||"var(--muted)",t.list||"Task"),t.n,[
+    ["Due",t.due?`<span class="${late?"late":""}">${t.due===T?"Today":shortD(t.due)}</span>`:"Anytime"],["Remind at",t.at?fmtTime(t.at):""],
+    ["Repeats",t.rep?repLabel(t.rep):""],["Follow up",t.fu?esc(fuLabel(t)):""],
+    ["Followed up",t.fuCount?`${t.fuCount} time${t.fuCount>1?"s":""}${t.fuLast?`, last ${shortD(t.fuLast)}`:""}`:""],["Status",t.done?"Done":""]],
+    [t.done?["syncl","Reopen",()=>{t.done=false;saveHome();again();re()}]:["okl",t.fu||t.rep?"Check off":"Complete",()=>{closeDetail();completeTask(t.id,again)}],
+     ["edit","Edit",()=>editTask(t,again,{},re)],
+     !t.done&&(t.fu||t.rep)?["lock","Done for good",()=>{const before={...t};t.done=true;saveHome();closeDetail();again();
+       toast(`Done: ${t.n}`,{kind:"ok",key:"task",icon:"okl",action:"Undo",ms:6000,onAction:()=>{Object.assign(t,before);t.done=false;saveHome();again()}})}]:null,
+     ["trashl","Delete",()=>{closeDetail();deleteTask(t,again)}]]);
+}
+function deleteTask(t,again){home.tasks=home.tasks.filter(x=>x!==t);saveHome();again();
+  toast(`Deleted ${t.n}`,{kind:"removed",key:"task",action:"Undo",ms:6000,onAction:()=>{home.tasks.push(t);saveHome();again()}})}
+function viewEvent(e,again){if(!e)return;const re=()=>viewEvent(allEvents().find(x=>x.id===e.id)||e,again);
+  const when=e.allDay?(e.from&&e.to&&e.from!==e.to?`${shortD(e.from)} – ${shortD(e.to)}`:`${shortD(e.date)}, all day`):`${shortD(e.date)}, ${fmtTime(e.start)}${e.end?` – ${fmtTime(e.end)}`:""}`;
+  const feed=e.src&&cals.feeds.find(f=>f.id===e.src);
+  viewSheet(kick(calColor(e),e.cal||"Event"),e.n,[["When",when],["Where",esc(e.where||"")],["Calendar",feed?`${esc(feed.n)} <span class="hm-mute">· linked, read only</span>`:esc(e.cal||"")]],
+    [["bell","Follow-up task",()=>editTask(null,again,{n:`Follow up: ${e.n}`,due:plusDays(e.date,1),list:"Work",fu:"days",fuN:3},re)],
+     e.src?null:["edit","Edit",()=>editEvent(e,again,re)],
+     e.src?null:["trashl","Delete",()=>{closeDetail();home.events=home.events.filter(x=>x!==e);saveHome();again();
+       toast(`Deleted ${e.n}`,{kind:"removed",key:"event",action:"Undo",ms:6000,onAction:()=>{home.events.push(e);saveHome();again()}})}]]);
+}
+function viewGoal(g,s,again){if(!g)return;const re=()=>viewGoal(g,s,again),v=goalVal(g,s),u=esc(g.unit||"");
+  const week=Array.from({length:7},(_,j)=>{const d=new Date(s+"T00:00:00");d.setDate(d.getDate()-6+j);const k=dISO(d),x=goalVal(g,k);return {k,x,p:Math.min(1,g.target?x/g.target:0),d}});
+  const bars=`<div class="hm-week" style="--c:${g.c||"var(--ink)"}" aria-label="The last 7 days">${week.map(w=>`<span class="${w.p>=1?"met":""}" title="${esc(shortD(w.k))}: ${gfmt(w.x)} ${u}"><b><i style="height:${(w.p*100).toFixed(0)}%"></i></b><small>${w.d.toLocaleDateString("en-US",{weekday:"narrow"})}</small></span>`).join("")}</div>`;
+  viewSheet(kick(g.c||"var(--ink)",s===todayISO()?"Today":shortD(s)),g.n,[["Progress",`<b>${gfmt(v)}</b> of ${gfmt(g.target)} ${u}`],["Each tap adds",`${gfmt(g.step||1)} ${u}`],
+    ["Last 7 days",`met ${week.filter(w=>w.p>=1).length} of 7 days`]],
+    [["plusl",`Add ${gfmt(g.step||1)}`,()=>{bumpGoal(g,s,1);again();re()}],v>0?["downl",`Take off ${gfmt(g.step||1)}`,()=>{bumpGoal(g,s,-1);again();re()}]:null,
+     ["edit","Edit",()=>editGoal(g,again,re)],["trashl","Delete",()=>{closeDetail();deleteGoal(g,again)}]],bars);
 }
 const hmOpts=(list,sel)=>list.map(([v,l])=>`<option value="${esc(v)}"${v===sel?" selected":""}>${esc(l)}</option>`).join("");
-function editTask(t,again,pre={}){const v=t||{n:"",due:dISO(dayAt(homeDay)),list:"Home",rep:"",...pre};
+function editTask(t,again,pre={},back=null){const v=t||{n:"",due:dISO(dayAt(homeDay)),list:"Home",rep:"",...pre};
   formSheet(t?"Edit task":"New task",`<label for="hmName">Task</label><input id="hmName" type="text" maxlength="120" value="${esc(v.n)}" placeholder="e.g. Pay water bill">
     <label for="hmDue">Due</label><input id="hmDue" type="date" value="${esc(v.due||"")}">
     <label for="hmAt">Remind at</label><input id="hmAt" type="time" step="300" value="${esc(v.at||"")}">
@@ -167,12 +246,11 @@ function editTask(t,again,pre={}){const v=t||{n:"",due:dISO(dayAt(homeDay)),list
         fuN:Math.min(365,Math.max(1,Math.round(+$("hmFuN").value||3))),fuOn:fu==="date"?$("hmFuOn").value||"":""};
       if(fu&&!x.due)x.due=todayISO();if(!x.at||x.at!==(t&&t.at)||x.due!==(t&&t.due))x.reminded="";
       if(t)Object.assign(t,x);else home.tasks.push({id:uid(),...x});toast(t?"Task saved":`Added ${x.n}`,{kind:"ok",key:"task",icon:"okl"});again()},
-    t?()=>{home.tasks=home.tasks.filter(x=>x!==t);toast(`Deleted ${t.n}`,{kind:"removed",key:"task",action:"Undo",ms:6000,onAction:()=>{home.tasks.push(t);saveHome();again()}});again()}:null,
-    t&&!t.done&&(t.fu||t.rep)?[["okl","Done for good",()=>{const before={...t};t.done=true;toast(`Done: ${t.n}`,{kind:"ok",key:"task",icon:"okl",action:"Undo",ms:6000,onAction:()=>{Object.assign(t,before);t.done=false;saveHome();again()}});again()}]]:[]);
+    null,[],back);
   const sync=()=>{const f=$("hmFu").value,n=Math.max(1,Math.round(+$("hmFuN").value||3));$("hmFuDays").hidden=f!=="days";$("hmFuDate").hidden=f!=="date";
     $("hmFuNote").textContent=f==="days"?`Checking it off brings it back ${n===1?"tomorrow":`in ${n} days`}, until you mark it done for good.`:f==="date"?"Checking it off brings it back once, on that date.":"";$("hmFuNote").hidden=!f};
   $("hmFu").onchange=sync;$("hmFuN").oninput=sync;sync()}
-function editEvent(e,again){const v=e||{n:"",date:dISO(dayAt(homeDay)),start:"09:00",end:"10:00",cal:"Family",where:""};
+function editEvent(e,again,back=null){const v=e||{n:"",date:dISO(dayAt(homeDay)),start:"09:00",end:"10:00",cal:"Family",where:""};
   formSheet(e?"Edit event":"New event",`<label for="hmName">Event</label><input id="hmName" type="text" maxlength="120" value="${esc(v.n)}" placeholder="e.g. Dentist">
     <label for="hmDate">Date</label><input id="hmDate" type="date" value="${esc(v.date)}">
     <label for="hmStart">Starts</label><input id="hmStart" type="time" step="300" value="${esc(v.start)}">
@@ -181,12 +259,12 @@ function editEvent(e,again){const v=e||{n:"",date:dISO(dayAt(homeDay)),start:"09
     <label for="hmWhere">Where</label><input id="hmWhere" type="text" maxlength="80" value="${esc(v.where||"")}" placeholder="Optional">`,
     ()=>{const x={n:$("hmName").value.trim(),date:$("hmDate").value||todayISO(),start:$("hmStart").value||"09:00",end:$("hmEnd").value||"",cal:$("hmCal").value,where:$("hmWhere").value.trim()};
       if(x.end&&x.end<x.start)x.end=x.start;if(e)Object.assign(e,x);else home.events.push({id:uid(),...x});toast(e?"Event saved":`Added ${x.n}`,{kind:"ok",key:"event",icon:"cal"});again()},
-    e?()=>{home.events=home.events.filter(x=>x!==e);toast(`Deleted ${e.n}`,{kind:"removed",key:"event",action:"Undo",ms:6000,onAction:()=>{home.events.push(e);saveHome();again()}});again()}:null);
+    null,[],back);
 }
 
 /* ---------- Calendar: the next two weeks, day by day ---------- */
-function homeCalendar(body){const again=()=>homeCalendar(body);
-  body.innerHTML=weekStrip()+`<div class="hm-page narrow"><div class="hm-legend">${Object.entries(CALS).map(([n,c])=>`<span>${dot(c)}${n}</span>`).join("")}</div>`+
+function homeCalendar(body){refreshCals();const again=()=>homeCalendar(body);
+  body.innerHTML=weekStrip()+`<div class="hm-page narrow"><div class="hm-legend">${Object.entries(CALS).map(([n,c])=>`<span>${dot(c)}${n}</span>`).join("")}${cals.feeds.filter(f=>!f.off).map(f=>`<span>${dot(f.c)}${esc(f.n)}</span>`).join("")}</div>`+
     Array.from({length:14},(_,j)=>{const k=homeDay+j,d=dayAt(k),s=dISO(d),evs=eventsOn(s),ts=k?openTasks().filter(t=>t.due===s):tasksOn(s);
       return `<section class="hm-day"><h3>${k===0?"Today":k===1?"Tomorrow":d.toLocaleDateString("en-US",{weekday:"long"})}<span>${d.toLocaleDateString("en-US",{month:"short",day:"numeric"})}</span></h3>
         ${evs.map(e=>eventRow(e,false)).join("")}${ts.map(taskRow).join("")}${!evs.length&&!ts.length?`<p class="hint">Free</p>`:""}</section>`}).join("")+`</div>`;
@@ -202,6 +280,34 @@ function homeTasks(body){const again=()=>homeTasks(body),T=todayISO(),all=openTa
 
 window.SECTION_VIEWS=Object.assign(window.SECTION_VIEWS||{},{"home.today":homeToday,"home.calendar":homeCalendar,"home.tasks":homeTasks});
 // the header's + adds a task or an event; the view refreshes after
-window.SECTION_ADD=Object.assign(window.SECTION_ADD||{},{home:(btn,refresh)=>openMenu(btn,"Add",[["okl","New task",()=>editTask(null,refresh)],["cal","New event",()=>editEvent(null,refresh)],["flame","New goal",()=>editGoal(null,refresh)]])});
+window.SECTION_ADD=Object.assign(window.SECTION_ADD||{},{home:(btn,refresh)=>openMenu(btn,"Add",[["okl","New task",()=>editTask(null,refresh)],["cal","New event",()=>editEvent(null,refresh)],["flame","New goal",()=>editGoal(null,refresh)],["cal","Link a calendar",()=>editFeed(null)]])});
+
+/* ---------- linking calendars ----------
+   An iCloud calendar's share link (Calendar app: tap ⓘ next to a calendar, turn on Public Calendar, Share Link)
+   or any other .ics link. The Worker reads it, so this needs the Notion passcode, like sync. */
+function editFeed(f){const v=f||{n:"",url:"",c:FEED_COLORS[cals.feeds.length%FEED_COLORS.length][0]};
+  formSheet(f?"Edit calendar":"Link a calendar",`<label for="hmName">Name</label><input id="hmName" type="text" maxlength="40" value="${esc(v.n)}" placeholder="e.g. Home">
+    <label for="hmUrl">Link</label><input id="hmUrl" type="url" inputmode="url" value="${esc(v.url)}" placeholder="webcal://… or https://…ics">
+    <label for="hmCol">Color</label><select id="hmCol">${FEED_COLORS.map(([c,l])=>`<option value="${c}" data-swatch="${c}"${c===v.c?" selected":""}>${l}</option>`).join("")}</select>
+    <p class="hint pf-note">On iPhone: Calendar app → Calendars → ⓘ next to a calendar → turn on Public Calendar → Share Link. Anyone with the link can see that calendar, so keep it private.</p>`,
+    ()=>{const url=$("hmUrl").value.trim(),x={n:$("hmName").value.trim(),c:$("hmCol").value};if(!url)return;
+      if(f){const moved=f.url!==url;Object.assign(f,x,{url,named:true});if(moved){cals.events=cals.events.filter(e=>e.f!==f.id);cals.at=0}}
+      else{cals.feeds.push({id:uid(),url,named:true,...x});cals.at=0}
+      saveCals();toast(f?"Calendar saved":`Linked ${x.n}`,{kind:"ok",key:"cal",icon:"cal"});refreshCals(true);renderCalSettings()},null,
+    f?[["trashl","Unlink",()=>{cals.feeds=cals.feeds.filter(x=>x!==f);cals.events=cals.events.filter(e=>e.f!==f.id);saveCals();renderCalSettings();
+      if(document.body.dataset.sec==="home")renderSection(secOf("home"));toast(`Unlinked ${f.n}`,{kind:"removed",key:"cal"})}]]:[]);
+}
+// Settings → Calendars: the linked ones, with how they're doing
+function renderCalSettings(){const el=$("calSet");if(!el)return;
+  el.innerHTML=(cals.feeds.length?cals.feeds.map(f=>{const n=cals.events.filter(e=>e.f===f.id).length,err=cals.err[f.id];
+      return `<div class="row"><button class="txt hm-feed" data-feed="${f.id}">${dot(f.c)}${esc(f.n)}</button><span class="hint${err?" late":""}">${err?esc(err):cals.at?`${n} event${n===1?"":"s"}`:"Not read yet"}</span></div>`}).join("")
+    :`<p class="hint">Show your iCloud calendars on Tasks: link a calendar's share link.</p>`)
+    +`<div class="row"><button class="txt" id="calAdd" type="button">Link a calendar</button>${cals.feeds.length?`<button class="txt" id="calNow" type="button">Refresh now</button>`:""}</div>`
+    +(cals.feeds.length&&!passcode()?`<p class="hint late">Add your Notion passcode below to read them.</p>`:"");
+  el.querySelectorAll("[data-feed]").forEach(b=>b.onclick=()=>{closeGoalsFor(()=>editFeed(cals.feeds.find(f=>f.id===b.dataset.feed)))});
+  $("calAdd").onclick=()=>closeGoalsFor(()=>editFeed(null));if($("calNow"))$("calNow").onclick=()=>refreshCals(true)}
+// the forms live in the item sheet, so Settings steps aside first
+function closeGoalsFor(fn){const g=$("goals");if(g&&!g.hidden&&$("goalsClose"))$("goalsClose").click();setTimeout(fn,g&&!g.hidden?280:0)}
+renderCalSettings();
 // keep "now" current while Today is showing
 setInterval(()=>{if(document.body.dataset.sec==="home"&&$("sheet").hidden&&document.visibilityState==="visible"&&document.querySelector("#secBody-home .hm-hero"))homeToday($("secBody-home"))},30000);

@@ -80,6 +80,10 @@ A sidebar (a rail of icons on wide screens, a drawer from the header's sidebar b
 
 **Finance** has **Accounts** (balances grouped by type, with net worth — credit cards and loans count against it), **Bills** (what's left to pay this month, past-due bills called out, tap the circle to mark one paid for the month) and **Recurring** (subscriptions and other charges by weekly, monthly, quarterly or yearly cycle, with the monthly and yearly cost; next dates roll forward on their own). The header's **+** adds an account, bill or recurring charge.
 
+Tapping a task, event, goal, account, bill or charge opens its own sheet first (its details, with actions like Complete, Mark paid or Add along the bottom); **Edit** opens the form, with a back arrow, and Save returns to the sheet. Dropdowns are drawn by the kit (`ui/kit.js`), so they look the same everywhere; the real `<select>` stays underneath.
+
+**Linked calendars.** Tasks can show your iCloud (or any) calendars: in Settings → **Calendars** (or the Tasks header's **+** → **Link a calendar**), paste a calendar's share link. On iPhone: Calendar app → Calendars → ⓘ next to a calendar → turn on **Public Calendar** → **Share Link**. The Worker reads the link (`POST /calendar`, see `worker/src/ics.js`, which handles time zones, repeating events and exceptions), so it uses your Notion passcode. Linked events show on Today, the timeline and Calendar in that calendar's color, are read only, and refresh every 15 minutes while the app is open; an event's sheet can make a follow-up task from it. (Notion Calendar's own events aren't available to apps, so the share link is the way in.)
+
 Tasks, goals and finance are kept on this device for now. Add `?demo` to the address to start with a sample week and sample finances, or `?home`, `?food`, `?finance` etc. to open a section. Health has its tab bar and empty views, ready for content.
 
 ## Appearance

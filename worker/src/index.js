@@ -8,6 +8,8 @@
 //   GET  /plan?from=YYYY-MM-DD -> { rows: [...] }       planned meals from that date on
 //        Each row's "time" is the wall-clock time (HH:MM) it was planned for, so devices in
 //        different time zones agree; "when" is the same moment as a full date for Notion's calendar.
+//   POST /calendar           -> { feeds: [{url, name, events} | {url, error}] }
+//        body: { urls: [webcal or https .ics links], from, to }  events between two dates (see ics.js)
 //   POST /plan/batch         -> { ok: [keys], failed: [{key, message}] }
 //        body: { creates: [item], updates: [item + id], deletes: [{id, key}] }  (max 20 in total)
 //        Planned meals are keyed "YYYY-MM-DD <slot number>"; meals added by hand are "YYYY-MM-DD c<id>"
@@ -25,6 +27,7 @@
 //
 // Optional history cleanup: when KEEP_WEEKS is set above 0, a daily cron moves
 // Meal Plan rows older than that many weeks to Notion's trash (restorable for 30 days).
+import { readFeeds } from "./ics.js";
 
 //
 // Reusable pieces live in lib/: notion.js (Notion client), http.js (CORS, JSON, secrets),
@@ -80,6 +83,11 @@ export default {
       // an ingredient taken out of a recipe in the app: its new ingredient list, macros and nutrients
       if (route("POST", "/meals/update")) { const b = await body(); await patchPage(env, mealId(b), mealUpdateProps(b)); return json({ ok: true }); }
       if (route("POST", "/plan/batch")) return json(await writePlan(env, await body()));
+      // calendar feeds (an iCloud calendar's share link): their events between two dates
+      if (route("POST", "/calendar")) {
+        const b = await body(), d = (v, k) => (/^\d{4}-\d{2}-\d{2}$/.test(v || "") ? v : new Date(Date.now() + k * 864e5).toISOString().slice(0, 10));
+        return json({ feeds: await readFeeds(b.urls, d(b.from, -14), d(b.to, 90)) });
+      }
       return json({ error: "not_found" }, 404);
     } catch (e) {
       if (e.badRequest) return json({ error: "bad_request", message: e.message }, 400);

@@ -32,13 +32,13 @@ function finAccounts(body){const again=()=>finAccounts(body);
     <div class="fin-cols">${groups.map(([t,as])=>`<section class="hm-panel"><h3>${t}<span>${money(as.reduce((s,a)=>s+(+a.bal||0),0))}</span></h3>
       ${as.map(a=>`<button class="fin-row" data-acct="${a.id}"><span class="nm">${esc(a.n)}</span><span class="v${owes(a)?" neg":""}">${owes(a)?"−":""}${money(Math.abs(a.bal))}</span></button>`).join("")}</section>`).join("")||`<div class="sec-empty"><svg class="ic" aria-hidden="true"><use href="#i-wallet"/></svg><p class="sec-empty-t">No accounts yet</p><p class="hint">Add one with +.</p></div>`}</div>
     ${sampleLink()}</div>`;
-  body.querySelectorAll("[data-acct]").forEach(b=>b.onclick=()=>editAccount(fin.accounts.find(a=>a.id===b.dataset.acct),again));bindSample(body,again)}
-function editAccount(a,again){const v=a||{n:"",type:"Checking",bal:0};
+  body.querySelectorAll("[data-acct]").forEach(b=>b.onclick=()=>viewAccount(fin.accounts.find(a=>a.id===b.dataset.acct),again));bindSample(body,again)}
+function editAccount(a,again,back=null){const v=a||{n:"",type:"Checking",bal:0};
   formSheet(a?"Edit account":"New account",`<label for="hmName">Name</label><input id="hmName" type="text" maxlength="60" value="${esc(v.n)}" placeholder="e.g. Everyday checking">
     <label for="fnType">Type</label><select id="fnType">${hmOpts(ACCT_TYPES.map(t=>[t,t]),v.type)}</select>
     <label for="fnBal">Balance</label><input id="fnBal" type="number" step="0.01" inputmode="decimal" value="${v.bal}">`,
     ()=>{const x={n:$("hmName").value.trim(),type:$("fnType").value,bal:Math.abs(+$("fnBal").value||0)};if(a)Object.assign(a,x);else fin.accounts.push({id:uid(),...x});saveFin();toast(a?"Account saved":`Added ${x.n}`,{kind:"ok",key:"fin",icon:"wallet"});again()},
-    a?()=>{fin.accounts=fin.accounts.filter(x=>x!==a);saveFin();toast(`Deleted ${a.n}`,{kind:"removed",key:"fin",action:"Undo",ms:6000,onAction:()=>{fin.accounts.push(a);saveFin();again()}});again()}:null)}
+    null,[],back)}
 
 /* ---------- Bills: this month's, by due day ---------- */
 function finBills(body){const again=()=>finBills(body),mk=monthKey(),today=new Date().getDate();
@@ -53,17 +53,16 @@ function finBills(body){const again=()=>finBills(body),mk=monthKey(),today=new D
     ${list.length?`<div class="fin-cols"><section class="hm-panel"><h3>This month<span>${money(total)} total</span></h3>${list.map(row).join("")}</section></div>`
       :`<div class="sec-empty"><svg class="ic" aria-hidden="true"><use href="#i-clockl"/></svg><p class="sec-empty-t">No bills yet</p><p class="hint">Add one with +.</p></div>`}
     ${sampleLink()}</div>`;
-  body.querySelectorAll("[data-paid]").forEach(b=>b.onclick=()=>{const x=fin.bills.find(y=>y.id===b.dataset.paid);x.paid=x.paid||[];
-    if(x.paid.includes(mk))x.paid=x.paid.filter(k=>k!==mk);else{x.paid.push(mk);toast(`Paid: ${x.n}`,{kind:"ok",key:"fin",icon:"okl"})}saveFin();again()});
-  body.querySelectorAll("[data-bill]").forEach(b=>b.onclick=()=>editBill(fin.bills.find(x=>x.id===b.dataset.bill),again));bindSample(body,again)}
-function editBill(b,again){const v=b||{n:"",amt:"",day:1,auto:false};
+  body.querySelectorAll("[data-paid]").forEach(b=>b.onclick=()=>{togglePaid(fin.bills.find(y=>y.id===b.dataset.paid));again()});
+  body.querySelectorAll("[data-bill]").forEach(b=>b.onclick=()=>viewBill(fin.bills.find(x=>x.id===b.dataset.bill),again));bindSample(body,again)}
+function editBill(b,again,back=null){const v=b||{n:"",amt:"",day:1,auto:false};
   formSheet(b?"Edit bill":"New bill",`<label for="hmName">Bill</label><input id="hmName" type="text" maxlength="60" value="${esc(v.n)}" placeholder="e.g. Electric">
     <label for="fnAmt">Amount</label><input id="fnAmt" type="number" min="0" step="0.01" inputmode="decimal" value="${v.amt}">
     <label for="fnDay">Due on day</label><input id="fnDay" type="number" min="1" max="31" inputmode="numeric" value="${v.day}">
     <label for="fnAuto">Autopay</label><select id="fnAuto">${hmOpts([["0","No"],["1","Yes"]],v.auto?"1":"0")}</select>`,
     ()=>{const x={n:$("hmName").value.trim(),amt:Math.max(0,+$("fnAmt").value||0),day:Math.min(31,Math.max(1,Math.round(+$("fnDay").value||1))),auto:$("fnAuto").value==="1"};
       if(b)Object.assign(b,x);else fin.bills.push({id:uid(),paid:[],...x});saveFin();toast(b?"Bill saved":`Added ${x.n}`,{kind:"ok",key:"fin",icon:"clockl"});again()},
-    b?()=>{fin.bills=fin.bills.filter(x=>x!==b);saveFin();toast(`Deleted ${b.n}`,{kind:"removed",key:"fin",action:"Undo",ms:6000,onAction:()=>{fin.bills.push(b);saveFin();again()}});again()}:null)}
+    null,[],back)}
 
 /* ---------- Recurring charges ---------- */
 const perYear=s=>(+s.amt||0)*((CYCLES.find(c=>c[0]===s.cycle)||CYCLES[1])[2]);
@@ -78,15 +77,30 @@ function finRecurring(body){const again=()=>finRecurring(body);rollSubs();
     ${list.length?`<div class="fin-cols"><section class="hm-panel"><h3>Upcoming<span>${list.length}</span></h3>${list.map(s=>`<button class="fin-row" data-sub="${s.id}"><span class="nm">${esc(s.n)}<small>${(CYCLES.find(c=>c[0]===s.cycle)||CYCLES[1])[1]}${s.next?` · next ${shortD(s.next)}`:""}</small></span><span class="v">${money(s.amt)}</span></button>`).join("")}</section></div>`
       :`<div class="sec-empty"><svg class="ic" aria-hidden="true"><use href="#i-syncl"/></svg><p class="sec-empty-t">No recurring charges yet</p><p class="hint">Add subscriptions with +.</p></div>`}
     ${sampleLink()}</div>`;
-  body.querySelectorAll("[data-sub]").forEach(b=>b.onclick=()=>editSub(fin.subs.find(x=>x.id===b.dataset.sub),again));bindSample(body,again)}
-function editSub(s,again){const v=s||{n:"",amt:"",cycle:"monthly",next:todayISO()};
+  body.querySelectorAll("[data-sub]").forEach(b=>b.onclick=()=>viewSub(fin.subs.find(x=>x.id===b.dataset.sub),again));bindSample(body,again)}
+function editSub(s,again,back=null){const v=s||{n:"",amt:"",cycle:"monthly",next:todayISO()};
   formSheet(s?"Edit charge":"New recurring charge",`<label for="hmName">Name</label><input id="hmName" type="text" maxlength="60" value="${esc(v.n)}" placeholder="e.g. Netflix">
     <label for="fnAmt">Amount</label><input id="fnAmt" type="number" min="0" step="0.01" inputmode="decimal" value="${v.amt}">
     <label for="fnCycle">Repeats</label><select id="fnCycle">${hmOpts(CYCLES.map(c=>[c[0],c[1]]),v.cycle)}</select>
     <label for="fnNext">Next charge</label><input id="fnNext" type="date" value="${esc(v.next||"")}">`,
     ()=>{const x={n:$("hmName").value.trim(),amt:Math.max(0,+$("fnAmt").value||0),cycle:$("fnCycle").value,next:$("fnNext").value||todayISO()};
       if(s)Object.assign(s,x);else fin.subs.push({id:uid(),...x});saveFin();toast(s?"Charge saved":`Added ${x.n}`,{kind:"ok",key:"fin",icon:"syncl"});again()},
-    s?()=>{fin.subs=fin.subs.filter(x=>x!==s);saveFin();toast(`Deleted ${s.n}`,{kind:"removed",key:"fin",action:"Undo",ms:6000,onAction:()=>{fin.subs.push(s);saveFin();again()}});again()}:null)}
+    null,[],back)}
+
+/* ---------- an item's own sheet ---------- */
+function togglePaid(x,mk=monthKey()){x.paid=x.paid||[];if(x.paid.includes(mk))x.paid=x.paid.filter(k=>k!==mk);else{x.paid.push(mk);toast(`Paid: ${x.n}`,{kind:"ok",key:"fin",icon:"okl"})}saveFin()}
+function finDelete(list,x,again){const k=fin[list].indexOf(x);fin[list]=fin[list].filter(y=>y!==x);saveFin();closeDetail();again();
+  toast(`Deleted ${x.n}`,{kind:"removed",key:"fin",action:"Undo",ms:6000,onAction:()=>{fin[list].splice(k,0,x);saveFin();again()}})}
+function viewAccount(a,again){if(!a)return;const re=()=>viewAccount(a,again);
+  viewSheet(esc(a.type),a.n,[["Balance",`<span class="${owes(a)?"late":""}">${owes(a)?"−":""}${money(Math.abs(a.bal))}</span>`],["Counts as",owes(a)?"Owed":"Savings and cash"]],
+    [["edit","Edit",()=>editAccount(a,again,re)],["trashl","Delete",()=>finDelete("accounts",a,again)]])}
+function viewBill(b,again){if(!b)return;const re=()=>viewBill(b,again),p=(b.paid||[]).includes(monthKey()),late=!p&&!b.auto&&b.day<new Date().getDate();
+  const recent=(b.paid||[]).slice().sort().reverse().slice(0,3).map(k=>new Date(k+"-01T00:00:00").toLocaleDateString("en-US",{month:"short",year:"numeric"})).join(", ");
+  viewSheet(b.auto?"Autopay":"Bill",b.n,[["Amount",money(b.amt)],["Due",`the ${ordinal(b.day)} of each month`],["This month",p?"Paid":late?'<span class="late">Past due</span>':"Not paid yet"],["Paid in",recent]],
+    [["okl",p?"Mark unpaid":"Mark paid",()=>{togglePaid(b);again();re()}],["edit","Edit",()=>editBill(b,again,re)],["trashl","Delete",()=>finDelete("bills",b,again)]])}
+function viewSub(x,again){if(!x)return;const re=()=>viewSub(x,again),c=CYCLES.find(y=>y[0]===x.cycle)||CYCLES[1];
+  viewSheet(c[1],x.n,[["Amount",money(x.amt)],["Next charge",x.next?shortD(x.next):""],["A month",money(perYear(x)/12)],["A year",money(perYear(x))]],
+    [["edit","Edit",()=>editSub(x,again,re)],["trashl","Delete",()=>finDelete("subs",x,again)]])}
 
 window.SECTION_VIEWS=Object.assign(window.SECTION_VIEWS||{},{"finance.accounts":finAccounts,"finance.bills":finBills,"finance.recurring":finRecurring});
 window.SECTION_ADD=Object.assign(window.SECTION_ADD||{},{finance:(btn,refresh)=>openMenu(btn,"Add",[["wallet","New account",()=>editAccount(null,refresh)],["clockl","New bill",()=>editBill(null,refresh)],["syncl","New recurring charge",()=>editSub(null,refresh)]])});

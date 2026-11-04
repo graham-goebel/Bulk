@@ -71,19 +71,67 @@ function openMenu(btn,label,items){
   const left=Math.max(12,Math.min(window.innerWidth-mw-12,r.right-mw));m.style.left=left+"px";m.style.top=(below?r.bottom+6:r.top-6-mh)+"px";
   // it grows out of the button that opened it
   m.style.transformOrigin=`${Math.round(r.left+r.width/2-left)}px ${below?"-6px":`calc(100% + 6px)`}`;m.classList.add("in");
-  btn.setAttribute("aria-expanded","true");menuFor={m,btn};
+  btn.setAttribute("aria-expanded","true");menuFor={m,btn,y:btn.getBoundingClientRect().top};
   const first=m.querySelector("button:not(:disabled)");if(first)first.focus();
 }
 function closeMenu(quiet){if(!menuFor)return;const{m,btn}=menuFor;menuFor=null;
   if(reduceMotion)m.remove();else{m.classList.remove("in");m.classList.add("out");m.style.pointerEvents="none";setTimeout(()=>m.remove(),130)}btn.setAttribute("aria-expanded","false");if(!quiet)btn.focus()}
 document.addEventListener("pointerdown",e=>{if(menuFor&&!menuFor.m.contains(e.target)&&!menuFor.btn.contains(e.target))closeMenu(true)},true);
-document.addEventListener("scroll",()=>closeMenu(true),{capture:true,passive:true}); // any scroll, including inside a sheet
+// a scroll that moves the menu's button (the page, or a sheet) closes it; the menu's own list scrolls freely
+document.addEventListener("scroll",e=>{if(!menuFor||(e.target instanceof Node&&menuFor.m.contains(e.target)))return;
+  const y=menuFor.btn.getBoundingClientRect().top;if(menuFor.y==null||Math.abs(y-menuFor.y)>3)closeMenu(true)},{capture:true,passive:true});
 document.addEventListener("keydown",e=>{
   if(!menuFor)return;const items=[...menuFor.m.querySelectorAll("button:not(:disabled)")],k=items.indexOf(document.activeElement);
   if(e.key==="Escape"){e.preventDefault();e.stopImmediatePropagation();closeMenu()} // close the menu, not the sheet under it
   else if((e.key==="ArrowDown"||e.key==="ArrowUp")&&items.length){e.preventDefault();items[(k+(e.key==="ArrowDown"?1:-1)+items.length)%items.length].focus()}
   else if(e.key==="Tab")closeMenu(true);
 });
+
+/* ---------- dropdowns ----------
+   Every <select> on the page is drawn as a button that opens a list like the menus above. The select stays in
+   the page, hidden, so its value, its change event and setting .value from code all work as before. Selects
+   added later are picked up too. Add data-native to a select to keep the browser's own; an option with
+   data-swatch="#hex" shows that color beside its name. */
+const ddChev='<svg class="ic dd-chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 6.5 8 10l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const ddTick='<svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+// a placeholder option ("Link to a recipe…": no value, ending in an ellipsis) labels the button but isn't listed
+const ddHolder=o=>!!o&&!o.value&&/…$/.test(o.textContent.trim());
+const selValue=Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,"value");
+function enhanceSelect(sel){
+  if(sel._dd||sel.hasAttribute("data-native")||sel.multiple)return;
+  const b=document.createElement("button");b.type="button";b.className="dd";b.setAttribute("aria-haspopup","listbox");b.setAttribute("aria-expanded","false");
+  b.innerHTML=`<span class="dd-v"></span>${ddChev}`;
+  if(sel.id){b.id=sel.id+"-dd";document.querySelectorAll(`label[for="${CSS.escape(sel.id)}"]`).forEach(l=>{l.htmlFor=b.id})}
+  if(sel.getAttribute("aria-label"))b.setAttribute("aria-label",sel.getAttribute("aria-label"));
+  const sync=()=>{const o=sel.options[sel.selectedIndex];b.firstChild.textContent=o?o.textContent:"";if(o&&o.dataset.swatch)b.firstChild.insertAdjacentHTML("afterbegin",`<i class="dd-sw" style="background:${o.dataset.swatch.replace(/[^#\w(),.% -]/g,"")}"></i>`);b.classList.toggle("dd-empty",!o||ddHolder(o));b.disabled=sel.disabled};
+  Object.defineProperty(sel,"value",{configurable:true,get(){return selValue.get.call(this)},set(v){selValue.set.call(this,v);sync()}});
+  sel.addEventListener("change",sync);sel._dd={b,sync};sel.classList.add("dd-native");sel.tabIndex=-1;sel.setAttribute("aria-hidden","true");
+  sel.after(b);sync();
+  b.onclick=()=>openList(b,sel);
+}
+// the list: options (with optgroup headings), the chosen one ticked, opening by the button
+function openList(btn,sel){
+  if(menuFor&&menuFor.btn===btn){closeMenu();return}closeMenu(true);
+  const m=document.createElement("div");m.className="menu dd-menu";m.setAttribute("role","listbox");
+  const add=o=>{if(o.tagName==="OPTGROUP"){const h=document.createElement("p");h.className="dd-h";h.textContent=o.label;m.appendChild(h);[...o.children].forEach(add);return}
+    if(o.hidden||ddHolder(o))return;const on=o.selected;
+    const x=document.createElement("button");x.type="button";x.setAttribute("role","option");x.setAttribute("aria-selected",String(o.selected));x.disabled=o.disabled;
+    x.innerHTML=`<span></span>${on?ddTick:""}`;x.firstChild.textContent=o.textContent;if(o.dataset.swatch)x.firstChild.insertAdjacentHTML("afterbegin",`<i class="dd-sw" style="background:${o.dataset.swatch.replace(/[^#\w(),.% -]/g,"")}"></i>`);
+    x.onclick=()=>{closeMenu();if(sel.selectedIndex!==o.index){sel.selectedIndex=o.index;sel._dd.sync();sel.dispatchEvent(new Event("input",{bubbles:true}));sel.dispatchEvent(new Event("change",{bubbles:true}))}};m.appendChild(x)};
+  [...sel.children].forEach(add);
+  document.body.appendChild(m);
+  const r=btn.getBoundingClientRect();m.style.minWidth=Math.max(180,r.width)+"px";
+  const room=Math.max(window.innerHeight-r.bottom-24,r.top-24),mh=Math.min(m.scrollHeight,room,420);m.style.maxHeight=mh+"px";
+  const mw=m.offsetWidth,below=r.bottom+6+mh<=window.innerHeight-12||r.top<window.innerHeight-r.bottom;
+  const left=Math.max(12,Math.min(window.innerWidth-mw-12,r.left));m.style.left=left+"px";m.style.top=(below?r.bottom+6:r.top-6-mh)+"px";
+  m.style.transformOrigin=`${Math.round(r.left+r.width/2-left)}px ${below?"-6px":`calc(100% + 6px)`}`;m.classList.add("in");
+  btn.setAttribute("aria-expanded","true");menuFor={m,btn,y:btn.getBoundingClientRect().top};
+  const cur=m.querySelector('[aria-selected="true"]')||m.querySelector("button:not(:disabled)");if(cur){cur.scrollIntoView({block:"nearest"});cur.focus({preventScroll:true})}
+}
+function enhanceSelects(root=document){root.querySelectorAll("select").forEach(enhanceSelect)}
+new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)if(n.nodeType===1){if(n.tagName==="SELECT")enhanceSelect(n);else if(n.querySelector)enhanceSelects(n)}})
+  .observe(document.documentElement,{childList:true,subtree:true});
+document.addEventListener("DOMContentLoaded",()=>enhanceSelects());enhanceSelects();
 
 /* ---------- sheets ---------- */
 // Sheets animate out, then hide. Opening one again cancels a close that's still running.
@@ -161,4 +209,4 @@ function swipeDismiss(bg,close,canBack){
 }
 const nestedSheet=()=>{const c=$("shClose");return !!c&&c.getAttribute("aria-label")==="Back"};
 
-Object.assign(UI,{$,esc,uid,touchUI,reduceMotion,OUTLINE,toast,openMenu,closeMenu,sheetHead,sheetActs,showBg,hideBg,resetSheet,holdSize,backBtn,nestedSheet,swipeDismiss,addClear});
+Object.assign(UI,{$,esc,uid,touchUI,reduceMotion,OUTLINE,toast,openMenu,closeMenu,enhanceSelects,sheetHead,sheetActs,showBg,hideBg,resetSheet,holdSize,backBtn,nestedSheet,swipeDismiss,addClear});
