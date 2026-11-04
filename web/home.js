@@ -1,5 +1,5 @@
 /* ---------- Home: calendar and tasks ----------
-   Today is the dashboard: the time, the week, how many tasks are left and what to start with, the day's
+   Today is the dashboard: the week, how many tasks are left and what to start with, the day's
    events on a timeline, what's on now, and the day's tasks and schedule side by side. Calendar lists the
    week; Tasks lists everything by when it's due. Tasks and events are kept on this device for now.
    Views register with sections.js through window.SECTION_VIEWS. */
@@ -41,7 +41,6 @@ function homeToday(body){
   const evs=eventsOn(S),due=tasksOn(S),any=isT?openTasks().filter(t=>!t.due):[],T=todayISO();
   const overdue=isT?due.filter(t=>t.due<T):[],left=due.length+any.length;
   const cur=isT?evs.find(e=>mins(e.start)<=now&&now<mins(e.end||e.start)):null,next=isT?evs.find(e=>mins(e.start)>now):null;
-  const clock=new Date(),hh=clock.getHours()%12||12,mm=String(clock.getMinutes()).padStart(2,"0");
   // the sentence: what's overdue, else what's first
   const first=overdue[0]||due[0]||any[0];
   const say=!left?`Nothing to do${isT?" today":""}. <span class="hm-mute">Enjoy the space.</span>`
@@ -52,9 +51,7 @@ function homeToday(body){
     :isT?`<p class="hm-now-t">No more events today.</p><p class="hm-now-s">${left} task${left===1?"":"s"} open.</p>`:"";
   body.innerHTML=`
     ${weekStrip()}
-    <div class="hm-page narrow"><div class="hm-top"><div class="hm-clock">${hh}:${mm}<small>${clock.getHours()>=12?"PM":"AM"}</small></div>
-      <p class="hm-date">${day.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}</p>
-      <div class="hm-legend">${Object.entries(CALS).map(([n,c])=>`<span>${dot(c)}${n}</span>`).join("")}</div></div>
+    <div class="hm-page narrow">
     <div class="hm-grid">
       <div class="hm-left">
         <p class="hm-count"><b>${left}</b> task${left===1?"":"s"} to do</p>
@@ -150,5 +147,5 @@ function homeTasks(body){const again=()=>homeTasks(body),T=todayISO(),all=openTa
 window.SECTION_VIEWS=Object.assign(window.SECTION_VIEWS||{},{"home.today":homeToday,"home.calendar":homeCalendar,"home.tasks":homeTasks});
 // the header's + adds a task or an event; the view refreshes after
 window.SECTION_ADD=Object.assign(window.SECTION_ADD||{},{home:(btn,refresh)=>openMenu(btn,"Add",[["okl","New task",()=>editTask(null,refresh)],["cal","New event",()=>editEvent(null,refresh)]])});
-// keep the clock and "now" current while Today is showing
-setInterval(()=>{if(document.body.dataset.sec==="home"&&$("sheet").hidden&&document.visibilityState==="visible"&&document.querySelector("#secBody-home .hm-top"))homeToday($("secBody-home"))},30000);
+// keep "now" current while Today is showing
+setInterval(()=>{if(document.body.dataset.sec==="home"&&$("sheet").hidden&&document.visibilityState==="visible"&&document.querySelector("#secBody-home .hm-grid"))homeToday($("secBody-home"))},30000);
